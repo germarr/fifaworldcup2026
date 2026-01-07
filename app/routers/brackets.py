@@ -240,6 +240,22 @@ async def knockout_bracket(
 
     # Get the predicted champion (winner of the final)
     champion, champion_flag_url = get_champion_prediction(current_user.id, db)
+    
+    # Get standings for group results section (from API via calculate_group_standings)
+    from app.standings import calculate_group_standings
+    standings = calculate_group_standings(current_user.id, db)
+    
+    # Convert to template format
+    standings_by_group = {}
+    for group_letter, standings_list in standings.items():
+        standings_by_group[group_letter] = [
+            {
+                "team": ts.team,
+                "team_flag_url": ts.team_flag_url,
+                "points": ts.points
+            }
+            for ts in standings_list
+        ]
 
     return templates.TemplateResponse(
         "knockout_bracket.html",
@@ -249,6 +265,7 @@ async def knockout_bracket(
             "matches": matches,
             "champion": champion,
             "champion_flag_url": champion_flag_url,
-            "total_score": total_score
+            "total_score": total_score,
+            "standings": standings_by_group
         }
     )

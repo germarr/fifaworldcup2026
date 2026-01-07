@@ -40,6 +40,38 @@
     <!-- Will be populated by JavaScript -->
 </div>
 
+<!-- Group Stage Results -->
+{% if standings %}
+<div class="group-results-section">
+    <h3 class="section-title">Group Stage Results - Qualified Teams</h3>
+    <div class="group-results-grid">
+        {% for group_letter in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] %}
+            {% if group_letter in standings %}
+            <div class="group-result-card">
+                <div class="group-result-header">
+                    <h4>Group {{ group_letter }}</h4>
+                </div>
+                <div class="qualified-teams">
+                    {% for team_standing in standings[group_letter][:2] %}
+                    <div class="qualified-team">
+                        <span class="position-badge">{{ loop.index }}</span>
+                        {% if team_standing.team_flag_url %}
+                        <img class="qualified-team-flag" src="{{ team_standing.team_flag_url }}" alt="{{ team_standing.team.name }} flag">
+                        {% else %}
+                        <span class="qualified-team-flag fallback">{{ team_standing.team.name[0] }}</span>
+                        {% endif %}
+                        <span class="team-qualified-name">{{ team_standing.team.code }}</span>
+                        <span class="team-points">{{ team_standing.points }} pts</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
 <div class="bracket-container">
     {% set round_of_16 = [] %}
     {% set quarter_finals = [] %}

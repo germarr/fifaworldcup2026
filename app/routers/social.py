@@ -22,28 +22,13 @@ def sync_user_scores(db: Session):
     Recalculate and update total_points for all users based on current finished matches.
     This ensures the leaderboard is always up to date.
     """
-    # optimization: fetch all finished matches once
-    finished_matches = db.exec(select(Match).where(Match.is_finished == True)).all()
-    match_map = {m.id: m for m in finished_matches}
+    from app.scoring import calculate_total_user_score
     
-    if not match_map:
-        return
-
     users = db.exec(select(User)).all()
     
     for user in users:
-        total_points = 0
-        # Get user predictions for finished matches
-        predictions = db.exec(select(Prediction).where(
-            Prediction.user_id == user.id,
-            Prediction.match_id.in_(match_map.keys())
-        )).all()
-        
-        for pred in predictions:
-            match = match_map.get(pred.match_id)
-            if match:
-                result = calculate_match_points(pred, match)
-                total_points += result["points"]
+        # Use centralized scoring function that handles group + knockout
+        total_points = calculate_total_user_score(user.id, db)
         
         if user.total_points != total_points:
             user.total_points = total_points
