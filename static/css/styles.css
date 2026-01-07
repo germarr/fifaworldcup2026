@@ -1451,56 +1451,61 @@ main.container.main-wide {
 }
 
 .champion-trophy {
-    font-size: 72px;
+    font-size: 48px;
     line-height: 1;
-    margin: 0 10px;
+    margin: 0 5px;
 }
 
 .champion-info {
     text-align: center;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 6px;
     align-items: center;
 }
 
 .champion-info h3 {
     color: #fff;
-    font-size: 18px;
-    margin-bottom: 10px;
+    font-size: 12px;
+    margin-bottom: 4px;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-weight: 600;
 }
 
 .champion-name {
-    font-size: 36px;
+    font-size: 18px;
     font-weight: bold;
     color: #fff;
-    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.4);
-    margin-bottom: 5px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    justify-content: center;
 }
 
 .champion-code {
-    font-size: 20px;
+    font-size: 12px;
     color: #fff;
-    opacity: 0.9;
+    opacity: 0.85;
+    font-weight: 500;
 }
 
 .knockout-highlight {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 40px;
+    gap: 60px;
     margin: 30px auto;
-    flex-wrap: wrap;
-    max-width: 1000px;
+    flex-wrap: nowrap;
+    max-width: 1200px;
     padding: 0 20px;
+    aspect-ratio: 16 / 9;
 }
 
 .knockout-highlight > .champion-card,
 .knockout-highlight > .score-card {
-    flex: 1 1 auto;
-    min-width: 300px;
-    max-width: 450px;
+    flex: 0 0 auto;
 }
 
 .champion-card {
@@ -1511,12 +1516,14 @@ main.container.main-wide {
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     box-shadow: 0 16px 30px rgba(0, 0, 0, 0.15);
-    padding: 40px 30px;
+    padding: 20px 15px;
     border-radius: 12px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 15px;
+    gap: 8px;
+    width: 220px;
+    min-width: 220px;
 }
 
 .champion-card .champion-flag-bg {
@@ -1536,17 +1543,17 @@ main.container.main-wide {
 }
 
 .champion-flag {
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    border: 2px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.6);
     object-fit: cover;
 }
 
 .champion-name {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 5px;
     justify-content: center;
 }
 
@@ -1555,12 +1562,13 @@ main.container.main-wide {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    min-width: 250px;
-    padding: 40px 30px;
+    flex: 1 1 auto;
+    padding: 30px 40px;
     background: linear-gradient(135deg, var(--primary-color), var(--success-color));
     color: white;
     border-radius: 12px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    min-height: 180px;
 }
 
 .total-score-badge {
