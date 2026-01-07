@@ -5,7 +5,6 @@ Knockout team resolution based on group standings and match predictions.
 from typing import Dict, Optional
 from sqlmodel import Session, select
 from app.models import Match, Prediction, Team
-from app.standings import get_group_winner, get_group_runner_up
 
 
 def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team]]:
@@ -20,12 +19,19 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
         Dictionary mapping placeholder codes to Team objects
         Example: {'1A': Team(Brazil), '2B': Team(Senegal), 'W49': Team(Netherlands)}
     """
+    from app.standings import calculate_group_standings
+    
     resolution: Dict[str, Optional[Team]] = {}
+
+    # Calculate standings once and reuse (instead of calling get_group_winner/runner_up 16 times)
+    standings = calculate_group_standings(user_id, db)
 
     # Resolve group winners and runners-up
     for group in "ABCDEFGH":
-        winner = get_group_winner(group, user_id, db)
-        runner_up = get_group_runner_up(group, user_id, db)
+        group_standings = standings.get(group, [])
+        
+        winner = group_standings[0].team if len(group_standings) > 0 else None
+        runner_up = group_standings[1].team if len(group_standings) > 1 else None
 
         resolution[f"1{group}"] = winner
         resolution[f"2{group}"] = runner_up
@@ -48,13 +54,17 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
 
     predictions_map = {p.match_id: p for p in predictions}
 
+    # Get all teams once to avoid repeated queries
+    teams_statement = select(Team)
+    teams_map = {t.id: t for t in db.exec(teams_statement).all()}
+
     # Resolve match winners and losers based on predictions
     for match in knockout_matches:
         prediction = predictions_map.get(match.id)
 
         if prediction:
             # First, resolve the teams in this match
-            team1, team2 = resolve_match_teams(match, user_id, db)
+            team1, team2 = resolve_match_teams_with_cache(match, resolution, teams_map, user_id, db)
 
             # Determine winner and loser based on predicted scores
             if prediction.predicted_team1_score > prediction.predicted_team2_score:
@@ -66,9 +76,8 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
             else:
                 # Tie - check penalty shootout winner
                 if prediction.penalty_shootout_winner_id:
-                    # Get the penalty winner team
-                    penalty_winner_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
-                    penalty_winner = db.exec(penalty_winner_statement).first()
+                    # Get the penalty winner team from cache
+                    penalty_winner = teams_map.get(prediction.penalty_shootout_winner_id)
 
                     if penalty_winner:
                         winner_team = penalty_winner
@@ -92,6 +101,46 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
     return resolution
 
 
+def resolve_match_teams_with_cache(match: Match, resolution: Dict[str, Optional[Team]], teams_map: Dict[int, Team], user_id: int, db: Session) -> tuple[Optional[Team], Optional[Team]]:
+    """
+    Resolve the actual teams for a match using cached data.
+
+    Args:
+        match: Match object with potential placeholders
+        resolution: Pre-built resolution dictionary
+        teams_map: Pre-fetched teams map
+        user_id: User ID to resolve for
+        db: Database session
+
+    Returns:
+        Tuple of (team1, team2) - resolved Team objects or None if not determined
+    """
+    # If match has direct team IDs (group stage), use those
+    if match.team1_id and match.team2_id and not match.team1_placeholder and not match.team2_placeholder:
+        team1 = teams_map.get(match.team1_id)
+        team2 = teams_map.get(match.team2_id)
+        return team1, team2
+
+    # Otherwise, resolve using placeholders from pre-built resolution
+    team1 = None
+    team2 = None
+
+    if match.team1_placeholder:
+        team1 = resolution.get(match.team1_placeholder)
+
+    if match.team2_placeholder:
+        team2 = resolution.get(match.team2_placeholder)
+
+    # Fallback to teams_map if placeholders didn't resolve
+    if not team1 and match.team1_id:
+        team1 = teams_map.get(match.team1_id)
+
+    if not team2 and match.team2_id:
+        team2 = teams_map.get(match.team2_id)
+
+    return team1, team2
+
+
 def resolve_match_teams(match: Match, user_id: int, db: Session) -> tuple[Optional[Team], Optional[Team]]:
     """
     Resolve the actual teams for a match based on placeholders.
@@ -106,13 +155,10 @@ def resolve_match_teams(match: Match, user_id: int, db: Session) -> tuple[Option
     """
     # If match has direct team IDs (group stage), use those
     if match.team1_id and match.team2_id and not match.team1_placeholder and not match.team2_placeholder:
-        team1_statement = select(Team).where(Team.id == match.team1_id)
-        team2_statement = select(Team).where(Team.id == match.team2_id)
-
-        team1 = db.exec(team1_statement).first()
-        team2 = db.exec(team2_statement).first()
-
-        return team1, team2
+        teams_statement = select(Team).where(Team.id.in_([match.team1_id, match.team2_id]))
+        teams = {t.id: t for t in db.exec(teams_statement).all()}
+        
+        return teams.get(match.team1_id), teams.get(match.team2_id)
 
     # Otherwise, resolve using placeholders
     resolution = resolve_knockout_teams(user_id, db)
