@@ -110,3 +110,118 @@ def calculate_knockout_points(
         "outcome_correct": points > 0,
         "score_correct": False
     }
+
+
+def calculate_total_user_score(user_id: int, db) -> int:
+    """
+    Calculate total score across all matches (group stage + knockout).
+    
+    This is the centralized scoring function used by all endpoints.
+    Ensures consistent score calculation across the application.
+    
+    Args:
+        user_id: User ID to calculate score for
+        db: Database session
+        
+    Returns:
+        Total points earned by user
+    """
+    from sqlmodel import Session, select
+    
+    total_score = 0
+    
+    # Score group stage predictions
+    group_statement = (
+        select(Prediction, Match)
+        .join(Match, Prediction.match_id == Match.id)
+        .where(
+            Prediction.user_id == user_id,
+            Match.round.like("Group Stage%")
+        )
+    )
+    group_results = db.exec(group_statement).all()
+    for prediction, match in group_results:
+        total_score += calculate_match_points(prediction, match)["points"]
+    
+    # Score knockout predictions
+    from app.knockout import resolve_match_teams
+    
+    knockout_statement = select(Match).where(~Match.round.like("Group Stage%")).order_by(Match.match_number)
+    knockout_matches = db.exec(knockout_statement).all()
+    
+    pred_statement = select(Prediction).where(Prediction.user_id == user_id)
+    predictions = db.exec(pred_statement).all()
+    predictions_dict = {pred.match_id: pred for pred in predictions}
+    
+    for match in knockout_matches:
+        team1, team2 = resolve_match_teams(match, user_id, db)
+        prediction = predictions_dict.get(match.id)
+        
+        if prediction:
+            scoring_result = calculate_knockout_points(
+                prediction,
+                match,
+                team1.id if team1 else None,
+                team2.id if team2 else None
+            )
+            total_score += scoring_result["points"]
+    
+    return total_score
+
+
+def get_champion_prediction(user_id: int, db) -> tuple[Team | None, str | None]:
+    """
+    Get the predicted champion from the user's final match prediction.
+    
+    Resolves the final match teams using group stage predictions,
+    then determines the winner based on the prediction scores.
+    
+    Args:
+        user_id: User ID to get champion for
+        db: Database session
+        
+    Returns:
+        Tuple of (champion_team, champion_flag_url) or (None, None) if invalid
+    """
+    from sqlmodel import Session, select
+    from app.knockout import resolve_match_teams
+    from app.flags import flag_url
+    
+    # Get final match
+    final_statement = select(Match).where(Match.round == "Final")
+    final_match = db.exec(final_statement).first()
+    
+    if not final_match:
+        return None, None
+    
+    # Get prediction for final match
+    pred_statement = select(Prediction).where(
+        Prediction.user_id == user_id,
+        Prediction.match_id == final_match.id
+    )
+    prediction = db.exec(pred_statement).first()
+    
+    if not prediction:
+        return None, None
+    
+    # Resolve teams for final match
+    team1, team2 = resolve_match_teams(final_match, user_id, db)
+    
+    if not team1 or not team2:
+        return None, None
+    
+    # Determine champion based on prediction
+    champion = None
+    if prediction.predicted_team1_score > prediction.predicted_team2_score:
+        champion = team1
+    elif prediction.predicted_team2_score > prediction.predicted_team1_score:
+        champion = team2
+    elif prediction.penalty_shootout_winner_id:
+        champ_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
+        champion = db.exec(champ_statement).first()
+    
+    if not champion:
+        return None, None
+    
+    champion_flag_url = flag_url(champion.code, 80)
+    return champion, champion_flag_url

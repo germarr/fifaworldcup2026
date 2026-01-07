@@ -17,6 +17,7 @@ def create_db_and_tables():
     # Import all models to ensure they are registered with SQLModel
     from app.models import User, Team, Match, Prediction, GroupStanding
     from app.models import Session as SessionModel
+    from app.models import PlayerTeam, UserTeamMembership  # NEW: Many-to-many team membership
     SQLModel.metadata.create_all(engine)
 
 

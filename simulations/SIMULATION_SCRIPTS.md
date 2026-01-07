@@ -8,12 +8,12 @@ This document explains the two simulation scripts and their purposes.
 
 The application has **TWO separate simulation systems**:
 
-### 1. **Actual Match Results** (`simulate_full_tournament.py`)
+### 1. **Actual Match Results** (`simulations/simulate_full_tournament.py`)
 - Simulates the **official tournament results**
 - Fills in `actual_team1_score` and `actual_team2_score` in the **Match** table
 - Used as the "ground truth" that user predictions are compared against
 
-### 2. **User Predictions** (`generate_user_picks.py`)
+### 2. **User Predictions** (`mockups/generate_user_picks.py`)
 - Generates **random predictions for a specific user**
 - Creates records in the **Prediction** table
 - Simulates what a user might predict for all matches
@@ -45,7 +45,7 @@ The application has **TWO separate simulation systems**:
 
 ---
 
-## Script 1: `simulate_full_tournament.py`
+## Script 1: `simulations/simulate_full_tournament.py`
 
 ### Purpose
 Simulates the entire World Cup tournament with random results (the "official" results).
@@ -60,7 +60,7 @@ Simulates the entire World Cup tournament with random results (the "official" re
 
 ### Usage
 ```bash
-python simulate_full_tournament.py
+python simulations/simulate_full_tournament.py
 ```
 
 ### Output Example
@@ -84,7 +84,7 @@ Tournament Simulation Complete! ✓
 
 ---
 
-## Script 2: `generate_user_picks.py` (NEW!)
+## Script 2: `mockups/generate_user_picks.py` (NEW!)
 
 ### Purpose
 Generates random predictions for a specific user (simulates a user making picks).
@@ -101,13 +101,13 @@ Generates random predictions for a specific user (simulates a user making picks)
 ### Usage
 ```bash
 # Generate predictions for user "admin"
-python generate_user_picks.py admin
+python mockups/generate_user_picks.py admin
 
 # Generate predictions and clear existing ones first
-python generate_user_picks.py admin --clear
+python mockups/generate_user_picks.py admin --clear
 
 # Generate for a different user
-python generate_user_picks.py john
+python mockups/generate_user_picks.py john
 ```
 
 ### Output Example
@@ -148,8 +148,8 @@ Total:    64 predictions saved
 
 ## Key Differences
 
-| Feature | simulate_full_tournament.py | generate_user_picks.py |
-|---------|----------------------------|------------------------|
+| Feature | simulations/simulate_full_tournament.py | mockups/generate_user_picks.py |
+|---------|----------------------------------------|-------------------------------|
 | **Purpose** | Generate official tournament results | Generate user predictions |
 | **Table Modified** | Match (actual_team1_score, actual_team2_score) | Prediction (predicted_team1_score, predicted_team2_score) |
 | **Scope** | All matches (one set of results) | All matches for ONE user |
@@ -164,13 +164,13 @@ Total:    64 predictions saved
 ### Scenario 1: Testing Tournament Scoring
 ```bash
 # 1. Simulate the actual tournament
-python simulate_full_tournament.py
+python simulations/simulate_full_tournament.py
 
 # 2. Generate predictions for user "admin"
-python generate_user_picks.py admin
+python mockups/generate_user_picks.py admin
 
 # 3. Generate predictions for user "john"
-python generate_user_picks.py john
+python mockups/generate_user_picks.py john
 
 # 4. View the app to see scores compared
 python main.py
@@ -180,7 +180,7 @@ python main.py
 ### Scenario 2: Re-testing with New Results
 ```bash
 # 1. Reset and re-simulate tournament
-python simulate_full_tournament.py
+python simulations/simulate_full_tournament.py
 
 # 2. User predictions remain unchanged
 # 3. Scores will be recalculated based on new actual results
@@ -189,7 +189,7 @@ python simulate_full_tournament.py
 ### Scenario 3: Reset User Predictions
 ```bash
 # Clear and regenerate predictions for a user
-python generate_user_picks.py admin --clear
+python mockups/generate_user_picks.py admin --clear
 ```
 
 ---
@@ -235,11 +235,12 @@ All predictions and actual results reference **Match ID 1** - the same match rec
 
 ## Important Notes
 
-1. **`simulate_full_tournament.py` should be run FIRST** to establish actual results
-2. **`generate_user_picks.py` can be run multiple times** for different users
+1. **`simulations/simulate_full_tournament.py` should be run FIRST** to establish actual results
+2. **`mockups/generate_user_picks.py` can be run multiple times** for different users
 3. **Knockout predictions** depend on group stage predictions being completed first
 4. **Both scripts use the same Match records** - predictions are compared against actual scores from the same matches
 5. **The scoring system** (app/scoring.py) compares prediction vs actual on a per-match basis
+6. **Scripts are organized** - Simulation scripts are in simulations/ folder, testing/mockup scripts are in mockups/ folder
 
 ---
 
@@ -249,4 +250,4 @@ Users can also enter predictions manually via:
 - **Web UI**: `/bracket` (Game Mode or Individual Mode)
 - **API**: `POST /api/predictions` (single prediction) or `POST /api/predictions/bulk` (multiple)
 
-The `generate_user_picks.py` script is just a convenience tool for testing or quickly filling in predictions.
+The `mockups/generate_user_picks.py` script is just a convenience tool for testing or quickly filling in predictions.

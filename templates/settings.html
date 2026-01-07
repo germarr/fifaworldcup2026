@@ -3,80 +3,417 @@
 {% block title %}Settings - FIFA World Cup{% endblock %}
 
 {% block content %}
-<div class="settings-container">
-    <h2>Profile Settings</h2>
-
-    <!-- Avatar Settings -->
-    <div class="settings-card">
-        <h3>My Avatar</h3>
-        <div class="avatar-section">
-            <img id="current-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed={{ user.avatar_seed }}" class="avatar-large">
-            <form action="/settings/avatar" method="POST" class="avatar-form">
-                <div class="form-group">
-                    <label>Avatar Seed (Random Text)</label>
-                    <input type="text" name="seed" id="avatar-seed" value="{{ user.avatar_seed }}" class="form-input" oninput="updateAvatarPreview()">
-                </div>
-                <button type="submit" class="btn btn-primary">Update Avatar</button>
-                <button type="button" class="btn btn-secondary" onclick="randomizeAvatar()">Randomize</button>
-            </form>
-        </div>
+<div class="settings-page">
+    <div class="settings-header">
+        <h2>Settings</h2>
+        <p>Manage your profile, teams, and preferences</p>
     </div>
 
-    <!-- Team Settings -->
-    <div class="settings-card">
-        <h3>Team Management</h3>
-        
-        {% if user.player_team %}
-            <div class="current-team-info">
-                <p>You are a member of <strong>{{ user.player_team.name }}</strong></p>
-                <p class="join-code-display">Join Code: <code>{{ user.player_team.join_code }}</code> (Share this with friends!)</p>
-                
-                <form action="/settings/team/leave" method="POST" onsubmit="return confirm('Are you sure you want to leave your team?');">
-                    <button type="submit" class="btn btn-danger">Leave Team</button>
+    <div class="settings-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="settings-sidebar">
+            <nav class="sidebar-nav">
+                <button class="sidebar-item active" onclick="showSettingsTab('profile')" data-tab="profile">
+                    <span class="icon">👤</span>
+                    <span class="label">Profile</span>
+                </button>
+                <button class="sidebar-item" onclick="showSettingsTab('teams')" data-tab="teams">
+                    <span class="icon">👥</span>
+                    <span class="label">My Teams</span>
+                </button>
+                <button class="sidebar-item" onclick="showSettingsTab('avatar')" data-tab="avatar">
+                    <span class="icon">🎭</span>
+                    <span class="label">Avatar</span>
+                </button>
+            </nav>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="settings-content">
+            <!-- Profile Tab -->
+            <div id="settings-tab-profile" class="settings-panel">
+                <div class="panel-header">
+                    <h3>Profile Information</h3>
+                    <p>Update your personal information and preferences</p>
+                </div>
+
+                <form action="/settings/profile" method="POST" class="settings-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email Address *</label>
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                value="{{ user.email or '' }}"
+                                required
+                                class="form-input"
+                                placeholder="your.email@example.com"
+                            >
+                            <small>Used for account recovery and notifications</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row form-row-2col">
+                        <div class="form-group">
+                            <label for="first_name">First Name</label>
+                            <input
+                                type="text"
+                                id="first_name"
+                                name="first_name"
+                                value="{{ user.first_name or '' }}"
+                                class="form-input"
+                                placeholder="John"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="last_name">Last Name</label>
+                            <input
+                                type="text"
+                                id="last_name"
+                                name="last_name"
+                                value="{{ user.last_name or '' }}"
+                                class="form-input"
+                                placeholder="Doe"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="favorite_team_id">Favorite Team</label>
+                            <select id="favorite_team_id" name="favorite_team_id" class="form-select">
+                                <option value="">-- Select a team --</option>
+                                {% for team in all_teams %}
+                                <option
+                                    value="{{ team.id }}"
+                                    {% if user.favorite_team_id == team.id %}selected{% endif %}
+                                >
+                                    {{ team.code }} - {{ team.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
                 </form>
             </div>
-        {% else %}
-            <div class="team-actions-grid">
-                <!-- Create Team -->
-                <div class="team-action-box">
-                    <h4>Create a New Team</h4>
-                    <form action="/settings/team/create" method="POST">
-                        <div class="form-group">
-                            <label>Team Name</label>
-                            <input type="text" name="team_name" required class="form-input" placeholder="e.g. The Champions">
-                        </div>
-                        <button type="submit" class="btn btn-primary btn-block">Create Team</button>
-                    </form>
+
+            <!-- Teams Tab -->
+            <div id="settings-tab-teams" class="settings-panel" style="display: none;">
+                <div class="panel-header">
+                    <h3>Team Management</h3>
+                    <p>Join multiple teams and compete with different groups</p>
                 </div>
 
-                <div class="divider-vertical">OR</div>
+                <!-- My Teams Section -->
+                <div class="teams-section">
+                    <h4>My Teams ({{ user_teams|length }})</h4>
 
-                <!-- Join Team -->
-                <div class="team-action-box">
-                    <h4>Join Existing Team</h4>
-                    <form action="/settings/team/join" method="POST">
-                        <div class="form-group">
-                            <label>Join Code</label>
-                            <input type="text" name="join_code" required class="form-input" placeholder="e.g. ABC123">
+                    {% if user_teams %}
+                    <div class="teams-list">
+                        {% for membership in user_teams %}
+                        <div class="team-card">
+                            <div class="team-info">
+                                <h5>{{ membership.player_team.name }}</h5>
+                                <p class="team-meta">
+                                    <span>{{ membership.player_team.memberships|length }} members</span>
+                                    <span>•</span>
+                                    <span>{{ membership.player_team.total_points }} points</span>
+                                </p>
+                                <p class="join-code">
+                                    Join Code: <code>{{ membership.player_team.join_code }}</code>
+                                </p>
+                                <p class="joined-date">
+                                    Joined {{ membership.joined_at.strftime('%B %d, %Y') }}
+                                </p>
+                            </div>
+                            <div class="team-actions">
+                                <form action="/settings/team/leave/{{ membership.player_team.id }}" method="POST"
+                                      onsubmit="return confirm('Leave {{ membership.player_team.name }}?');">
+                                    <button type="submit" class="btn btn-danger btn-small">Leave Team</button>
+                                </form>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-secondary btn-block">Join Team</button>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="empty-message">You haven't joined any teams yet.</p>
+                    {% endif %}
+                </div>
+
+                <!-- Create/Join Team Section -->
+                <div class="teams-section">
+                    <h4>Join or Create a Team</h4>
+
+                    <div class="team-actions-grid">
+                        <!-- Create Team -->
+                        <div class="team-action-card">
+                            <h5>Create New Team</h5>
+                            <form action="/settings/team/create" method="POST">
+                                <div class="form-group">
+                                    <label for="team_name">Team Name</label>
+                                    <input
+                                        type="text"
+                                        id="team_name"
+                                        name="team_name"
+                                        required
+                                        class="form-input"
+                                        placeholder="The Champions"
+                                    >
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Create Team</button>
+                            </form>
+                        </div>
+
+                        <!-- Join via Code -->
+                        <div class="team-action-card">
+                            <h5>Join via Code</h5>
+                            <form action="/settings/team/join" method="POST">
+                                <div class="form-group">
+                                    <label for="join_code">Join Code</label>
+                                    <input
+                                        type="text"
+                                        id="join_code"
+                                        name="join_code"
+                                        required
+                                        class="form-input"
+                                        placeholder="ABC123"
+                                    >
+                                </div>
+                                <button type="submit" class="btn btn-secondary btn-block">Join Team</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Browse Teams Section -->
+                <div class="teams-section">
+                    <h4>Browse Teams</h4>
+
+                    <div class="search-box">
+                        <input
+                            type="text"
+                            id="team-search"
+                            class="form-input"
+                            placeholder="Search teams..."
+                            oninput="searchTeams(this.value)"
+                        >
+                    </div>
+
+                    <div id="team-search-results" class="team-browse-list">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avatar Tab -->
+            <div id="settings-tab-avatar" class="settings-panel" style="display: none;">
+                <div class="panel-header">
+                    <h3>Avatar Customization</h3>
+                    <p>Personalize your profile picture</p>
+                </div>
+
+                <div class="avatar-section">
+                    <img
+                        id="current-avatar"
+                        src="https://api.dicebear.com/7.x/adventurer/svg?seed={{ user.avatar_seed }}"
+                        class="avatar-large"
+                        alt="Current avatar"
+                    >
+
+                    <form action="/settings/avatar" method="POST" class="avatar-form">
+                        <div class="form-group">
+                            <label for="avatar-seed">Avatar Seed</label>
+                            <input
+                                type="text"
+                                name="seed"
+                                id="avatar-seed"
+                                value="{{ user.avatar_seed }}"
+                                class="form-input"
+                                oninput="updateAvatarPreview()"
+                            >
+                            <small>Change this text to generate a different avatar</small>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Save Avatar</button>
+                            <button type="button" class="btn btn-secondary" onclick="randomizeAvatar()">
+                                Randomize
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
-        {% endif %}
+        </main>
     </div>
 </div>
 
 <script>
+// Tab switching
+function showSettingsTab(tabName) {
+    // Hide all panels
+    document.querySelectorAll('.settings-panel').forEach(panel => {
+        panel.style.display = 'none';
+    });
+
+    // Remove active state from all sidebar items
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Show selected panel
+    document.getElementById('settings-tab-' + tabName).style.display = 'block';
+
+    // Add active state to clicked sidebar item
+    document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+}
+
+// Avatar preview
 function updateAvatarPreview() {
     const seed = document.getElementById('avatar-seed').value;
-    document.getElementById('current-avatar').src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+    document.getElementById('current-avatar').src =
+        `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
 }
 
 function randomizeAvatar() {
     const randomSeed = Math.random().toString(36).substring(7);
     document.getElementById('avatar-seed').value = randomSeed;
     updateAvatarPreview();
+}
+
+// Team search
+let searchTimeout;
+async function searchTeams(query) {
+    clearTimeout(searchTimeout);
+
+    searchTimeout = setTimeout(async () => {
+        try {
+            const response = await fetch(`/api/teams/search?q=${encodeURIComponent(query)}`);
+            const teams = await response.json();
+
+            const resultsContainer = document.getElementById('team-search-results');
+
+            if (teams.length === 0) {
+                resultsContainer.innerHTML = '<p class="empty-message">No teams found</p>';
+                return;
+            }
+
+            resultsContainer.innerHTML = teams.map(team => `
+                <div class="team-browse-card">
+                    <div class="team-info">
+                        <h5>${team.name}</h5>
+                        <p class="team-meta">
+                            <span>${team.member_count} members</span>
+                            <span>•</span>
+                            <span>${team.total_points} points</span>
+                        </p>
+                        <p class="join-code">Code: <code>${team.join_code}</code></p>
+                    </div>
+                    <div class="team-actions">
+                        <form action="/settings/team/join" method="POST">
+                            <input type="hidden" name="join_code" value="${team.join_code}">
+                            <button type="submit" class="btn btn-secondary btn-small">Join</button>
+                        </form>
+                    </div>
+                </div>
+            `).join('');
+        } catch (error) {
+            console.error('Error searching teams:', error);
+        }
+    }, 300);
+}
+
+// Initial load of teams
+window.addEventListener('DOMContentLoaded', () => {
+    searchTeams('');
+    handleNotifications();
+});
+
+// Handle success/error notifications from URL parameters
+function handleNotifications() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const success = urlParams.get('success');
+    const error = urlParams.get('error');
+
+    let message = '';
+    let isError = false;
+    let switchToTab = null;
+
+    // Success messages
+    if (success === 'profile_updated') {
+        message = 'Profile updated successfully!';
+        switchToTab = 'profile';
+    } else if (success === 'team_created') {
+        message = 'Team created successfully!';
+        switchToTab = 'teams';
+    } else if (success === 'team_joined') {
+        message = 'Successfully joined the team!';
+        switchToTab = 'teams';
+    } else if (success === 'left_team') {
+        message = 'You have left the team.';
+        switchToTab = 'teams';
+    }
+
+    // Error messages
+    if (error === 'email_exists') {
+        message = 'This email is already in use.';
+        isError = true;
+        switchToTab = 'profile';
+    } else if (error === 'invalid_email') {
+        message = 'Invalid email format.';
+        isError = true;
+        switchToTab = 'profile';
+    } else if (error === 'team_exists') {
+        message = 'A team with this name already exists.';
+        isError = true;
+        switchToTab = 'teams';
+    } else if (error === 'invalid_code') {
+        message = 'Invalid join code.';
+        isError = true;
+        switchToTab = 'teams';
+    } else if (error === 'already_member') {
+        message = 'You are already a member of this team.';
+        isError = true;
+        switchToTab = 'teams';
+    }
+
+    // Show notification if there's a message
+    if (message) {
+        showNotification(message, isError);
+
+        // Switch to the appropriate tab
+        if (switchToTab) {
+            showSettingsTab(switchToTab);
+        }
+
+        // Clean up URL (remove query parameters)
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
+}
+
+// Show notification toast
+function showNotification(message, isError = false) {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = 'notification' + (isError ? ' error' : '');
+    notification.textContent = message;
+
+    // Add to page
+    document.body.appendChild(notification);
+
+    // Auto-dismiss after 4 seconds
+    setTimeout(() => {
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notification.remove();
+        }, 300);
+    }, 4000);
 }
 </script>
 {% endblock %}

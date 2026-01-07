@@ -3,6 +3,20 @@ from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
 
 
+class UserTeamMembership(SQLModel, table=True):
+    """Junction table for many-to-many relationship between users and player teams."""
+    __tablename__ = "user_team_memberships"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: int = Field(foreign_key="users.id", index=True)
+    player_team_id: int = Field(foreign_key="player_teams.id", index=True)
+    joined_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relationships
+    user: Optional["User"] = Relationship(back_populates="team_memberships")
+    player_team: Optional["PlayerTeam"] = Relationship(back_populates="memberships")
+
+
 class PlayerTeam(SQLModel, table=True):
     """Team for players (users) to join and compete."""
     __tablename__ = "player_teams"
@@ -11,13 +25,17 @@ class PlayerTeam(SQLModel, table=True):
     name: str = Field(unique=True, index=True, max_length=100)
     join_code: str = Field(unique=True, index=True, max_length=20)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    
+
     # Relationships
-    members: List["User"] = Relationship(back_populates="player_team")
+    members: List["User"] = Relationship(back_populates="player_team")  # DEPRECATED: Keep for backward compatibility
+    memberships: List["UserTeamMembership"] = Relationship(back_populates="player_team")  # NEW: Many-to-many
 
     @property
     def total_points(self) -> int:
         """Sum of all members' points."""
+        # Use new memberships relationship if it has data, fallback to old members
+        if self.memberships:
+            return sum(membership.user.total_points for membership in self.memberships)
         return sum(member.total_points for member in self.members)
 
 
@@ -28,21 +46,36 @@ class User(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     username: str = Field(unique=True, index=True, max_length=50)
     password_hash: str = Field(max_length=255)
-    favorite_team: str = Field(max_length=100)
+
+    # NEW: Profile fields
+    email: Optional[str] = Field(default=None, unique=True, index=True, max_length=255)  # Will be required after migration
+    first_name: Optional[str] = Field(default=None, max_length=100)
+    last_name: Optional[str] = Field(default=None, max_length=100)
+
+    # DEPRECATED: Keep for backward compatibility during migration
+    favorite_team: Optional[str] = Field(default=None, max_length=100)
+
+    # NEW: Favorite team as FK to Team table
+    favorite_team_id: Optional[int] = Field(default=None, foreign_key="teams.id")
+
     cookie_consent: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
-    
-    # Profile fields
+
+    # Avatar and scoring
     avatar_seed: str = Field(default="adventurer", max_length=50) # For DiceBear avatar
     total_points: int = Field(default=0)
-    
-    # Player Team
+
+    # DEPRECATED: Player Team (single team - keep for backward compatibility)
     player_team_id: Optional[int] = Field(default=None, foreign_key="player_teams.id")
     player_team: Optional[PlayerTeam] = Relationship(back_populates="members")
 
     # Relationships
     predictions: list["Prediction"] = Relationship(back_populates="user")
     sessions: list["Session"] = Relationship(back_populates="user")
+    team_memberships: List["UserTeamMembership"] = Relationship(back_populates="user")  # NEW: Many-to-many
+    favorite_team_obj: Optional["Team"] = Relationship(
+        sa_relationship_kwargs={"foreign_keys": "[User.favorite_team_id]", "uselist": False}
+    )
 
 
 class Session(SQLModel, table=True):

@@ -250,7 +250,7 @@ async def simulate_tournament(
 ):
     """Simulate the full tournament and persist official results."""
     try:
-        from simulate_full_tournament import simulate_full_tournament
+        from simulations.simulate_full_tournament import simulate_full_tournament
         simulate_full_tournament()
     except Exception as exc:
         raise HTTPException(

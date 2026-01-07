@@ -70,6 +70,11 @@ async def bracket_view(
     db: Session = Depends(get_session)
 ):
     """View all user predictions with scoring."""
+    from app.scoring import calculate_total_user_score
+    
+    # Use centralized score calculation
+    total_score = calculate_total_user_score(current_user.id, db)
+    
     # Get all user predictions with match and team data
     statement = (
         select(Prediction, Match, Team)
@@ -82,7 +87,6 @@ async def bracket_view(
     results = db.exec(statement).all()
 
     predictions_with_teams = []
-    total_score = 0
     
     for prediction, match, team1 in results:
         team2_statement = select(Team).where(Team.id == match.team2_id)
@@ -92,7 +96,6 @@ async def bracket_view(
 
         # Calculate points
         scoring_result = calculate_match_points(prediction, match)
-        total_score += scoring_result["points"]
 
         predictions_with_teams.append({
             "prediction": prediction,
@@ -194,6 +197,11 @@ async def knockout_bracket(
     db: Session = Depends(get_session)
 ):
     """Visual knockout bracket tree with predictions."""
+    from app.scoring import calculate_total_user_score, get_champion_prediction
+    
+    # Use centralized score calculation
+    total_score = calculate_total_user_score(current_user.id, db)
+    
     # Get all knockout matches (not group stage)
     statement = select(Match).where(~Match.round.like("Group Stage%")).order_by(Match.match_number)
     knockout_matches = db.exec(statement).all()
@@ -211,58 +219,27 @@ async def knockout_bracket(
         # Get prediction if exists
         prediction = predictions_dict.get(match.id)
 
+        scoring_result = {"points": 0}
+        if prediction:
+            scoring_result = calculate_knockout_points(
+                prediction,
+                match,
+                team1.id if team1 else None,
+                team2.id if team2 else None
+            )
+
         matches.append({
             "match": match,
             "team1": team1,
             "team2": team2,
             "team1_flag_url": flag_url(team1.code, 40) if team1 else None,
             "team2_flag_url": flag_url(team2.code, 40) if team2 else None,
-            "prediction": prediction
+            "prediction": prediction,
+            "scoring": scoring_result
         })
 
     # Get the predicted champion (winner of the final)
-    final_item = next((m for m in matches if m["match"].round == "Final"), None)
-    champion = None
-    if final_item and final_item["prediction"]:
-        prediction = final_item["prediction"]
-        if prediction.predicted_team1_score > prediction.predicted_team2_score:
-            champion = final_item["team1"]
-        elif prediction.predicted_team2_score > prediction.predicted_team1_score:
-            champion = final_item["team2"]
-        elif prediction.penalty_shootout_winner_id:
-            champ_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
-            champion = db.exec(champ_statement).first()
-
-    # Get group standings (Actual)
-    standings_statement = (
-        select(GroupStanding, Team)
-        .join(Team, GroupStanding.team_id == Team.id)
-    )
-    standings_results = db.exec(standings_statement).all()
-    standings_by_group = {}
-
-    # Helper class to match the template structure expected by calculate_group_standings
-    class StandingWrapper:
-        def __init__(self, standing, team):
-            self.team = team
-            self.points = standing.points
-            self.team_flag_url = flag_url(team.code, 40)
-            # Add other fields if needed by the template, but 'team' and 'points' are the main ones used in the simple list
-
-    for standing, team in standings_results:
-        group_letter = standing.group_letter or team.group
-        if not group_letter:
-            continue
-        
-        # Create a wrapper object that matches the structure expected by the template
-        # The template expects an object with .team and .points attributes
-        wrapper = StandingWrapper(standing, team)
-        standings_by_group.setdefault(group_letter, []).append(wrapper)
-
-    # Sort standings
-    for group_letter, standings_list in standings_by_group.items():
-        # Sort by points DESC
-        standings_list.sort(key=lambda x: x.points, reverse=True)
+    champion, champion_flag_url = get_champion_prediction(current_user.id, db)
 
     return templates.TemplateResponse(
         "knockout_bracket.html",
@@ -271,6 +248,7 @@ async def knockout_bracket(
             "user": current_user,
             "matches": matches,
             "champion": champion,
-            "standings": standings_by_group
+            "champion_flag_url": champion_flag_url,
+            "total_score": total_score
         }
     )

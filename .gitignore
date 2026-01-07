@@ -47,3 +47,6 @@ htmlcov/
 
 # Misc
 .git/
+
+# Mockups and test data
+mockups/

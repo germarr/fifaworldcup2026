@@ -34,6 +34,14 @@ fifa_worldcup/
 │       ├── auth.py        # Auth routes (login, register, logout)
 │       ├── brackets.py    # Bracket viewing routes
 │       └── api.py         # API endpoints for predictions
+├── simulations/
+│   ├── seed_data.py       # Database seeder
+│   ├── seed_player.py     # Player seeder with predictions
+│   └── simulate_full_tournament.py # Tournament simulator
+├── mockups/
+│   ├── export_group_matches_csv.py # Export matches to CSV
+│   ├── import_group_results_csv.py # Import results from CSV
+│   └── generate_user_picks.py      # Generate test predictions
 ├── static/
 │   ├── css/
 │   │   └── styles.css     # Application styles
@@ -48,7 +56,6 @@ fifa_worldcup/
 │   ├── bracket_select.html # Bracket selection
 │   └── bracket_view.html  # View predictions
 ├── main.py                # Application entry point
-├── seed_data.py           # Database seeder
 └── pyproject.toml         # Project dependencies
 ```
 
@@ -63,7 +70,7 @@ fifa_worldcup/
 
 3. **Seed the database**:
    ```bash
-   uv run python seed_data.py
+   uv run python simulations/seed_data.py
    ```
 
    This will create:
@@ -187,10 +194,10 @@ The application will be available at: `http://localhost:8000`
 ## Customization
 
 ### Add More Teams
-Edit `seed_data.py` and add teams to the `teams_data` list.
+Edit `simulations/seed_data.py` and add teams to the `teams_data` list.
 
 ### Change Match Schedule
-Modify the match creation logic in `seed_data.py`.
+Modify the match creation logic in `simulations/seed_data.py`.
 
 ### Styling
 Edit `static/css/styles.css` to customize colors, fonts, and layout.
@@ -217,27 +224,27 @@ pytest
 ### Seed Sample Data
 ```bash
 # Seed teams and matches
-uv run python seed_data.py
+uv run python simulations/seed_data.py
 
 # Simulate tournament results
-uv run python simulate_full_tournament.py
+uv run python simulations/simulate_full_tournament.py
 
 # Generate predictions for existing user
-uv run python generate_user_picks.py <username>
+uv run python mockups/generate_user_picks.py <username>
 
 # Create new player with automatic predictions
-uv run python seed_player.py <username> <password> <favorite_team> [team_name]
+uv run python simulations/seed_player.py <username> <password> <favorite_team> [team_name]
 ```
 
 ### Seed New Players
-The `seed_player.py` script quickly creates new players with automatic tournament predictions:
+The `simulations/seed_player.py` script quickly creates new players with automatic tournament predictions:
 
 ```bash
 # Create new player (randomly assigned to a team)
-python seed_player.py john password123 Brazil
+python simulations/seed_player.py john password123 Brazil
 
 # Create new player and assign to specific team
-python seed_player.py alice mypass123 Argentina Phoenix
+python simulations/seed_player.py alice mypass123 Argentina Phoenix
 
 # Available teams: Phoenix, Dragons, Tigers, Eagles
 ```
@@ -249,7 +256,7 @@ Each new player:
 
 ### Database Reset
 ```bash
-rm worldcup.db && uv run python seed_data.py
+rm worldcup.db && uv run python simulations/seed_data.py
 ```
 
 ### Enable Debug Mode
