@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}My Predictions - FIFA World Cup{% endblock %}
+
+{% block content %}
+<div class="bracket-header">
+    <h2>My Bracket Predictions</h2>
+    <p>Review all your predictions for the World Cup</p>
+
+    <div class="view-actions">
+        <a href="/bracket" class="btn btn-secondary">Edit Predictions</a>
+    </div>
+</div>
+
+{% if predictions %}
+<div class="predictions-view">
+    {% for item in predictions %}
+    <div class="prediction-card">
+        <div class="prediction-header">
+            <span class="match-round">{{ item.match.round }}</span>
+            <span class="match-number">Match #{{ item.match.match_number }}</span>
+            <span class="match-date">{{ item.match.match_date.strftime('%B %d, %Y') if item.match.match_date else 'TBD' }}</span>
+        </div>
+
+        <div class="prediction-content">
+            <div class="team-score {% if item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                <span class="team-name">{{ item.team1.name }}</span>
+                <span class="score">{{ item.prediction.predicted_team1_score }}</span>
+            </div>
+
+            <div class="vs-divider">-</div>
+
+            <div class="team-score {% if item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                <span class="score">{{ item.prediction.predicted_team2_score }}</span>
+                <span class="team-name">{{ item.team2.name }}</span>
+            </div>
+        </div>
+
+        <div class="prediction-footer">
+            {% if item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}
+            <span class="predicted-winner">Predicted Winner: {{ item.team1.name }}</span>
+            {% elif item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}
+            <span class="predicted-winner">Predicted Winner: {{ item.team2.name }}</span>
+            {% else %}
+            <span class="predicted-tie">Predicted Tie</span>
+            {% endif %}
+        </div>
+
+        {% if item.match.is_finished %}
+        <div class="actual-result">
+            <strong>Actual Result:</strong>
+            {{ item.match.actual_team1_score }} - {{ item.match.actual_team2_score }}
+            {% if (item.prediction.predicted_team1_score == item.match.actual_team1_score and
+                   item.prediction.predicted_team2_score == item.match.actual_team2_score) %}
+            <span class="correct-badge">Correct!</span>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <h3>No Predictions Yet</h3>
+    <p>You haven't made any predictions yet. Start creating your bracket!</p>
+    <a href="/bracket" class="btn btn-primary btn-large">Create Predictions</a>
+</div>
+{% endif %}
+
+<div class="stats-summary">
+    <h3>Summary</h3>
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-number">{{ predictions|length }}</span>
+            <span class="stat-label">Total Predictions</span>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">{{ user.favorite_team }}</span>
+            <span class="stat-label">Favorite Team</span>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

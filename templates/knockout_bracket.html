@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block title %}Knockout Bracket - FIFA World Cup{% endblock %}
+
+{% block content %}
+<div class="knockout-header">
+    <h2>Knockout Stage Bracket</h2>
+    <p>Visualize your predicted path to the championship</p>
+
+    {% if champion %}
+    <div class="champion-banner">
+        <div class="champion-trophy">🏆</div>
+        <div class="champion-info">
+            <h3>Your Predicted Champion</h3>
+            <div class="champion-name">{{ champion.name }}</div>
+            <div class="champion-code">{{ champion.code }}</div>
+        </div>
+        <div class="champion-trophy">🏆</div>
+    </div>
+    {% endif %}
+</div>
+
+<div class="bracket-container">
+    {% set round_of_16 = [] %}
+    {% set quarter_finals = [] %}
+    {% set semi_finals = [] %}
+    {% set third_place = None %}
+    {% set final = None %}
+
+    {% for item in matches %}
+        {% if item.match.round == "Round of 16" %}
+            {% set _ = round_of_16.append(item) %}
+        {% elif item.match.round == "Quarter Finals" %}
+            {% set _ = quarter_finals.append(item) %}
+        {% elif item.match.round == "Semi Finals" %}
+            {% set _ = semi_finals.append(item) %}
+        {% elif item.match.round == "Third Place" %}
+            {% set third_place = item %}
+        {% elif item.match.round == "Final" %}
+            {% set final = item %}
+        {% endif %}
+    {% endfor %}
+
+    <!-- Round of 16 -->
+    <div class="bracket-round round-of-16">
+        <h3 class="round-title">Round of 16</h3>
+        <div class="matches-column">
+            {% for item in round_of_16 %}
+            <div class="bracket-match" data-match-id="{{ item.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">Match #{{ item.match.match_number }}</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                        <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                        <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+                {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
+                <div class="penalty-indicator">⚽ Penalties</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quarter Finals -->
+    <div class="bracket-round quarter-finals">
+        <h3 class="round-title">Quarter Finals</h3>
+        <div class="matches-column">
+            {% for item in quarter_finals %}
+            <div class="bracket-match" data-match-id="{{ item.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">Match #{{ item.match.match_number }}</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                        <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                        <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+                {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
+                <div class="penalty-indicator">⚽ Penalties</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Semi Finals -->
+    <div class="bracket-round semi-finals">
+        <h3 class="round-title">Semi Finals</h3>
+        <div class="matches-column">
+            {% for item in semi_finals %}
+            <div class="bracket-match" data-match-id="{{ item.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">Match #{{ item.match.match_number }}</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                        <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                        <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+                {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
+                <div class="penalty-indicator">⚽ Penalties</div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Finals -->
+    <div class="bracket-round finals">
+        <h3 class="round-title">Final</h3>
+        <div class="matches-column">
+            {% if final %}
+            <div class="bracket-match final-match" data-match-id="{{ final.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">🏆 FINAL</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team {% if final.prediction and final.prediction.predicted_team1_score > final.prediction.predicted_team2_score %}winner{% endif %}">
+                        <span class="team-name">{{ final.team1.name if final.team1 else final.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if final.prediction %}{{ final.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="bracket-team {% if final.prediction and final.prediction.predicted_team2_score > final.prediction.predicted_team1_score %}winner{% endif %}">
+                        <span class="team-name">{{ final.team2.name if final.team2 else final.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if final.prediction %}{{ final.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+                {% if final.prediction and final.prediction.predicted_team1_score == final.prediction.predicted_team2_score %}
+                <div class="penalty-indicator">⚽ Penalties</div>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            <!-- Third Place Match -->
+            {% if third_place %}
+            <div class="bracket-match third-place-match" data-match-id="{{ third_place.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">🥉 3rd Place</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team {% if third_place.prediction and third_place.prediction.predicted_team1_score > third_place.prediction.predicted_team2_score %}winner{% endif %}">
+                        <span class="team-name">{{ third_place.team1.name if third_place.team1 else third_place.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if third_place.prediction %}{{ third_place.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    <div class="bracket-team {% if third_place.prediction and third_place.prediction.predicted_team2_score > third_place.prediction.predicted_team1_score %}winner{% endif %}">
+                        <span class="team-name">{{ third_place.team2.name if third_place.team2 else third_place.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-score">{% if third_place.prediction %}{{ third_place.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="bracket-actions">
+    <a href="/bracket" class="btn btn-primary">Edit Predictions</a>
+    <a href="/bracket/view" class="btn btn-secondary">View All Predictions</a>
+</div>
+
+{% endblock %}

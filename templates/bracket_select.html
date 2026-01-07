@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}Select Your Bracket - FIFA World Cup{% endblock %}
+
+{% block content %}
+<div class="bracket-header">
+    <h2>Create Your Bracket Predictions</h2>
+    <p>Predict scores for each match and see your group standings update in real-time!</p>
+
+    <div class="mode-selector">
+        <button id="mode-all" class="btn btn-primary mode-btn active">Game Mode</button>
+        <button id="mode-individual" class="btn btn-secondary mode-btn">Individual Matches</button>
+    </div>
+</div>
+
+<!-- Group Standings Dashboard -->
+<div id="standings-dashboard" class="standings-dashboard">
+    <!-- Will be populated by JavaScript -->
+</div>
+
+<!-- Game Mode (previously "All At Once") -->
+<div id="all-at-once-mode" class="prediction-mode game-mode">
+    <!-- Progress Indicator -->
+    <div class="progress-bar-container">
+        <div class="progress-info">
+            <span>Match <span id="current-match-num">1</span> of <span id="total-matches">64</span></span>
+            <span class="round-indicator" id="current-round">Group Stage - Group A</span>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill" id="progress-fill" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- Single Match Card (Game-like) -->
+    <div id="match-card-container" class="match-card-large">
+        <div class="match-header">
+            <span class="match-round" id="card-round">Loading...</span>
+            <span class="match-number" id="card-match-number">Match #1</span>
+        </div>
+
+        <div class="match-date" id="card-date"></div>
+
+        <div class="match-teams-large">
+            <!-- Team 1 -->
+            <div class="team-container team-1">
+                <div class="team-flag" id="team1-flag"></div>
+                <h3 class="team-name" id="team1-name">Team 1</h3>
+                <input
+                    type="number"
+                    id="team1-score"
+                    class="score-input-large"
+                    min="0"
+                    max="20"
+                    placeholder="0"
+                >
+            </div>
+
+            <div class="vs-large">VS</div>
+
+            <!-- Team 2 -->
+            <div class="team-container team-2">
+                <div class="team-flag" id="team2-flag"></div>
+                <h3 class="team-name" id="team2-name">Team 2</h3>
+                <input
+                    type="number"
+                    id="team2-score"
+                    class="score-input-large"
+                    min="0"
+                    max="20"
+                    placeholder="0"
+                >
+            </div>
+        </div>
+
+        <!-- Penalty Shootout Selector (for tied knockout matches) -->
+        <div id="penalty-shootout-container" class="penalty-shootout-container" style="display: none;">
+            <div class="penalty-info">
+                <span class="penalty-icon">⚽</span>
+                <span class="penalty-text">Match is tied! Select penalty shootout winner:</span>
+            </div>
+            <select id="penalty-winner" class="penalty-select">
+                <option value="">Select Winner</option>
+                <option id="penalty-option-team1" value=""></option>
+                <option id="penalty-option-team2" value=""></option>
+            </select>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="game-navigation">
+            <button id="prev-btn" class="btn btn-secondary nav-btn">
+                <span>← Previous</span>
+            </button>
+
+            <button id="skip-btn" class="btn btn-secondary nav-btn">
+                <span>Skip</span>
+            </button>
+
+            <button id="next-btn" class="btn btn-primary nav-btn">
+                <span>Next →</span>
+            </button>
+        </div>
+
+        <div class="completion-message" id="completion-message" style="display: none;">
+            <h3>🎉 All matches predicted!</h3>
+            <p>You've completed your bracket predictions. You can review or modify them anytime.</p>
+            <a href="/bracket/view" class="btn btn-primary btn-large">View My Bracket</a>
+        </div>
+    </div>
+</div>
+
+<!-- Individual Mode -->
+<div id="individual-mode" class="prediction-mode individual-mode" style="display: none;">
+    <div class="mode-info">
+        <p>Enter or update predictions for each match. Changes are saved automatically.</p>
+    </div>
+
+    <div class="individual-matches-grid">
+        {% for match in matches %}
+        <div class="individual-match-card {% if match.id in predictions %}has-prediction{% endif %}" data-match-id="{{ match.id }}">
+            <div class="individual-match-header">
+                <span class="match-round">{{ match.round }}</span>
+                <span class="match-number">Match #{{ match.match_number }}</span>
+            </div>
+
+            <div class="individual-match-teams">
+                <div class="individual-team">
+                    <div class="team-flag-small">
+                        {{ match.team1.code if match.team1 else (match.team1_placeholder or 'TBD') }}
+                    </div>
+                    <span class="team-name-individual">{{ match.team1.name if match.team1 else (match.team1_placeholder or 'TBD') }}</span>
+                    <input
+                        type="number"
+                        class="score-input-individual team1-score"
+                        data-match-id="{{ match.id }}"
+                        min="0"
+                        max="20"
+                        placeholder="0"
+                        value="{% if match.id in predictions %}{{ predictions[match.id].predicted_team1_score }}{% endif %}"
+                    >
+                </div>
+
+                <div class="vs-individual">VS</div>
+
+                <div class="individual-team">
+                    <div class="team-flag-small">
+                        {{ match.team2.code if match.team2 else (match.team2_placeholder or 'TBD') }}
+                    </div>
+                    <span class="team-name-individual">{{ match.team2.name if match.team2 else (match.team2_placeholder or 'TBD') }}</span>
+                    <input
+                        type="number"
+                        class="score-input-individual team2-score"
+                        data-match-id="{{ match.id }}"
+                        min="0"
+                        max="20"
+                        placeholder="0"
+                        value="{% if match.id in predictions %}{{ predictions[match.id].predicted_team2_score }}{% endif %}"
+                    >
+                </div>
+            </div>
+
+            <!-- Penalty Shootout for Individual Mode -->
+            {% if not match.round.startswith('Group Stage') %}
+            <div class="penalty-shootout-individual" data-match-id="{{ match.id }}" style="display: none;">
+                <span class="penalty-text-small">⚽ Tied - Penalty winner:</span>
+                <select class="penalty-select-individual" data-match-id="{{ match.id }}">
+                    <option value="">Select</option>
+                    <option value="team1">{{ match.team1.name if match.team1 else (match.team1_placeholder or 'Team 1') }}</option>
+                    <option value="team2">{{ match.team2.name if match.team2 else (match.team2_placeholder or 'Team 2') }}</option>
+                </select>
+            </div>
+            {% endif %}
+
+            <button class="btn btn-primary btn-small save-individual-btn" data-match-id="{{ match.id }}">
+                Save
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div id="notification" class="notification" style="display: none;"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="/static/js/bracket.js"></script>
+{% endblock %}
