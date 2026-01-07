@@ -142,9 +142,23 @@
             <div class="individual-match-teams">
                 <div class="individual-team">
                     <div class="team-flag-small">
-                        {{ match.team1.code if match.team1 else (match.team1_placeholder or 'TBD') }}
+                        {% if match.resolved_team1 %}
+                            {{ match.resolved_team1.code }}
+                        {% elif match.team1 %}
+                            {{ match.team1.code }}
+                        {% else %}
+                            {{ match.team1_placeholder or 'TBD' }}
+                        {% endif %}
                     </div>
-                    <span class="team-name-individual">{{ match.team1.name if match.team1 else (match.team1_placeholder or 'TBD') }}</span>
+                    <span class="team-name-individual">
+                        {% if match.resolved_team1 %}
+                            {{ match.resolved_team1.name }}
+                        {% elif match.team1 %}
+                            {{ match.team1.name }}
+                        {% else %}
+                            {{ match.team1_placeholder or 'TBD' }}
+                        {% endif %}
+                    </span>
                     <input
                         type="number"
                         class="score-input-individual team1-score"
@@ -160,9 +174,23 @@
 
                 <div class="individual-team">
                     <div class="team-flag-small">
-                        {{ match.team2.code if match.team2 else (match.team2_placeholder or 'TBD') }}
+                        {% if match.resolved_team2 %}
+                            {{ match.resolved_team2.code }}
+                        {% elif match.team2 %}
+                            {{ match.team2.code }}
+                        {% else %}
+                            {{ match.team2_placeholder or 'TBD' }}
+                        {% endif %}
                     </div>
-                    <span class="team-name-individual">{{ match.team2.name if match.team2 else (match.team2_placeholder or 'TBD') }}</span>
+                    <span class="team-name-individual">
+                        {% if match.resolved_team2 %}
+                            {{ match.resolved_team2.name }}
+                        {% elif match.team2 %}
+                            {{ match.team2.name }}
+                        {% else %}
+                            {{ match.team2_placeholder or 'TBD' }}
+                        {% endif %}
+                    </span>
                     <input
                         type="number"
                         class="score-input-individual team2-score"
@@ -181,8 +209,24 @@
                 <span class="penalty-text-small">⚽ Tied - Penalty winner:</span>
                 <select class="penalty-select-individual" data-match-id="{{ match.id }}">
                     <option value="">Select</option>
-                    <option value="team1">{{ match.team1.name if match.team1 else (match.team1_placeholder or 'Team 1') }}</option>
-                    <option value="team2">{{ match.team2.name if match.team2 else (match.team2_placeholder or 'Team 2') }}</option>
+                    <option value="team1">
+                        {% if match.resolved_team1 %}
+                            {{ match.resolved_team1.name }}
+                        {% elif match.team1 %}
+                            {{ match.team1.name }}
+                        {% else %}
+                            Team 1
+                        {% endif %}
+                    </option>
+                    <option value="team2">
+                        {% if match.resolved_team2 %}
+                            {{ match.resolved_team2.name }}
+                        {% elif match.team2 %}
+                            {{ match.team2.name }}
+                        {% else %}
+                            Team 2
+                        {% endif %}
+                    </option>
                 </select>
             </div>
             {% endif %}

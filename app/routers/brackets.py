@@ -29,12 +29,26 @@ async def bracket_select(
     # Create a dict of predictions by match_id for easy lookup
     predictions_dict = {pred.match_id: pred for pred in predictions}
 
+    # Resolve knockout team placeholders
+    resolved_matches = []
+    for match in matches:
+        if match.team1_placeholder or match.team2_placeholder:
+            # This is a knockout match with placeholders - resolve the actual teams
+            team1, team2 = resolve_match_teams(match, current_user.id, db)
+            # Create a modified match object for display
+            match.resolved_team1 = team1
+            match.resolved_team2 = team2
+        else:
+            match.resolved_team1 = match.team1
+            match.resolved_team2 = match.team2
+        resolved_matches.append(match)
+
     return templates.TemplateResponse(
         "bracket_select.html",
         {
             "request": request,
             "user": current_user,
-            "matches": matches,
+            "matches": resolved_matches,
             "predictions": predictions_dict
         }
     )
