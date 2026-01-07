@@ -42,8 +42,12 @@
                     {% for team_standing in standings[group_letter][:2] %}
                     <div class="qualified-team">
                         <span class="position-badge">{{ loop.index }}</span>
-                        <span class="team-flag-code">{{ team_standing.team.code }}</span>
-                        <span class="team-qualified-name">{{ team_standing.team.name }}</span>
+                        {% if team_standing.team_flag_url %}
+                        <img class="qualified-team-flag" src="{{ team_standing.team_flag_url }}" alt="{{ team_standing.team.name }} flag">
+                        {% else %}
+                        <span class="qualified-team-flag fallback">{{ team_standing.team.name[0] }}</span>
+                        {% endif %}
+                        <span class="team-qualified-name">{{ team_standing.team.code }}</span>
                         <span class="team-points">{{ team_standing.points }} pts</span>
                     </div>
                     {% endfor %}
@@ -86,11 +90,25 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% elif item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if item.team1_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team1_flag_url }}" alt="{{ item.team1.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team1 %}{{ item.team1.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team1_score }}{% elif item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% elif item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if item.team2_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team2_flag_url }}" alt="{{ item.team2.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team2 %}{{ item.team2.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team2_score }}{% elif item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
@@ -113,11 +131,25 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% elif item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if item.team1_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team1_flag_url }}" alt="{{ item.team1.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team1 %}{{ item.team1.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team1_score }}{% elif item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% elif item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if item.team2_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team2_flag_url }}" alt="{{ item.team2.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team2 %}{{ item.team2.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team2_score }}{% elif item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
@@ -140,11 +172,25 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% elif item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if item.team1_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team1_flag_url }}" alt="{{ item.team1.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team1 %}{{ item.team1.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team1_score }}{% elif item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% elif item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if item.team2_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team2_flag_url }}" alt="{{ item.team2.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team2 %}{{ item.team2.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team2_score }}{% elif item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
@@ -167,11 +213,25 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if knockout.final.match.is_finished and knockout.final.match.actual_team1_score > knockout.final.match.actual_team2_score %}winner{% elif knockout.final.prediction and knockout.final.prediction.predicted_team1_score > knockout.final.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ knockout.final.team1.name if knockout.final.team1 else 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if knockout.final.team1_flag_url %}
+                            <img class="bracket-team-flag" src="{{ knockout.final.team1_flag_url }}" alt="{{ knockout.final.team1.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if knockout.final.team1 %}{{ knockout.final.team1.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ knockout.final.team1.name if knockout.final.team1 else 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if knockout.final.match.is_finished %}{{ knockout.final.match.actual_team1_score }}{% elif knockout.final.prediction %}{{ knockout.final.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if knockout.final.match.is_finished and knockout.final.match.actual_team2_score > knockout.final.match.actual_team1_score %}winner{% elif knockout.final.prediction and knockout.final.prediction.predicted_team2_score > knockout.final.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ knockout.final.team2.name if knockout.final.team2 else 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if knockout.final.team2_flag_url %}
+                            <img class="bracket-team-flag" src="{{ knockout.final.team2_flag_url }}" alt="{{ knockout.final.team2.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if knockout.final.team2 %}{{ knockout.final.team2.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ knockout.final.team2.name if knockout.final.team2 else 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if knockout.final.match.is_finished %}{{ knockout.final.match.actual_team2_score }}{% elif knockout.final.prediction %}{{ knockout.final.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
@@ -186,11 +246,17 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team">
-                        <span class="team-name">TBD</span>
+                        <span class="team-name">
+                            <span class="bracket-team-flag fallback">TBD</span>
+                            <span class="team-label">TBD</span>
+                        </span>
                         <span class="team-score">-</span>
                     </div>
                     <div class="bracket-team">
-                        <span class="team-name">TBD</span>
+                        <span class="team-name">
+                            <span class="bracket-team-flag fallback">TBD</span>
+                            <span class="team-label">TBD</span>
+                        </span>
                         <span class="team-score">-</span>
                     </div>
                 </div>
@@ -205,11 +271,25 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if knockout.third_place.match.is_finished and knockout.third_place.match.actual_team1_score > knockout.third_place.match.actual_team2_score %}winner{% elif knockout.third_place.prediction and knockout.third_place.prediction.predicted_team1_score > knockout.third_place.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ knockout.third_place.team1.name if knockout.third_place.team1 else 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if knockout.third_place.team1_flag_url %}
+                            <img class="bracket-team-flag" src="{{ knockout.third_place.team1_flag_url }}" alt="{{ knockout.third_place.team1.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if knockout.third_place.team1 %}{{ knockout.third_place.team1.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ knockout.third_place.team1.name if knockout.third_place.team1 else 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if knockout.third_place.match.is_finished %}{{ knockout.third_place.match.actual_team1_score }}{% elif knockout.third_place.prediction %}{{ knockout.third_place.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if knockout.third_place.match.is_finished and knockout.third_place.match.actual_team2_score > knockout.third_place.match.actual_team1_score %}winner{% elif knockout.third_place.prediction and knockout.third_place.prediction.predicted_team2_score > knockout.third_place.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ knockout.third_place.team2.name if knockout.third_place.team2 else 'TBD' }}</span>
+                        <span class="team-name">
+                            {% if knockout.third_place.team2_flag_url %}
+                            <img class="bracket-team-flag" src="{{ knockout.third_place.team2_flag_url }}" alt="{{ knockout.third_place.team2.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if knockout.third_place.team2 %}{{ knockout.third_place.team2.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ knockout.third_place.team2.name if knockout.third_place.team2 else 'TBD' }}</span>
+                        </span>
                         <span class="team-score">{% if knockout.third_place.match.is_finished %}{{ knockout.third_place.match.actual_team2_score }}{% elif knockout.third_place.prediction %}{{ knockout.third_place.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
@@ -221,11 +301,17 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team">
-                        <span class="team-name">TBD</span>
+                        <span class="team-name">
+                            <span class="bracket-team-flag fallback">TBD</span>
+                            <span class="team-label">TBD</span>
+                        </span>
                         <span class="team-score">-</span>
                     </div>
                     <div class="bracket-team">
-                        <span class="team-name">TBD</span>
+                        <span class="team-name">
+                            <span class="bracket-team-flag fallback">TBD</span>
+                            <span class="team-label">TBD</span>
+                        </span>
                         <span class="team-score">-</span>
                     </div>
                 </div>
@@ -284,11 +370,17 @@ async function loadStandingsDashboard() {
             groupStandings.forEach((team, index) => {
                 const qualified = index < 2 ? 'qualified' : '';
                 const gdClass = team.goal_difference >= 0 ? 'positive' : 'negative';
+                const flagHtml = team.team_flag_url
+                    ? `<img class="standings-flag" src="${team.team_flag_url}" alt="${team.team_name} flag">`
+                    : '';
                 html += `
                     <tr class="${qualified}">
                         <td>${index + 1}</td>
                         <td class="team-name-cell">
-                            <span class="team-code">${team.team_code}</span>
+                            <span class="team-name-row">
+                                ${flagHtml}
+                                <span class="team-code">${team.team_code}</span>
+                            </span>
                             <span class="team-name-short">${team.team_name}</span>
                         </td>
                         <td class="points">${team.points}</td>

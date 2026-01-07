@@ -5,6 +5,7 @@ Group standings calculation based on user predictions.
 from typing import Dict, List, Optional
 from sqlmodel import Session, select
 from app.models import Match, Prediction, Team
+from app.flags import flag_url
 
 
 class TeamStanding:
@@ -30,6 +31,7 @@ class TeamStanding:
             "team_id": self.team.id,
             "team_name": self.team.name,
             "team_code": self.team.code,
+            "team_flag_url": flag_url(self.team.code, 40),
             "played": self.played,
             "won": self.won,
             "drawn": self.drawn,

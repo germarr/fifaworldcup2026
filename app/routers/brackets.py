@@ -7,44 +7,10 @@ from app.database import get_session
 from app.dependencies import get_current_user
 from app.knockout import resolve_knockout_teams, resolve_match_teams
 from app.scoring import calculate_match_points, calculate_knockout_points
+from app.flags import flag_url
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
-
-FIFA_TO_FLAGCDN = {
-    "ARG": "ar",
-    "AUS": "au",
-    "BEL": "be",
-    "BRA": "br",
-    "CAN": "ca",
-    "CMR": "cm",
-    "CRC": "cr",
-    "CRO": "hr",
-    "DEN": "dk",
-    "ECU": "ec",
-    "ENG": "gb-eng",
-    "ESP": "es",
-    "FRA": "fr",
-    "GER": "de",
-    "GHA": "gh",
-    "IRN": "ir",
-    "JPN": "jp",
-    "KOR": "kr",
-    "KSA": "sa",
-    "MAR": "ma",
-    "MEX": "mx",
-    "NED": "nl",
-    "POL": "pl",
-    "POR": "pt",
-    "QAT": "qa",
-    "SEN": "sn",
-    "SRB": "rs",
-    "SUI": "ch",
-    "TUN": "tn",
-    "URU": "uy",
-    "USA": "us",
-    "WAL": "gb-wls",
-}
 
 
 @router.get("/bracket", response_class=HTMLResponse)
@@ -75,15 +41,15 @@ async def bracket_select(
             team1 = match.team1
             team2 = match.team2
         
-        team1_flag_code = FIFA_TO_FLAGCDN.get(team1.code) if team1 else None
-        team2_flag_code = FIFA_TO_FLAGCDN.get(team2.code) if team2 else None
+        team1_flag_url = flag_url(team1.code, 80) if team1 else None
+        team2_flag_url = flag_url(team2.code, 80) if team2 else None
 
         matches_with_teams.append({
             "match": match,
             "team1": team1,
             "team2": team2,
-            "team1_flag_url": f"https://flagcdn.com/w80/{team1_flag_code}.png" if team1_flag_code else None,
-            "team2_flag_url": f"https://flagcdn.com/w80/{team2_flag_code}.png" if team2_flag_code else None,
+            "team1_flag_url": team1_flag_url,
+            "team2_flag_url": team2_flag_url,
         })
 
     return templates.TemplateResponse(
@@ -121,8 +87,8 @@ async def bracket_view(
     for prediction, match, team1 in results:
         team2_statement = select(Team).where(Team.id == match.team2_id)
         team2 = db.exec(team2_statement).first()
-        team1_flag = FIFA_TO_FLAGCDN.get(team1.code) if team1 else None
-        team2_flag = FIFA_TO_FLAGCDN.get(team2.code) if team2 else None
+        team1_flag_url = flag_url(team1.code, 80) if team1 else None
+        team2_flag_url = flag_url(team2.code, 80) if team2 else None
 
         # Calculate points
         scoring_result = calculate_match_points(prediction, match)
@@ -134,8 +100,8 @@ async def bracket_view(
             "team1": team1,
             "team2": team2,
             "scoring": scoring_result,
-            "team1_flag_url": f"https://flagcdn.com/w80/{team1_flag}.png" if team1_flag else None,
-            "team2_flag_url": f"https://flagcdn.com/w80/{team2_flag}.png" if team2_flag else None,
+            "team1_flag_url": team1_flag_url,
+            "team2_flag_url": team2_flag_url,
         })
 
     knockout_statement = select(Match).where(~Match.round.like("Group Stage%")).order_by(Match.match_number)
@@ -158,10 +124,10 @@ async def bracket_view(
                 predicted_team1.id if predicted_team1 else None,
                 predicted_team2.id if predicted_team2 else None
             )
-        predicted_team1_flag = FIFA_TO_FLAGCDN.get(predicted_team1.code) if predicted_team1 else None
-        predicted_team2_flag = FIFA_TO_FLAGCDN.get(predicted_team2.code) if predicted_team2 else None
-        actual_team1_flag = FIFA_TO_FLAGCDN.get(actual_team1.code) if actual_team1 else None
-        actual_team2_flag = FIFA_TO_FLAGCDN.get(actual_team2.code) if actual_team2 else None
+        predicted_team1_flag_url = flag_url(predicted_team1.code, 40) if predicted_team1 else None
+        predicted_team2_flag_url = flag_url(predicted_team2.code, 40) if predicted_team2 else None
+        actual_team1_flag_url = flag_url(actual_team1.code, 40) if actual_team1 else None
+        actual_team2_flag_url = flag_url(actual_team2.code, 40) if actual_team2 else None
         knockout_with_teams.append({
             "match": match,
             "predicted_team1": predicted_team1,
@@ -170,10 +136,10 @@ async def bracket_view(
             "actual_team2": actual_team2,
             "prediction": prediction,
             "scoring": scoring_result,
-            "predicted_team1_flag_url": f"https://flagcdn.com/w40/{predicted_team1_flag}.png" if predicted_team1_flag else None,
-            "predicted_team2_flag_url": f"https://flagcdn.com/w40/{predicted_team2_flag}.png" if predicted_team2_flag else None,
-            "actual_team1_flag_url": f"https://flagcdn.com/w40/{actual_team1_flag}.png" if actual_team1_flag else None,
-            "actual_team2_flag_url": f"https://flagcdn.com/w40/{actual_team2_flag}.png" if actual_team2_flag else None,
+            "predicted_team1_flag_url": predicted_team1_flag_url,
+            "predicted_team2_flag_url": predicted_team2_flag_url,
+            "actual_team1_flag_url": actual_team1_flag_url,
+            "actual_team2_flag_url": actual_team2_flag_url,
         })
 
     standings_statement = (
@@ -191,6 +157,7 @@ async def bracket_view(
         standings_by_group.setdefault(group_letter, []).append({
             "team_name": team.name,
             "team_code": team.code,
+            "team_flag_url": flag_url(team.code, 40),
             "played": standing.played,
             "won": standing.won,
             "drawn": standing.drawn,
@@ -248,6 +215,8 @@ async def knockout_bracket(
             "match": match,
             "team1": team1,
             "team2": team2,
+            "team1_flag_url": flag_url(team1.code, 40) if team1 else None,
+            "team2_flag_url": flag_url(team2.code, 40) if team2 else None,
             "prediction": prediction
         })
 
@@ -277,6 +246,7 @@ async def knockout_bracket(
         def __init__(self, standing, team):
             self.team = team
             self.points = standing.points
+            self.team_flag_url = flag_url(team.code, 40)
             # Add other fields if needed by the template, but 'team' and 'points' are the main ones used in the simple list
 
     for standing, team in standings_results:

@@ -1,7 +1,32 @@
 import random
 from sqlmodel import Session, select
 from app.database import engine
-from app.models import Match, Team, GroupStanding
+from app.models import Match, Team, GroupStanding, User, Prediction
+from app.scoring import calculate_match_points
+
+def update_user_scores(session):
+    """Recalculate and update total_points for all users based on current match results."""
+    print("Updating user scores...")
+    users = session.exec(select(User)).all()
+    matches = session.exec(select(Match)).all()
+    match_map = {m.id: m for m in matches}
+    
+    for user in users:
+        total_points = 0
+        predictions = session.exec(select(Prediction).where(Prediction.user_id == user.id)).all()
+        
+        for pred in predictions:
+            match = match_map.get(pred.match_id)
+            if match and match.is_finished:
+                # Calculate points for this prediction
+                result = calculate_match_points(pred, match)
+                total_points += result["points"]
+        
+        user.total_points = total_points
+        session.add(user)
+    
+    session.commit()
+    print(f"Updated scores for {len(users)} users.")
 
 def update_official_standings(session):
     """Calculate and save official standings to the GroupStanding table."""
@@ -238,6 +263,9 @@ def simulate_full_tournament():
                     print(f"Match {m.match_number}: {t1} {score1} - {score2} {t2}")
                 
             session.commit() # Commit after each round so next round can see winners
+
+        # Update user scores based on full tournament results
+        update_user_scores(session)
 
 if __name__ == "__main__":
     simulate_full_tournament()

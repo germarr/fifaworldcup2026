@@ -281,6 +281,15 @@ class BracketGame {
 
         let html = '<h3 class="section-title">Group Standings Dashboard</h3><div class="standings-grid">';
 
+        // Helper to build flag URL
+        const buildFlagUrl = (teamCode) => {
+            if (!teamCode || !this.flagMapping[teamCode]) {
+                return '';
+            }
+            const code = this.flagMapping[teamCode];
+            return `https://flagcdn.com/w40/${code}.png`;
+        };
+
         // Sort groups alphabetically
         const groups = Object.keys(this.standings).sort();
 
@@ -310,11 +319,20 @@ class BracketGame {
             standings.forEach((team, index) => {
                 const qualified = index < 2 ? 'qualified' : '';
                 const gdClass = team.goal_difference >= 0 ? 'positive' : 'negative';
+                
+                const flagUrl = team.team_flag_url || buildFlagUrl(team.team_code);
+                const flagHtml = flagUrl
+                    ? `<img class="standings-flag" src="${flagUrl}" alt="${team.team_name} flag">`
+                    : '';
+
                 html += `
                     <tr class="${qualified}">
                         <td>${index + 1}</td>
                         <td class="team-name-cell">
-                            <span class="team-code">${team.team_code}</span>
+                            <span class="team-name-row">
+                                ${flagHtml}
+                                <span class="team-code">${team.team_code}</span>
+                            </span>
                             <span class="team-name-short">${team.team_name}</span>
                         </td>
                         <td class="points">${team.points}</td>
@@ -340,57 +358,74 @@ class BracketGame {
     }
 
     async pickForMe() {
-        // Generate random predictions for all matches
-        showNotification('Generating random predictions...', 'success');
+        showNotification('Generating a random pick for this match...', 'success');
 
         try {
-            const predictions = [];
-            
-            for (const match of this.matches) {
-                // Generate random scores (0-4 goals per team)
-                const team1Score = Math.floor(Math.random() * 5);
-                const team2Score = Math.floor(Math.random() * 5);
+            const match = this.matches[this.currentIndex];
+            const team1Score = Math.floor(Math.random() * 5);
+            const team2Score = Math.floor(Math.random() * 5);
 
-                const payload = {
-                    match_id: match.id,
-                    predicted_team1_score: team1Score,
-                    predicted_team2_score: team2Score
-                };
+            const payload = {
+                match_id: match.id,
+                predicted_team1_score: team1Score,
+                predicted_team2_score: team2Score
+            };
 
-                // For tied knockout matches, randomly select penalty shootout winner
-                const isKnockout = !match.round.includes('Group Stage');
-                if (isKnockout && team1Score === team2Score) {
-                    payload.penalty_shootout_winner_id = Math.random() > 0.5 ? match.team1_id : match.team2_id;
-                }
-
-                // Save prediction
-                const response = await fetch('/api/predictions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
-                });
-
-                if (response.ok) {
-                    const savedPrediction = await response.json();
-                    this.predictions[match.id] = savedPrediction;
-                } else {
-                    const error = await response.json();
-                    showNotification(error.detail || 'Failed to save prediction', 'error');
-                    return;
-                }
+            const isKnockout = !match.round.includes('Group Stage');
+            if (isKnockout && team1Score === team2Score) {
+                payload.penalty_shootout_winner_id = Math.random() > 0.5 ? match.team1_id : match.team2_id;
             }
 
-            // Reload standings and matches
+            const response = await fetch('/api/predictions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const savedPrediction = await response.json();
+                this.predictions[match.id] = savedPrediction;
+            } else {
+                const error = await response.json();
+                showNotification(error.detail || 'Failed to save prediction', 'error');
+                return;
+            }
+
             await this.loadStandings();
             await this.loadMatches();
-
-            // Show first match
-            this.showMatch(0);
-            showNotification('🎯 Random predictions generated! Review them before submitting.', 'success');
+            this.showMatch(this.currentIndex);
+            showNotification('🎲 Picked this match! You can edit the scores before moving on.', 'success');
         } catch (error) {
             console.error('Error in pickForMe:', error);
+            showNotification('Network error. Please try again.', 'error');
+        }
+    }
+
+    async simulateTournament() {
+        showNotification('Simulating full tournament...', 'success');
+
+        try {
+            const response = await fetch('/api/simulate-tournament', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                showNotification(error.detail || 'Simulation failed', 'error');
+                return;
+            }
+
+            await this.loadStandings();
+            await this.loadMatches();
+            this.showMatch(this.currentIndex);
+            showNotification('🏆 Tournament simulated! Actual results are now available.', 'success');
+        } catch (error) {
+            console.error('Error simulating tournament:', error);
             showNotification('Network error. Please try again.', 'error');
         }
     }
@@ -415,8 +450,15 @@ class BracketGame {
         const pickForMeBtn = document.getElementById('pick-for-me-btn');
         if (pickForMeBtn) {
             pickForMeBtn.addEventListener('click', () => {
-                if (confirm('This will generate random predictions for all matches. Continue?')) {
-                    this.pickForMe();
+                this.pickForMe();
+            });
+        }
+
+        const pickEntireTournamentBtn = document.getElementById('pick-entire-tournament-btn');
+        if (pickEntireTournamentBtn) {
+            pickEntireTournamentBtn.addEventListener('click', () => {
+                if (confirm('This will simulate the entire tournament and overwrite official results. Continue?')) {
+                    this.simulateTournament();
                 }
             });
         }

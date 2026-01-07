@@ -29,11 +29,12 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 # Include routers
-from app.routers import auth, brackets, api
+from app.routers import auth, brackets, api, social
 
 app.include_router(auth.router, tags=["auth"])
 app.include_router(brackets.router, tags=["brackets"])
 app.include_router(api.router, tags=["api"])
+app.include_router(social.router, tags=["social"])
 
 
 @app.get("/health")

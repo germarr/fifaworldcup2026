@@ -17,8 +17,15 @@
                 {% if user %}
                     <span class="user-info">Welcome, {{ user.username }}!</span>
                     <a href="/bracket">Predictions</a>
-                    <a href="/bracket/knockout">Tournament Overview</a>
-                    <a href="/bracket/view">My Results</a>
+                    <div class="dropdown">
+                        <span class="dropbtn">Results</span>
+                        <div class="dropdown-content">
+                            <a href="/bracket/knockout">My Results</a>
+                            <a href="/bracket/view">Global Results</a>
+                        </div>
+                    </div>
+                    <a href="/leaderboard">Leaderboard</a>
+                    <a href="/settings">Settings</a>
                     <form method="POST" action="/logout" style="display: inline;">
                         <button type="submit" class="btn btn-secondary">Logout</button>
                     </form>

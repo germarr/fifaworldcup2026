@@ -14,8 +14,30 @@
     </div>
 </div>
 
+<details class="standings-toggle" id="standings-toggle">
+    <summary class="standings-toggle-summary">
+        Group Standings Dashboard
+        <span class="standings-toggle-hint">Click to expand</span>
+    </summary>
+    <div id="standings-dashboard" class="standings-dashboard">
+        <!-- Will be populated by JavaScript -->
+    </div>
+</details>
+
 <!-- Game Mode (previously "All At Once") -->
 <div id="all-at-once-mode" class="prediction-mode game-mode">
+    <div class="game-instructions">
+        <h3>How Game Mode Works</h3>
+        <p>Enter scores match by match. Your picks save as you go.</p>
+        <p>🎲 Pick for me! fills only the current match. Pick the entire Tournament runs a full simulation to generate official results.</p>
+    </div>
+
+    <div class="tournament-actions">
+        <button id="pick-entire-tournament-btn" class="btn btn-secondary">
+            🏆 Pick the entire Tournament
+        </button>
+    </div>
+
     <!-- Progress Indicator -->
     <div class="progress-bar-container">
         <div class="progress-info">
@@ -91,7 +113,7 @@
                 <span>Skip</span>
             </button>
 
-            <button id="pick-for-me-btn" class="btn btn-secondary nav-btn" title="Randomly fill all predictions">
+            <button id="pick-for-me-btn" class="btn btn-secondary nav-btn" title="Randomly fill the current match">
                 <span>🎲 Pick for me!</span>
             </button>
 
@@ -148,7 +170,7 @@
                     </div>
                     <span class="team-name-individual">
                         {% if item.team1 %}
-                            {{ item.team1.name }}
+                            {{ item.team1.code }}
                         {% else %}
                             {{ match.team1_placeholder or 'TBD' }}
                         {% endif %}
@@ -178,7 +200,7 @@
                     </div>
                     <span class="team-name-individual">
                         {% if item.team2 %}
-                            {{ item.team2.name }}
+                            {{ item.team2.code }}
                         {% else %}
                             {{ match.team2_placeholder or 'TBD' }}
                         {% endif %}
@@ -233,4 +255,107 @@
 
 {% block extra_js %}
 <script src="/static/js/bracket.js"></script>
+<script>
+async function loadStandingsDashboard() {
+    try {
+        const response = await fetch('/api/standings');
+        const standings = await response.json();
+
+        const dashboard = document.getElementById('standings-dashboard');
+        if (!dashboard) {
+            return;
+        }
+
+        if (!standings || Object.keys(standings).length === 0) {
+            dashboard.innerHTML = '<h3 class="section-title">Group Standings Dashboard</h3><p class="no-standings">Make predictions for group stage matches to see standings</p>';
+            return;
+        }
+
+        let html = '<h3 class="section-title">Group Standings Dashboard</h3><div class="standings-grid">';
+        const groups = Object.keys(standings).sort();
+
+        const flagCodeMap = {
+            ARG: 'ar', AUS: 'au', BEL: 'be', BRA: 'br', CAN: 'ca',
+            CMR: 'cm', CRC: 'cr', CRO: 'hr', DEN: 'dk', ECU: 'ec',
+            ENG: 'gb-eng', ESP: 'es', FRA: 'fr', GER: 'de', GHA: 'gh',
+            IRN: 'ir', JPN: 'jp', KOR: 'kr', KSA: 'sa', MAR: 'ma',
+            MEX: 'mx', NED: 'nl', POL: 'pl', POR: 'pt', QAT: 'qa',
+            SEN: 'sn', SRB: 'rs', SUI: 'ch', TUN: 'tn', URU: 'uy',
+            USA: 'us', WAL: 'gb-wls'
+        };
+
+        const buildFlagUrl = (teamCode) => {
+            if (!teamCode || !flagCodeMap[teamCode]) {
+                return '';
+            }
+            const code = flagCodeMap[teamCode];
+            return `https://flagcdn.com/w40/${code}.png`;
+        };
+
+        groups.forEach(groupLetter => {
+            const groupStandings = standings[groupLetter];
+            html += `
+                <div class="group-standings">
+                    <h4>Group ${groupLetter}</h4>
+                    <table class="standings-table">
+                        <thead>
+                            <tr>
+                                <th>Pos</th>
+                                <th>Team</th>
+                                <th>Pts</th>
+                                <th>W</th>
+                                <th>L</th>
+                                <th>D</th>
+                                <th>GF</th>
+                                <th>GA</th>
+                                <th>GD</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            groupStandings.forEach((team, index) => {
+                const qualified = index < 2 ? 'qualified' : '';
+                const gdClass = team.goal_difference >= 0 ? 'positive' : 'negative';
+                const flagUrl = team.team_flag_url || buildFlagUrl(team.team_code);
+                const flagHtml = flagUrl
+                    ? `<img class="standings-flag" src="${flagUrl}" alt="${team.team_name} flag">`
+                    : '';
+                html += `
+                    <tr class="${qualified}">
+                        <td>${index + 1}</td>
+                        <td class="team-name-cell">
+                            <span class="team-name-row">
+                                ${flagHtml}
+                                <span class="team-code">${team.team_code}</span>
+                            </span>
+                            <span class="team-name-short">${team.team_name}</span>
+                        </td>
+                        <td class="points">${team.points}</td>
+                        <td class="record-stat wins">${team.won}</td>
+                        <td class="record-stat losses">${team.lost}</td>
+                        <td class="record-stat draws">${team.drawn}</td>
+                        <td class="goals-cell">${team.goals_for}</td>
+                        <td class="goals-cell">${team.goals_against}</td>
+                        <td class="goals-cell ${gdClass}">${team.goal_difference >= 0 ? '+' : ''}${team.goal_difference}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        dashboard.innerHTML = html;
+    } catch (error) {
+        console.error('Error loading standings:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadStandingsDashboard);
+</script>
 {% endblock %}

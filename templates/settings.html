@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Settings - FIFA World Cup{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <h2>Profile Settings</h2>
+
+    <!-- Avatar Settings -->
+    <div class="settings-card">
+        <h3>My Avatar</h3>
+        <div class="avatar-section">
+            <img id="current-avatar" src="https://api.dicebear.com/7.x/adventurer/svg?seed={{ user.avatar_seed }}" class="avatar-large">
+            <form action="/settings/avatar" method="POST" class="avatar-form">
+                <div class="form-group">
+                    <label>Avatar Seed (Random Text)</label>
+                    <input type="text" name="seed" id="avatar-seed" value="{{ user.avatar_seed }}" class="form-input" oninput="updateAvatarPreview()">
+                </div>
+                <button type="submit" class="btn btn-primary">Update Avatar</button>
+                <button type="button" class="btn btn-secondary" onclick="randomizeAvatar()">Randomize</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Team Settings -->
+    <div class="settings-card">
+        <h3>Team Management</h3>
+        
+        {% if user.player_team %}
+            <div class="current-team-info">
+                <p>You are a member of <strong>{{ user.player_team.name }}</strong></p>
+                <p class="join-code-display">Join Code: <code>{{ user.player_team.join_code }}</code> (Share this with friends!)</p>
+                
+                <form action="/settings/team/leave" method="POST" onsubmit="return confirm('Are you sure you want to leave your team?');">
+                    <button type="submit" class="btn btn-danger">Leave Team</button>
+                </form>
+            </div>
+        {% else %}
+            <div class="team-actions-grid">
+                <!-- Create Team -->
+                <div class="team-action-box">
+                    <h4>Create a New Team</h4>
+                    <form action="/settings/team/create" method="POST">
+                        <div class="form-group">
+                            <label>Team Name</label>
+                            <input type="text" name="team_name" required class="form-input" placeholder="e.g. The Champions">
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block">Create Team</button>
+                    </form>
+                </div>
+
+                <div class="divider-vertical">OR</div>
+
+                <!-- Join Team -->
+                <div class="team-action-box">
+                    <h4>Join Existing Team</h4>
+                    <form action="/settings/team/join" method="POST">
+                        <div class="form-group">
+                            <label>Join Code</label>
+                            <input type="text" name="join_code" required class="form-input" placeholder="e.g. ABC123">
+                        </div>
+                        <button type="submit" class="btn btn-secondary btn-block">Join Team</button>
+                    </form>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function updateAvatarPreview() {
+    const seed = document.getElementById('avatar-seed').value;
+    document.getElementById('current-avatar').src = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+}
+
+function randomizeAvatar() {
+    const randomSeed = Math.random().toString(36).substring(7);
+    document.getElementById('avatar-seed').value = randomSeed;
+    updateAvatarPreview();
+}
+</script>
+{% endblock %}

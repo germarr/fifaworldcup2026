@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Leaderboard - FIFA World Cup{% endblock %}
+
+{% block content %}
+<div class="leaderboard-header">
+    <h2>🏆 Leaderboard</h2>
+    <p>See who's predicting the best outcomes!</p>
+    
+    <div class="leaderboard-selector">
+        <button class="btn btn-primary lb-tab-btn" onclick="showTab('global')">Global Players</button>
+        <button class="btn btn-secondary lb-tab-btn" onclick="showTab('teams')">Teams</button>
+        {% if user.player_team %}
+        <button class="btn btn-secondary lb-tab-btn" onclick="showTab('myteam')">My Team: {{ user.player_team.name }}</button>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Global Players Tab -->
+<div id="tab-global" class="leaderboard-tab">
+    <div class="leaderboard-card">
+        <h3>Top Players</h3>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Team</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for player in global_players %}
+                <tr class="{% if player.id == user.id %}highlight{% endif %}">
+                    <td>#{{ loop.index }}</td>
+                    <td class="player-cell">
+                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed={{ player.avatar_seed }}" class="avatar-mini">
+                        {{ player.username }}
+                    </td>
+                    <td>{{ player.player_team.name if player.player_team else '-' }}</td>
+                    <td class="points-cell">{{ player.total_points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Teams Tab -->
+<div id="tab-teams" class="leaderboard-tab" style="display: none;">
+    <div class="leaderboard-card">
+        <h3>Top Teams</h3>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Team Name</th>
+                    <th>Members</th>
+                    <th>Total Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for team in teams %}
+                <tr>
+                    <td>#{{ loop.index }}</td>
+                    <td>{{ team.name }}</td>
+                    <td>{{ team.members|length }}</td>
+                    <td class="points-cell">{{ team.total_points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- My Team Tab -->
+{% if user.player_team %}
+<div id="tab-myteam" class="leaderboard-tab" style="display: none;">
+    <div class="leaderboard-card">
+        <div class="team-header-info">
+            <h3>{{ user.player_team.name }}</h3>
+            <span class="join-code">Join Code: <strong>{{ user.player_team.join_code }}</strong></span>
+        </div>
+        <table class="leaderboard-table">
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Player</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for member in my_team_members %}
+                <tr class="{% if member.id == user.id %}highlight{% endif %}">
+                    <td>#{{ loop.index }}</td>
+                    <td class="player-cell">
+                        <img src="https://api.dicebear.com/7.x/adventurer/svg?seed={{ member.avatar_seed }}" class="avatar-mini">
+                        {{ member.username }}
+                    </td>
+                    <td class="points-cell">{{ member.total_points }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function showTab(tabName) {
+    // Hide all tabs
+    document.querySelectorAll('.leaderboard-tab').forEach(el => el.style.display = 'none');
+    
+    // Show selected tab
+    document.getElementById('tab-' + tabName).style.display = 'block';
+    
+    // Update buttons
+    document.querySelectorAll('.lb-tab-btn').forEach(btn => {
+        btn.classList.remove('btn-primary');
+        btn.classList.add('btn-secondary');
+    });
+    
+    // Highlight active button (approximate based on text/onclick)
+    event.target.classList.remove('btn-secondary');
+    event.target.classList.add('btn-primary');
+}
+</script>
+{% endblock %}

@@ -242,3 +242,20 @@ async def get_standings(
         response[group_letter] = [ts.to_dict() for ts in standings_list]
 
     return response
+
+
+@router.post("/simulate-tournament")
+async def simulate_tournament(
+    current_user: User = Depends(get_current_user)
+):
+    """Simulate the full tournament and persist official results."""
+    try:
+        from simulate_full_tournament import simulate_full_tournament
+        simulate_full_tournament()
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Simulation failed: {exc}"
+        ) from exc
+
+    return {"status": "success"}

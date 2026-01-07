@@ -1,6 +1,24 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from sqlmodel import Field, SQLModel, Relationship
+
+
+class PlayerTeam(SQLModel, table=True):
+    """Team for players (users) to join and compete."""
+    __tablename__ = "player_teams"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(unique=True, index=True, max_length=100)
+    join_code: str = Field(unique=True, index=True, max_length=20)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Relationships
+    members: List["User"] = Relationship(back_populates="player_team")
+
+    @property
+    def total_points(self) -> int:
+        """Sum of all members' points."""
+        return sum(member.total_points for member in self.members)
 
 
 class User(SQLModel, table=True):
@@ -13,6 +31,14 @@ class User(SQLModel, table=True):
     favorite_team: str = Field(max_length=100)
     cookie_consent: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
+    
+    # Profile fields
+    avatar_seed: str = Field(default="adventurer", max_length=50) # For DiceBear avatar
+    total_points: int = Field(default=0)
+    
+    # Player Team
+    player_team_id: Optional[int] = Field(default=None, foreign_key="player_teams.id")
+    player_team: Optional[PlayerTeam] = Relationship(back_populates="members")
 
     # Relationships
     predictions: list["Prediction"] = Relationship(back_populates="user")
