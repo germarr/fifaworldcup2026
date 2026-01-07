@@ -312,6 +312,24 @@ class BracketGame {
                         <td class="goals-cell">${team.goals_against}</td>
                         <td class="goals-cell ${gdClass}">${team.goal_difference >= 0 ? '+' : ''}${team.goal_difference}</td>
                     </tr>
+                    <tr class="team-record-row">
+                        <td colspan="6" class="record-cell">
+                            <div class="record-display">
+                                <span class="record-item wins">
+                                    <span class="record-label">W</span>
+                                    <span class="record-value">${team.won}</span>
+                                </span>
+                                <span class="record-item draws">
+                                    <span class="record-label">D</span>
+                                    <span class="record-value">${team.drawn}</span>
+                                </span>
+                                <span class="record-item losses">
+                                    <span class="record-label">L</span>
+                                    <span class="record-value">${team.lost}</span>
+                                </span>
+                            </div>
+                        </td>
+                    </tr>
                 `;
             });
 
