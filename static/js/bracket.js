@@ -289,6 +289,9 @@ class BracketGame {
                                 <th>Pos</th>
                                 <th>Team</th>
                                 <th>Pts</th>
+                                <th>W</th>
+                                <th>L</th>
+                                <th>D</th>
                                 <th>GF</th>
                                 <th>GA</th>
                                 <th>GD</th>
@@ -308,27 +311,12 @@ class BracketGame {
                             <span class="team-name-short">${team.team_name}</span>
                         </td>
                         <td class="points">${team.points}</td>
+                        <td class="record-stat wins">${team.won}</td>
+                        <td class="record-stat losses">${team.lost}</td>
+                        <td class="record-stat draws">${team.drawn}</td>
                         <td class="goals-cell">${team.goals_for}</td>
                         <td class="goals-cell">${team.goals_against}</td>
                         <td class="goals-cell ${gdClass}">${team.goal_difference >= 0 ? '+' : ''}${team.goal_difference}</td>
-                    </tr>
-                    <tr class="team-record-row">
-                        <td colspan="6" class="record-cell">
-                            <div class="record-display">
-                                <span class="record-item wins">
-                                    <span class="record-label">W</span>
-                                    <span class="record-value">${team.won}</span>
-                                </span>
-                                <span class="record-item draws">
-                                    <span class="record-label">D</span>
-                                    <span class="record-value">${team.drawn}</span>
-                                </span>
-                                <span class="record-item losses">
-                                    <span class="record-label">L</span>
-                                    <span class="record-value">${team.lost}</span>
-                                </span>
-                            </div>
-                        </td>
                     </tr>
                 `;
             });

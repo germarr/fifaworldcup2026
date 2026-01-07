@@ -1079,50 +1079,21 @@ main.container.main-wide {
     color: var(--primary-color);
 }
 
-.goals-cell {
+.record-stat {
     text-align: center;
-    font-size: 11px;
-}
-
-.expand-cell {
-    display: none;
-}
-
-.expand-btn {
-    display: none;
-}
-
-.expand-icon {
-    display: none;
-}
-
-.team-details {
-    display: none;
-}
-
-.team-details-content {
-    display: none;
-}
-
-.stat-item {
-    display: none;
-}
-
-.stat-label {
-    display: none;
-}
-
-.stat-value {
-    font-size: 12px;
     font-weight: 600;
-    color: var(--text-primary);
+    font-size: 12px;
 }
 
-.stat-value.positive {
+.record-stat.wins {
     color: #34a853;
 }
 
-.stat-value.negative {
+.record-stat.draws {
+    color: #fbbc04;
+}
+
+.record-stat.losses {
     color: #ea4335;
 }
 
@@ -1142,52 +1113,7 @@ main.container.main-wide {
 }
 
 .team-record-row {
-    background-color: rgba(100, 100, 100, 0.05);
-    border-top: 1px solid var(--border-color);
-}
-
-.team-record-row td {
-    padding: 6px 4px;
-}
-
-.record-cell {
-    padding: 8px 4px;
-}
-
-.record-display {
-    display: flex;
-    justify-content: space-around;
-    gap: 8px;
-}
-
-.record-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.record-item.wins {
-    color: #34a853;
-}
-
-.record-item.draws {
-    color: #fbbc04;
-}
-
-.record-item.losses {
-    color: #ea4335;
-}
-
-.record-label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.record-value {
-    font-size: 14px;
-    font-weight: 700;
+    display: none;
 }
 
 .no-standings {
