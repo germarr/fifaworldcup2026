@@ -4,9 +4,76 @@ Run this script to populate the database with sample data.
 """
 
 from datetime import datetime, timedelta
+import random
 from sqlmodel import Session, select
 from app.database import engine, create_db_and_tables
-from app.models import Team, Match
+from app.models import Team, Match, GroupStanding
+
+GROUP_MATCHES = [
+    # Group A
+    ("QAT", "ECU", "A"),
+    ("SEN", "NED", "A"),
+    ("QAT", "SEN", "A"),
+    ("NED", "ECU", "A"),
+    ("NED", "QAT", "A"),
+    ("ECU", "SEN", "A"),
+
+    # Group B
+    ("ENG", "IRN", "B"),
+    ("USA", "WAL", "B"),
+    ("WAL", "IRN", "B"),
+    ("ENG", "USA", "B"),
+    ("WAL", "ENG", "B"),
+    ("IRN", "USA", "B"),
+
+    # Group C
+    ("ARG", "KSA", "C"),
+    ("MEX", "POL", "C"),
+    ("POL", "KSA", "C"),
+    ("ARG", "MEX", "C"),
+    ("POL", "ARG", "C"),
+    ("KSA", "MEX", "C"),
+
+    # Group D
+    ("FRA", "AUS", "D"),
+    ("DEN", "TUN", "D"),
+    ("TUN", "AUS", "D"),
+    ("FRA", "DEN", "D"),
+    ("TUN", "FRA", "D"),
+    ("AUS", "DEN", "D"),
+
+    # Group E
+    ("ESP", "CRC", "E"),
+    ("GER", "JPN", "E"),
+    ("JPN", "CRC", "E"),
+    ("ESP", "GER", "E"),
+    ("JPN", "ESP", "E"),
+    ("CRC", "GER", "E"),
+
+    # Group F
+    ("BEL", "CAN", "F"),
+    ("MAR", "CRO", "F"),
+    ("CRO", "CAN", "F"),
+    ("BEL", "MAR", "F"),
+    ("CRO", "BEL", "F"),
+    ("CAN", "MAR", "F"),
+
+    # Group G
+    ("BRA", "SRB", "G"),
+    ("SUI", "CMR", "G"),
+    ("CMR", "SRB", "G"),
+    ("BRA", "SUI", "G"),
+    ("CMR", "BRA", "G"),
+    ("SRB", "SUI", "G"),
+
+    # Group H
+    ("POR", "GHA", "H"),
+    ("URU", "KOR", "H"),
+    ("KOR", "GHA", "H"),
+    ("POR", "URU", "H"),
+    ("KOR", "POR", "H"),
+    ("GHA", "URU", "H"),
+]
 
 
 def seed_teams():
@@ -97,73 +164,7 @@ def seed_matches():
         match_number = 1
 
         # Group Stage Matches
-        group_matches = [
-            # Group A
-            ("QAT", "ECU", "A"),
-            ("SEN", "NED", "A"),
-            ("QAT", "SEN", "A"),
-            ("NED", "ECU", "A"),
-            ("NED", "QAT", "A"),
-            ("ECU", "SEN", "A"),
-
-            # Group B
-            ("ENG", "IRN", "B"),
-            ("USA", "WAL", "B"),
-            ("WAL", "IRN", "B"),
-            ("ENG", "USA", "B"),
-            ("WAL", "ENG", "B"),
-            ("IRN", "USA", "B"),
-
-            # Group C
-            ("ARG", "KSA", "C"),
-            ("MEX", "POL", "C"),
-            ("POL", "KSA", "C"),
-            ("ARG", "MEX", "C"),
-            ("POL", "ARG", "C"),
-            ("KSA", "MEX", "C"),
-
-            # Group D
-            ("FRA", "AUS", "D"),
-            ("DEN", "TUN", "D"),
-            ("TUN", "AUS", "D"),
-            ("FRA", "DEN", "D"),
-            ("TUN", "FRA", "D"),
-            ("AUS", "DEN", "D"),
-
-            # Group E
-            ("ESP", "CRC", "E"),
-            ("GER", "JPN", "E"),
-            ("JPN", "CRC", "E"),
-            ("ESP", "GER", "E"),
-            ("JPN", "ESP", "E"),
-            ("CRC", "GER", "E"),
-
-            # Group F
-            ("BEL", "CAN", "F"),
-            ("MAR", "CRO", "F"),
-            ("CRO", "CAN", "F"),
-            ("BEL", "MAR", "F"),
-            ("CRO", "BEL", "F"),
-            ("CAN", "MAR", "F"),
-
-            # Group G
-            ("BRA", "SRB", "G"),
-            ("SUI", "CMR", "G"),
-            ("CMR", "SRB", "G"),
-            ("BRA", "SUI", "G"),
-            ("CMR", "BRA", "G"),
-            ("SRB", "SUI", "G"),
-
-            # Group H
-            ("POR", "GHA", "H"),
-            ("URU", "KOR", "H"),
-            ("KOR", "GHA", "H"),
-            ("POR", "URU", "H"),
-            ("KOR", "POR", "H"),
-            ("GHA", "URU", "H"),
-        ]
-
-        for team1_code, team2_code, group in group_matches:
+        for team1_code, team2_code, group in GROUP_MATCHES:
             match = Match(
                 round=f"Group Stage - Group {group}",
                 match_number=match_number,
@@ -277,6 +278,82 @@ def seed_matches():
         print(f"Successfully seeded {match_number - 1} matches!")
 
 
+def seed_group_standings():
+    """Seed random group standings (max 4 goals per team per match)."""
+    with Session(engine) as session:
+        existing_standings = session.exec(select(GroupStanding)).first()
+        if existing_standings:
+            print("Group standings already seeded. Skipping...")
+            return
+
+        teams = {team.code: team for team in session.exec(select(Team)).all()}
+
+        if not teams:
+            print("Error: No teams found. Please seed teams first.")
+            return
+
+        standings = {}
+        for team in teams.values():
+            if team.group:
+                standings[team.code] = {
+                    "team": team,
+                    "played": 0,
+                    "won": 0,
+                    "drawn": 0,
+                    "lost": 0,
+                    "goals_for": 0,
+                    "goals_against": 0,
+                    "points": 0,
+                }
+
+        for team1_code, team2_code, _group in GROUP_MATCHES:
+            team1_score = random.randint(0, 4)
+            team2_score = random.randint(0, 4)
+
+            team1 = standings[team1_code]
+            team2 = standings[team2_code]
+
+            team1["played"] += 1
+            team2["played"] += 1
+
+            team1["goals_for"] += team1_score
+            team1["goals_against"] += team2_score
+            team2["goals_for"] += team2_score
+            team2["goals_against"] += team1_score
+
+            if team1_score > team2_score:
+                team1["won"] += 1
+                team1["points"] += 3
+                team2["lost"] += 1
+            elif team2_score > team1_score:
+                team2["won"] += 1
+                team2["points"] += 3
+                team1["lost"] += 1
+            else:
+                team1["drawn"] += 1
+                team2["drawn"] += 1
+                team1["points"] += 1
+                team2["points"] += 1
+
+        for stats in standings.values():
+            team = stats["team"]
+            session.add(GroupStanding(
+                group_letter=team.group,
+                team_id=team.id,
+                played=stats["played"],
+                won=stats["won"],
+                drawn=stats["drawn"],
+                lost=stats["lost"],
+                goals_for=stats["goals_for"],
+                goals_against=stats["goals_against"],
+                goal_difference=stats["goals_for"] - stats["goals_against"],
+                points=stats["points"],
+            ))
+
+        session.commit()
+        print("Successfully seeded group standings!")
+
+
 def main():
     """Main function to seed the database."""
     print("Creating database tables...")
@@ -287,6 +364,9 @@ def main():
 
     print("\nSeeding matches...")
     seed_matches()
+
+    print("\nSeeding group standings...")
+    seed_group_standings()
 
     print("\nDatabase seeding complete!")
 

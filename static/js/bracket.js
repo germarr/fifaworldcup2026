@@ -6,6 +6,15 @@ class BracketGame {
         this.matches = [];
         this.predictions = {};
         this.standings = {};
+        this.flagMapping = {
+            "ARG": "ar", "AUS": "au", "BEL": "be", "BRA": "br", "CAN": "ca",
+            "CMR": "cm", "CRC": "cr", "CRO": "hr", "DEN": "dk", "ECU": "ec",
+            "ENG": "gb-eng", "ESP": "es", "FRA": "fr", "GER": "de", "GHA": "gh",
+            "IRN": "ir", "JPN": "jp", "KOR": "kr", "KSA": "sa", "MAR": "ma",
+            "MEX": "mx", "NED": "nl", "POL": "pl", "POR": "pt", "QAT": "qa",
+            "SEN": "sn", "SRB": "rs", "SUI": "ch", "TUN": "tn", "URU": "uy",
+            "USA": "us", "WAL": "gb-wls"
+        };
     }
 
     async init() {
@@ -79,24 +88,22 @@ class BracketGame {
         document.getElementById('team2-name').textContent = match.team2_name;
 
         // Update team flags (use country code or placeholder)
-        const team1Flag = document.getElementById('team1-flag');
-        const team2Flag = document.getElementById('team2-flag');
+        const team1FlagContainer = document.getElementById('team1-flag');
+        const team2FlagContainer = document.getElementById('team2-flag');
 
-        if (match.team1_code) {
-            team1Flag.textContent = match.team1_code;
-            team1Flag.className = 'team-flag';
-        } else {
-            team1Flag.textContent = match.team1_placeholder || 'TBD';
-            team1Flag.className = 'team-flag placeholder';
-        }
+        const updateFlag = (container, code, placeholder) => {
+            if (code && this.flagMapping[code]) {
+                const countryCode = this.flagMapping[code];
+                container.innerHTML = `<img src="https://flagcdn.com/w160/${countryCode}.png" alt="${code}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                container.className = 'team-flag has-img';
+            } else {
+                container.textContent = placeholder || 'TBD';
+                container.className = 'team-flag placeholder';
+            }
+        };
 
-        if (match.team2_code) {
-            team2Flag.textContent = match.team2_code;
-            team2Flag.className = 'team-flag';
-        } else {
-            team2Flag.textContent = match.team2_placeholder || 'TBD';
-            team2Flag.className = 'team-flag placeholder';
-        }
+        updateFlag(team1FlagContainer, match.team1_code, match.team1_placeholder);
+        updateFlag(team2FlagContainer, match.team2_code, match.team2_placeholder);
 
         // Update penalty shootout options with team names and IDs
         document.getElementById('penalty-option-team1').textContent = match.team1_name;
@@ -268,11 +275,11 @@ class BracketGame {
         const dashboard = document.getElementById('standings-dashboard');
 
         if (!this.standings || Object.keys(this.standings).length === 0) {
-            dashboard.innerHTML = '<p class="no-standings">Make predictions for group stage matches to see standings</p>';
+            dashboard.innerHTML = '<h3 class="section-title">Group Standings Dashboard</h3><p class="no-standings">Make predictions for group stage matches to see standings</p>';
             return;
         }
 
-        let html = '<div class="standings-grid">';
+        let html = '<h3 class="section-title">Group Standings Dashboard</h3><div class="standings-grid">';
 
         // Sort groups alphabetically
         const groups = Object.keys(this.standings).sort();

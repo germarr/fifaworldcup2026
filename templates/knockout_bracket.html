@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Knockout Bracket - FIFA World Cup{% endblock %}
+{% block title %}Tournament Overview - FIFA World Cup{% endblock %}
 {% block main_class %}main-wide{% endblock %}
 
 {% block content %}
 <div class="knockout-header">
-    <h2>Knockout Stage Bracket</h2>
-    <p>Visualize your predicted path to the championship</p>
+    <h2>Tournament Overview</h2>
+    <p>Group standings and knockout predictions in one place</p>
 
     {% if champion %}
     <div class="champion-banner">
@@ -23,6 +23,7 @@
 
 <!-- Group Standings Dashboard -->
 <div id="standings-dashboard" class="standings-dashboard">
+    <h3 class="section-title">Group Standings Dashboard</h3>
     <!-- Will be populated by JavaScript -->
 </div>
 
@@ -84,13 +85,13 @@
                     <span class="match-num">Match #{{ item.match.match_number }}</span>
                 </div>
                 <div class="bracket-teams">
-                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                    <div class="bracket-team {% if item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% elif item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
                         <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
-                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team1_score }}{% elif item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
-                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                    <div class="bracket-team {% if item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% elif item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
                         <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
-                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team2_score }}{% elif item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
                 {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
@@ -111,13 +112,13 @@
                     <span class="match-num">Match #{{ item.match.match_number }}</span>
                 </div>
                 <div class="bracket-teams">
-                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                    <div class="bracket-team {% if item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% elif item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
                         <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
-                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team1_score }}{% elif item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
-                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                    <div class="bracket-team {% if item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% elif item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
                         <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
-                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team2_score }}{% elif item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
                 {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
@@ -138,13 +139,13 @@
                     <span class="match-num">Match #{{ item.match.match_number }}</span>
                 </div>
                 <div class="bracket-teams">
-                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
+                    <div class="bracket-team {% if item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% elif item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% endif %}">
                         <span class="team-name">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
-                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team1_score }}{% elif item.prediction %}{{ item.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
-                    <div class="bracket-team {% if item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
+                    <div class="bracket-team {% if item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% elif item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% endif %}">
                         <span class="team-name">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
-                        <span class="team-score">{% if item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if item.match.is_finished %}{{ item.match.actual_team2_score }}{% elif item.prediction %}{{ item.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
                 {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
@@ -165,13 +166,13 @@
                     <span class="match-num">🏆 FINAL</span>
                 </div>
                 <div class="bracket-teams">
-                    <div class="bracket-team {% if knockout.final.prediction and knockout.final.prediction.predicted_team1_score > knockout.final.prediction.predicted_team2_score %}winner{% endif %}">
+                    <div class="bracket-team {% if knockout.final.match.is_finished and knockout.final.match.actual_team1_score > knockout.final.match.actual_team2_score %}winner{% elif knockout.final.prediction and knockout.final.prediction.predicted_team1_score > knockout.final.prediction.predicted_team2_score %}winner{% endif %}">
                         <span class="team-name">{{ knockout.final.team1.name if knockout.final.team1 else 'TBD' }}</span>
-                        <span class="team-score">{% if knockout.final.prediction %}{{ knockout.final.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if knockout.final.match.is_finished %}{{ knockout.final.match.actual_team1_score }}{% elif knockout.final.prediction %}{{ knockout.final.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
-                    <div class="bracket-team {% if knockout.final.prediction and knockout.final.prediction.predicted_team2_score > knockout.final.prediction.predicted_team1_score %}winner{% endif %}">
+                    <div class="bracket-team {% if knockout.final.match.is_finished and knockout.final.match.actual_team2_score > knockout.final.match.actual_team1_score %}winner{% elif knockout.final.prediction and knockout.final.prediction.predicted_team2_score > knockout.final.prediction.predicted_team1_score %}winner{% endif %}">
                         <span class="team-name">{{ knockout.final.team2.name if knockout.final.team2 else 'TBD' }}</span>
-                        <span class="team-score">{% if knockout.final.prediction %}{{ knockout.final.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if knockout.final.match.is_finished %}{{ knockout.final.match.actual_team2_score }}{% elif knockout.final.prediction %}{{ knockout.final.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
                 {% if knockout.final.prediction and knockout.final.prediction.predicted_team1_score == knockout.final.prediction.predicted_team2_score %}
@@ -203,13 +204,13 @@
                     <span class="match-num">🥉 3rd Place</span>
                 </div>
                 <div class="bracket-teams">
-                    <div class="bracket-team {% if knockout.third_place.prediction and knockout.third_place.prediction.predicted_team1_score > knockout.third_place.prediction.predicted_team2_score %}winner{% endif %}">
+                    <div class="bracket-team {% if knockout.third_place.match.is_finished and knockout.third_place.match.actual_team1_score > knockout.third_place.match.actual_team2_score %}winner{% elif knockout.third_place.prediction and knockout.third_place.prediction.predicted_team1_score > knockout.third_place.prediction.predicted_team2_score %}winner{% endif %}">
                         <span class="team-name">{{ knockout.third_place.team1.name if knockout.third_place.team1 else 'TBD' }}</span>
-                        <span class="team-score">{% if knockout.third_place.prediction %}{{ knockout.third_place.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if knockout.third_place.match.is_finished %}{{ knockout.third_place.match.actual_team1_score }}{% elif knockout.third_place.prediction %}{{ knockout.third_place.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
-                    <div class="bracket-team {% if knockout.third_place.prediction and knockout.third_place.prediction.predicted_team2_score > knockout.third_place.prediction.predicted_team1_score %}winner{% endif %}">
+                    <div class="bracket-team {% if knockout.third_place.match.is_finished and knockout.third_place.match.actual_team2_score > knockout.third_place.match.actual_team1_score %}winner{% elif knockout.third_place.prediction and knockout.third_place.prediction.predicted_team2_score > knockout.third_place.prediction.predicted_team1_score %}winner{% endif %}">
                         <span class="team-name">{{ knockout.third_place.team2.name if knockout.third_place.team2 else 'TBD' }}</span>
-                        <span class="team-score">{% if knockout.third_place.prediction %}{{ knockout.third_place.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                        <span class="team-score">{% if knockout.third_place.match.is_finished %}{{ knockout.third_place.match.actual_team2_score }}{% elif knockout.third_place.prediction %}{{ knockout.third_place.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
             </div>
@@ -251,11 +252,11 @@ async function loadStandingsDashboard() {
         
         if (!standings || Object.keys(standings).length === 0) {
             const dashboard = document.getElementById('standings-dashboard');
-            dashboard.innerHTML = '<p class="no-standings">Make predictions for group stage matches to see standings</p>';
+            dashboard.innerHTML = '<h3 class="section-title">Group Standings Dashboard</h3><p class="no-standings">Make predictions for group stage matches to see standings</p>';
             return;
         }
 
-        let html = '<div class="standings-grid">';
+        let html = '<h3 class="section-title">Group Standings Dashboard</h3><div class="standings-grid">';
         const groups = Object.keys(standings).sort();
 
         groups.forEach(groupLetter => {

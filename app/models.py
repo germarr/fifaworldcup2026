@@ -52,6 +52,7 @@ class Team(SQLModel, table=True):
         back_populates="team2",
         sa_relationship_kwargs={"foreign_keys": "Match.team2_id"}
     )
+    group_standings: list["GroupStanding"] = Relationship(back_populates="team")
 
 
 class Match(SQLModel, table=True):
@@ -80,6 +81,26 @@ class Match(SQLModel, table=True):
         sa_relationship_kwargs={"foreign_keys": "Match.team2_id"}
     )
     predictions: list["Prediction"] = Relationship(back_populates="match")
+
+
+class GroupStanding(SQLModel, table=True):
+    """Actual group standings data (seeded for now)."""
+    __tablename__ = "group_standings"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    group_letter: str = Field(max_length=1)
+    team_id: int = Field(foreign_key="teams.id")
+    played: int = Field(default=0)
+    won: int = Field(default=0)
+    drawn: int = Field(default=0)
+    lost: int = Field(default=0)
+    goals_for: int = Field(default=0)
+    goals_against: int = Field(default=0)
+    goal_difference: int = Field(default=0)
+    points: int = Field(default=0)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    team: Optional[Team] = Relationship(back_populates="group_standings")
 
 
 class Prediction(SQLModel, table=True):

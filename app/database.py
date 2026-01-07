@@ -15,7 +15,7 @@ engine = create_engine(
 def create_db_and_tables():
     """Create database tables."""
     # Import all models to ensure they are registered with SQLModel
-    from app.models import User, Team, Match, Prediction
+    from app.models import User, Team, Match, Prediction, GroupStanding
     from app.models import Session as SessionModel
     SQLModel.metadata.create_all(engine)
 
