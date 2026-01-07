@@ -162,11 +162,11 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if final.prediction and final.prediction.predicted_team1_score > final.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ final.team1.name if final.team1 else final.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-name">{{ final.team1.name if final.team1 else 'TBD' }}</span>
                         <span class="team-score">{% if final.prediction %}{{ final.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if final.prediction and final.prediction.predicted_team2_score > final.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ final.team2.name if final.team2 else final.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-name">{{ final.team2.name if final.team2 else 'TBD' }}</span>
                         <span class="team-score">{% if final.prediction %}{{ final.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>
@@ -200,11 +200,11 @@
                 </div>
                 <div class="bracket-teams">
                     <div class="bracket-team {% if third_place.prediction and third_place.prediction.predicted_team1_score > third_place.prediction.predicted_team2_score %}winner{% endif %}">
-                        <span class="team-name">{{ third_place.team1.name if third_place.team1 else third_place.match.team1_placeholder or 'TBD' }}</span>
+                        <span class="team-name">{{ third_place.team1.name if third_place.team1 else 'TBD' }}</span>
                         <span class="team-score">{% if third_place.prediction %}{{ third_place.prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
                     </div>
                     <div class="bracket-team {% if third_place.prediction and third_place.prediction.predicted_team2_score > third_place.prediction.predicted_team1_score %}winner{% endif %}">
-                        <span class="team-name">{{ third_place.team2.name if third_place.team2 else third_place.match.team2_placeholder or 'TBD' }}</span>
+                        <span class="team-name">{{ third_place.team2.name if third_place.team2 else 'TBD' }}</span>
                         <span class="team-score">{% if third_place.prediction %}{{ third_place.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
                     </div>
                 </div>

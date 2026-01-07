@@ -114,14 +114,14 @@ async def knockout_bracket(
     predictions_dict = {pred.match_id: pred for pred in predictions}
 
     # Resolve teams for each match
-    matches_with_teams = []
+    matches = []
     for match in knockout_matches:
         team1, team2 = resolve_match_teams(match, current_user.id, db)
 
         # Get prediction if exists
         prediction = predictions_dict.get(match.id)
 
-        matches_with_teams.append({
+        matches.append({
             "match": match,
             "team1": team1,
             "team2": team2,
@@ -129,16 +129,14 @@ async def knockout_bracket(
         })
 
     # Get the predicted champion (winner of the final)
-    final_match = next((m for m in knockout_matches if m.round == "Final"), None)
+    final_item = next((m for m in matches if m["match"].round == "Final"), None)
     champion = None
-    if final_match and final_match.id in predictions_dict:
-        prediction = predictions_dict[final_match.id]
+    if final_item and final_item["prediction"]:
+        prediction = final_item["prediction"]
         if prediction.predicted_team1_score > prediction.predicted_team2_score:
-            team1, _ = resolve_match_teams(final_match, current_user.id, db)
-            champion = team1
+            champion = final_item["team1"]
         elif prediction.predicted_team2_score > prediction.predicted_team1_score:
-            _, team2 = resolve_match_teams(final_match, current_user.id, db)
-            champion = team2
+            champion = final_item["team2"]
         elif prediction.penalty_shootout_winner_id:
             champ_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
             champion = db.exec(champ_statement).first()
@@ -152,7 +150,7 @@ async def knockout_bracket(
         {
             "request": request,
             "user": current_user,
-            "matches": matches_with_teams,
+            "matches": matches,
             "champion": champion,
             "standings": standings
         }
