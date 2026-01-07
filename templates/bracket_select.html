@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Select Your Bracket - FIFA World Cup{% endblock %}
+{% block main_class %}main-wide{% endblock %}
 
 {% block content %}
 <div class="bracket-header">
@@ -95,6 +96,10 @@
                 <span>Skip</span>
             </button>
 
+            <button id="pick-for-me-btn" class="btn btn-secondary nav-btn" title="Randomly fill all predictions">
+                <span>🎲 Pick for me!</span>
+            </button>
+
             <button id="next-btn" class="btn btn-primary nav-btn">
                 <span>Next →</span>
             </button>
@@ -116,7 +121,19 @@
 
     <div class="individual-matches-grid">
         {% for match in matches %}
-        <div class="individual-match-card {% if match.id in predictions %}has-prediction{% endif %}" data-match-id="{{ match.id }}">
+        {% set round_class = '' %}
+        {% if 'Group A' in match.round %}{% set round_class = 'group-a' %}
+        {% elif 'Group B' in match.round %}{% set round_class = 'group-b' %}
+        {% elif 'Group C' in match.round %}{% set round_class = 'group-c' %}
+        {% elif 'Group D' in match.round %}{% set round_class = 'group-d' %}
+        {% elif 'Group E' in match.round %}{% set round_class = 'group-e' %}
+        {% elif 'Group F' in match.round %}{% set round_class = 'group-f' %}
+        {% elif 'Group G' in match.round %}{% set round_class = 'group-g' %}
+        {% elif 'Group H' in match.round %}{% set round_class = 'group-h' %}
+        {% elif 'Round of 16' in match.round or 'Quarter' in match.round or 'Semi' in match.round %}{% set round_class = 'knockout-round' %}
+        {% elif 'Third' in match.round or match.round == 'Final' %}{% set round_class = 'final-round' %}
+        {% endif %}
+        <div class="individual-match-card {{ round_class }} {% if match.id in predictions %}has-prediction{% endif %}" data-match-id="{{ match.id }}">
             <div class="individual-match-header">
                 <span class="match-round">{{ match.round }}</span>
                 <span class="match-number">Match #{{ match.match_number }}</span>

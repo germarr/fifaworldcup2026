@@ -127,12 +127,17 @@ async def knockout_bracket(
             champ_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
             champion = db.exec(champ_statement).first()
 
+    # Get group standings
+    from app.standings import calculate_group_standings
+    standings = calculate_group_standings(current_user.id, db)
+
     return templates.TemplateResponse(
         "knockout_bracket.html",
         {
             "request": request,
             "user": current_user,
             "matches": matches_with_teams,
-            "champion": champion
+            "champion": champion,
+            "standings": standings
         }
     )

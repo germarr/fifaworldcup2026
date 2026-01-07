@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Knockout Bracket - FIFA World Cup{% endblock %}
+{% block main_class %}main-wide{% endblock %}
 
 {% block content %}
 <div class="knockout-header">
@@ -19,6 +20,34 @@
     </div>
     {% endif %}
 </div>
+
+<!-- Group Stage Results -->
+{% if standings %}
+<div class="group-results-section">
+    <h3 class="section-title">Group Stage Results - Qualified Teams</h3>
+    <div class="group-results-grid">
+        {% for group_letter in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H'] %}
+            {% if group_letter in standings %}
+            <div class="group-result-card">
+                <div class="group-result-header">
+                    <h4>Group {{ group_letter }}</h4>
+                </div>
+                <div class="qualified-teams">
+                    {% for team_standing in standings[group_letter][:2] %}
+                    <div class="qualified-team">
+                        <span class="position-badge">{{ loop.index }}</span>
+                        <span class="team-flag-code">{{ team_standing.team.code }}</span>
+                        <span class="team-qualified-name">{{ team_standing.team.name }}</span>
+                        <span class="team-points">{{ team_standing.points }} pts</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
 
 <div class="bracket-container">
     {% set round_of_16 = [] %}
@@ -145,6 +174,22 @@
                 <div class="penalty-indicator">⚽ Penalties</div>
                 {% endif %}
             </div>
+            {% else %}
+            <div class="bracket-match final-match">
+                <div class="bracket-match-header">
+                    <span class="match-num">🏆 FINAL</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team">
+                        <span class="team-name">TBD</span>
+                        <span class="team-score">-</span>
+                    </div>
+                    <div class="bracket-team">
+                        <span class="team-name">TBD</span>
+                        <span class="team-score">-</span>
+                    </div>
+                </div>
+            </div>
             {% endif %}
 
             <!-- Third Place Match -->
@@ -161,6 +206,22 @@
                     <div class="bracket-team {% if third_place.prediction and third_place.prediction.predicted_team2_score > third_place.prediction.predicted_team1_score %}winner{% endif %}">
                         <span class="team-name">{{ third_place.team2.name if third_place.team2 else third_place.match.team2_placeholder or 'TBD' }}</span>
                         <span class="team-score">{% if third_place.prediction %}{{ third_place.prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="bracket-match third-place-match">
+                <div class="bracket-match-header">
+                    <span class="match-num">🥉 3rd Place</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team">
+                        <span class="team-name">TBD</span>
+                        <span class="team-score">-</span>
+                    </div>
+                    <div class="bracket-team">
+                        <span class="team-name">TBD</span>
+                        <span class="team-score">-</span>
                     </div>
                 </div>
             </div>

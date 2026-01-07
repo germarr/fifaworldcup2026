@@ -319,6 +319,62 @@ class BracketGame {
         dashboard.innerHTML = html;
     }
 
+    async pickForMe() {
+        // Generate random predictions for all matches
+        showNotification('Generating random predictions...', 'success');
+
+        try {
+            const predictions = [];
+            
+            for (const match of this.matches) {
+                // Generate random scores (0-4 goals per team)
+                const team1Score = Math.floor(Math.random() * 5);
+                const team2Score = Math.floor(Math.random() * 5);
+
+                const payload = {
+                    match_id: match.id,
+                    predicted_team1_score: team1Score,
+                    predicted_team2_score: team2Score
+                };
+
+                // For tied knockout matches, randomly select penalty shootout winner
+                const isKnockout = !match.round.includes('Group Stage');
+                if (isKnockout && team1Score === team2Score) {
+                    payload.penalty_shootout_winner_id = Math.random() > 0.5 ? match.team1_id : match.team2_id;
+                }
+
+                // Save prediction
+                const response = await fetch('/api/predictions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                if (response.ok) {
+                    const savedPrediction = await response.json();
+                    this.predictions[match.id] = savedPrediction;
+                } else {
+                    const error = await response.json();
+                    showNotification(error.detail || 'Failed to save prediction', 'error');
+                    return;
+                }
+            }
+
+            // Reload standings and matches
+            await this.loadStandings();
+            await this.loadMatches();
+
+            // Show first match
+            this.showMatch(0);
+            showNotification('🎯 Random predictions generated! Review them before submitting.', 'success');
+        } catch (error) {
+            console.error('Error in pickForMe:', error);
+            showNotification('Network error. Please try again.', 'error');
+        }
+    }
+
     setupEventListeners() {
         // Next button
         document.getElementById('next-btn').addEventListener('click', () => {
@@ -334,6 +390,16 @@ class BracketGame {
         document.getElementById('skip-btn').addEventListener('click', () => {
             this.skip();
         });
+
+        // Pick for me button
+        const pickForMeBtn = document.getElementById('pick-for-me-btn');
+        if (pickForMeBtn) {
+            pickForMeBtn.addEventListener('click', () => {
+                if (confirm('This will generate random predictions for all matches. Continue?')) {
+                    this.pickForMe();
+                }
+            });
+        }
 
         // Score change listeners to update penalty shootout visibility
         const team1ScoreInput = document.getElementById('team1-score');

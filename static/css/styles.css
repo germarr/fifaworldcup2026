@@ -42,6 +42,13 @@ main.container {
     padding: 40px 20px;
 }
 
+main.container.main-wide {
+    max-width: 100%;
+    width: 100%;
+    padding-left: 30px;
+    padding-right: 30px;
+}
+
 /* Navigation */
 .navbar {
     background-color: var(--surface);
@@ -813,7 +820,7 @@ main.container {
 
 /* Game Mode Specific Styles */
 .game-mode {
-    max-width: 900px;
+    max-width: 1200px;
     margin: 0 auto;
 }
 
@@ -993,8 +1000,9 @@ main.container {
 
 .standings-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
+    max-width: 100%;
 }
 
 .group-standings {
@@ -1069,16 +1077,17 @@ main.container {
 
 .individual-matches-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 20px;
     margin-bottom: 30px;
+    max-width: 100%;
 }
 
 .individual-match-card {
     background-color: var(--surface);
     border-radius: 8px;
     box-shadow: var(--shadow);
-    padding: 20px;
+    padding: 15px;
     transition: transform 0.2s, box-shadow 0.2s;
     border: 2px solid transparent;
 }
@@ -1090,6 +1099,26 @@ main.container {
 
 .individual-match-card.has-prediction {
     border-color: var(--success-color);
+}
+
+/* Round Color Coding */
+.individual-match-card.group-a { background-color: #e3f2fd; }
+.individual-match-card.group-b { background-color: #f3e5f5; }
+.individual-match-card.group-c { background-color: #e8f5e9; }
+.individual-match-card.group-d { background-color: #fff3e0; }
+.individual-match-card.group-e { background-color: #fce4ec; }
+.individual-match-card.group-f { background-color: #e0f7fa; }
+.individual-match-card.group-g { background-color: #fff8e1; }
+.individual-match-card.group-h { background-color: #eceff1; }
+.individual-match-card.knockout-round { background-color: #f5f5f5; border: 1px solid #d0d0d0; }
+.individual-match-card.final-round { background-color: #fffde7; border: 1px solid #fbc02d; }
+
+/* Ensure prediction status overrides specific round borders */
+.individual-match-card.has-prediction,
+.individual-match-card.knockout-round.has-prediction,
+.individual-match-card.final-round.has-prediction {
+    border-color: var(--success-color);
+    border-width: 2px; /* Ensure visibility */
 }
 
 .individual-match-header {
@@ -1125,8 +1154,8 @@ main.container {
 }
 
 .team-flag-small {
-    width: 50px;
-    height: 50px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1146,9 +1175,9 @@ main.container {
 }
 
 .score-input-individual {
-    width: 70px;
-    height: 50px;
-    font-size: 24px;
+    width: 60px;
+    height: 40px;
+    font-size: 20px;
     font-weight: bold;
     text-align: center;
     border: 2px solid var(--border-color);
@@ -1280,9 +1309,9 @@ main.container {
 }
 
 .bracket-container {
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 30px;
-    overflow-x: auto;
     padding: 20px;
     background-color: var(--background);
     border-radius: 12px;
@@ -1292,7 +1321,7 @@ main.container {
 .bracket-round {
     display: flex;
     flex-direction: column;
-    min-width: 280px;
+    min-width: 0;
 }
 
 .round-title {
@@ -1405,7 +1434,7 @@ main.container {
 /* Responsive bracket */
 @media (max-width: 1024px) {
     .bracket-container {
-        flex-direction: column;
+        grid-template-columns: 1fr;
     }
 
     .bracket-round {
@@ -1520,4 +1549,131 @@ main.container {
     outline: none;
     border-color: #ff9800;
     box-shadow: 0 0 0 2px rgba(255, 193, 7, 0.2);
+}
+
+/* Group Results Section in Knockout Bracket */
+.group-results-section {
+    margin: 30px 0;
+    padding: 25px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.group-results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+    max-width: 100%;
+}
+
+.group-result-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.group-result-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.group-result-header {
+    background: var(--primary-color);
+    color: white;
+    padding: 10px;
+    text-align: center;
+}
+
+.group-result-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.qualified-teams {
+    padding: 12px;
+}
+
+.qualified-team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    transition: background-color 0.2s;
+}
+
+.qualified-team:last-child {
+    margin-bottom: 0;
+}
+
+.qualified-team:hover {
+    background-color: #f0f7ff;
+}
+
+.position-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    background: var(--primary-color);
+    color: white;
+    border-radius: 50%;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.team-flag-code {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--text-primary);
+    min-width: 40px;
+    flex-shrink: 0;
+}
+
+.team-qualified-name {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.team-points {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--success-color);
+    flex-shrink: 0;
+}
+
+/* Third Place Match Styling */
+.third-place-match {
+    margin-top: 30px;
+    border: 2px solid #cd7f32 !important;
+    background: linear-gradient(135deg, #fff8f0 0%, #ffe4cc 100%) !important;
+}
+
+.third-place-match .bracket-match-header {
+    background: linear-gradient(135deg, #cd7f32 0%, #b8722e 100%);
+    color: white;
+    font-weight: 700;
+}
+
+.third-place-match .bracket-team.winner {
+    background-color: rgba(205, 127, 50, 0.15);
+    border-left: 4px solid #cd7f32;
 }
