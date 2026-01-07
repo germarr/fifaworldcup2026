@@ -120,7 +120,8 @@
     </div>
 
     <div class="individual-matches-grid">
-        {% for match in matches %}
+        {% for item in matches_with_teams %}
+        {% set match = item.match %}
         {% set round_class = '' %}
         {% if 'Group A' in match.round %}{% set round_class = 'group-a' %}
         {% elif 'Group B' in match.round %}{% set round_class = 'group-b' %}
@@ -142,19 +143,15 @@
             <div class="individual-match-teams">
                 <div class="individual-team">
                     <div class="team-flag-small">
-                        {% if match.resolved_team1 %}
-                            {{ match.resolved_team1.code }}
-                        {% elif match.team1 %}
-                            {{ match.team1.code }}
+                        {% if item.team1 %}
+                            {{ item.team1.code }}
                         {% else %}
                             {{ match.team1_placeholder or 'TBD' }}
                         {% endif %}
                     </div>
                     <span class="team-name-individual">
-                        {% if match.resolved_team1 %}
-                            {{ match.resolved_team1.name }}
-                        {% elif match.team1 %}
-                            {{ match.team1.name }}
+                        {% if item.team1 %}
+                            {{ item.team1.name }}
                         {% else %}
                             {{ match.team1_placeholder or 'TBD' }}
                         {% endif %}
@@ -174,19 +171,15 @@
 
                 <div class="individual-team">
                     <div class="team-flag-small">
-                        {% if match.resolved_team2 %}
-                            {{ match.resolved_team2.code }}
-                        {% elif match.team2 %}
-                            {{ match.team2.code }}
+                        {% if item.team2 %}
+                            {{ item.team2.code }}
                         {% else %}
                             {{ match.team2_placeholder or 'TBD' }}
                         {% endif %}
                     </div>
                     <span class="team-name-individual">
-                        {% if match.resolved_team2 %}
-                            {{ match.resolved_team2.name }}
-                        {% elif match.team2 %}
-                            {{ match.team2.name }}
+                        {% if item.team2 %}
+                            {{ item.team2.name }}
                         {% else %}
                             {{ match.team2_placeholder or 'TBD' }}
                         {% endif %}
@@ -210,19 +203,15 @@
                 <select class="penalty-select-individual" data-match-id="{{ match.id }}">
                     <option value="">Select</option>
                     <option value="team1">
-                        {% if match.resolved_team1 %}
-                            {{ match.resolved_team1.name }}
-                        {% elif match.team1 %}
-                            {{ match.team1.name }}
+                        {% if item.team1 %}
+                            {{ item.team1.name }}
                         {% else %}
                             Team 1
                         {% endif %}
                     </option>
                     <option value="team2">
-                        {% if match.resolved_team2 %}
-                            {{ match.resolved_team2.name }}
-                        {% elif match.team2 %}
-                            {{ match.team2.name }}
+                        {% if item.team2 %}
+                            {{ item.team2.name }}
                         {% else %}
                             Team 2
                         {% endif %}
