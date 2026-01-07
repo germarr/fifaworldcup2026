@@ -1,6 +1,6 @@
 import secrets
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Optional
 from sqlmodel import Session, select
 from app.models import User, Session as SessionModel
@@ -41,7 +41,7 @@ def generate_session_token() -> str:
 def create_session(db: Session, user_id: int) -> SessionModel:
     """Create a new session for a user."""
     session_token = generate_session_token()
-    expires_at = datetime.utcnow() + timedelta(days=SESSION_EXPIRY_DAYS)
+    expires_at = datetime.now(timezone.utc) + timedelta(days=SESSION_EXPIRY_DAYS)
 
     session = SessionModel(
         user_id=user_id,
@@ -65,7 +65,12 @@ def get_user_by_session_token(db: Session, session_token: str) -> Optional[User]
         return None
 
     # Check if session has expired
-    if session.expires_at < datetime.utcnow():
+    # Ensure expires_at is timezone-aware for comparison if it comes back naive
+    expires_at = session.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=timezone.utc)
+        
+    if expires_at < datetime.now(timezone.utc):
         db.delete(session)
         db.commit()
         return None

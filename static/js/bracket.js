@@ -289,6 +289,7 @@ class BracketGame {
                                 <th>Pos</th>
                                 <th>Team</th>
                                 <th>Pts</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -296,6 +297,7 @@ class BracketGame {
 
             standings.forEach((team, index) => {
                 const qualified = index < 2 ? 'qualified' : '';
+                const teamId = `team-${groupLetter}-${index}`;
                 html += `
                     <tr class="${qualified}">
                         <td>${index + 1}</td>
@@ -304,6 +306,33 @@ class BracketGame {
                             <span class="team-name-short">${team.team_name}</span>
                         </td>
                         <td class="points">${team.points}</td>
+                        <td class="expand-cell">
+                            <button class="expand-btn" data-team-id="${teamId}" title="Show details">
+                                <span class="expand-icon">▼</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr class="team-details" id="${teamId}" style="display: none;">
+                        <td colspan="4">
+                            <div class="team-details-content">
+                                <div class="stat-item">
+                                    <span class="stat-label">Goals Scored:</span>
+                                    <span class="stat-value">${team.goals_for}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Goals Received:</span>
+                                    <span class="stat-value">${team.goals_against}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Goal Difference:</span>
+                                    <span class="stat-value ${team.goal_difference >= 0 ? 'positive' : 'negative'}">${team.goal_difference >= 0 ? '+' : ''}${team.goal_difference}</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">Record:</span>
+                                    <span class="stat-value">${team.won}W - ${team.drawn}D - ${team.lost}L</span>
+                                </div>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -317,6 +346,24 @@ class BracketGame {
 
         html += '</div>';
         dashboard.innerHTML = html;
+
+        // Add event listeners to expand buttons
+        document.querySelectorAll('.expand-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const teamId = btn.getAttribute('data-team-id');
+                const detailsRow = document.getElementById(teamId);
+                const icon = btn.querySelector('.expand-icon');
+                
+                if (detailsRow.style.display === 'none') {
+                    detailsRow.style.display = 'table-row';
+                    icon.textContent = '▲';
+                } else {
+                    detailsRow.style.display = 'none';
+                    icon.textContent = '▼';
+                }
+            });
+        });
     }
 
     async pickForMe() {
