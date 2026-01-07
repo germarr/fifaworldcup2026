@@ -214,6 +214,39 @@ Edit `static/css/styles.css` to customize colors, fonts, and layout.
 pytest
 ```
 
+### Seed Sample Data
+```bash
+# Seed teams and matches
+uv run python seed_data.py
+
+# Simulate tournament results
+uv run python simulate_full_tournament.py
+
+# Generate predictions for existing user
+uv run python generate_user_picks.py <username>
+
+# Create new player with automatic predictions
+uv run python seed_player.py <username> <password> <favorite_team> [team_name]
+```
+
+### Seed New Players
+The `seed_player.py` script quickly creates new players with automatic tournament predictions:
+
+```bash
+# Create new player (randomly assigned to a team)
+python seed_player.py john password123 Brazil
+
+# Create new player and assign to specific team
+python seed_player.py alice mypass123 Argentina Phoenix
+
+# Available teams: Phoenix, Dragons, Tigers, Eagles
+```
+
+Each new player:
+- Gets assigned to one of 4 player teams
+- Receives automatic predictions for all 64 matches
+- Has predictions that follow tournament logic (group stage → knockout)
+
 ### Database Reset
 ```bash
 rm worldcup.db && uv run python seed_data.py
