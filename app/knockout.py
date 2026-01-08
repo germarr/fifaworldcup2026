@@ -71,37 +71,27 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
         loser_team = None
 
         # 1. Check ACTUAL result first (Visual consistency with finished matches)
-        # BUT only if the actual match teams match the resolved teams
-        # (For knockout matches with placeholders, actual_team1_score/team2_score may be stale)
+        # For knockout matches with resolved teams, determine winner by match POSITION
+        # (not by comparing stale team IDs)
         if match.is_finished:
-            # Verify that actual result corresponds to resolved teams
-            # For knockout matches with placeholders, check if direct IDs match resolved teams
-            actual_result_valid = False
-            
-            if not match.team1_placeholder and not match.team2_placeholder:
-                # Group stage match - safe to use actual results
-                actual_result_valid = True
-            elif team1 and team2:
-                # Knockout match - check if direct IDs match resolved teams
-                if ((match.team1_id and team1.id == match.team1_id) and 
-                    (match.team2_id and team2.id == match.team2_id)):
-                    actual_result_valid = True
-            
-            if actual_result_valid:
-                if match.actual_team1_score > match.actual_team2_score:
+            # Determine winner position from actual scores
+            if match.actual_team1_score > match.actual_team2_score:
+                winner_team = team1
+                loser_team = team2
+            elif match.actual_team2_score > match.actual_team1_score:
+                winner_team = team2
+                loser_team = team1
+            elif match.actual_team1_score == match.actual_team2_score and match.penalty_winner_id:
+                # Tie with penalty shootout - determine which position won
+                # by checking if penalty_winner_id matches position 1 or position 2
+                if team1 and match.penalty_winner_id == team1.id:
                     winner_team = team1
                     loser_team = team2
-                elif match.actual_team2_score > match.actual_team1_score:
+                elif team2 and match.penalty_winner_id == team2.id:
                     winner_team = team2
                     loser_team = team1
-                elif match.penalty_winner_id:
-                    # Penalty shootout result
-                    p_winner = teams_map.get(match.penalty_winner_id)
-                    if p_winner:
-                        winner_team = p_winner
-                        loser_team = team2 if winner_team == team1 else team1
         
-        # 2. If no actual result (or not valid), use PREDICTION
+        # 2. If no actual result (or match not finished), use PREDICTION
         if not winner_team and prediction:
             if prediction.predicted_team1_score > prediction.predicted_team2_score:
                 winner_team = team1
