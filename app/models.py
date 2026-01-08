@@ -33,10 +33,13 @@ class PlayerTeam(SQLModel, table=True):
     @property
     def total_points(self) -> int:
         """Sum of all members' points."""
-        # Use new memberships relationship if it has data, fallback to old members
-        if self.memberships:
+        # First try new memberships relationship
+        if self.memberships and len(self.memberships) > 0:
             return sum(membership.user.total_points for membership in self.memberships)
-        return sum(member.total_points for member in self.members)
+        # Fallback to old members relationship for backward compatibility
+        if self.members and len(self.members) > 0:
+            return sum(member.total_points for member in self.members)
+        return 0
 
 
 class User(SQLModel, table=True):
@@ -76,6 +79,15 @@ class User(SQLModel, table=True):
     favorite_team_obj: Optional["Team"] = Relationship(
         sa_relationship_kwargs={"foreign_keys": "[User.favorite_team_id]", "uselist": False}
     )
+
+    @property
+    def get_team(self) -> Optional["PlayerTeam"]:
+        """Get the user's current team, checking both new and old relationships."""
+        # Try new relationship first (many-to-many via memberships)
+        if self.team_memberships and len(self.team_memberships) > 0:
+            return self.team_memberships[0].player_team
+        # Fallback to old relationship
+        return self.player_team
 
 
 class Session(SQLModel, table=True):

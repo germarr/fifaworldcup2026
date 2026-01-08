@@ -1,4 +1,10 @@
+import sys
+import os
 import random
+
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from sqlmodel import Session, select
 from app.database import engine
 from app.models import Match, Team, GroupStanding, User, Prediction

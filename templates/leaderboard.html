@@ -10,8 +10,8 @@
     <div class="leaderboard-selector">
         <button class="btn btn-primary lb-tab-btn" onclick="showTab('global')">Global Players</button>
         <button class="btn btn-secondary lb-tab-btn" onclick="showTab('teams')">Teams</button>
-        {% if user.player_team %}
-        <button class="btn btn-secondary lb-tab-btn" onclick="showTab('myteam')">My Team: {{ user.player_team.name }}</button>
+        {% if user.get_team %}
+        <button class="btn btn-secondary lb-tab-btn" onclick="showTab('myteam')">My Team: {{ user.get_team.name }}</button>
         {% endif %}
         <a href="/leaderboard/compare" class="btn btn-secondary">Compare Players</a>
     </div>
@@ -38,7 +38,7 @@
                         <img src="https://api.dicebear.com/7.x/adventurer/svg?seed={{ player.avatar_seed }}" class="avatar-mini">
                         {{ player.username }}
                     </td>
-                    <td>{{ player.player_team.name if player.player_team else '-' }}</td>
+                    <td>{{ player.get_team.name if player.get_team else '-' }}</td>
                     <td class="points-cell">{{ player.total_points }}</td>
                 </tr>
                 {% endfor %}
@@ -75,12 +75,12 @@
 </div>
 
 <!-- My Team Tab -->
-{% if user.player_team %}
+{% if user.get_team %}
 <div id="tab-myteam" class="leaderboard-tab" style="display: none;">
     <div class="leaderboard-card">
         <div class="team-header-info">
-            <h3>{{ user.player_team.name }}</h3>
-            <span class="join-code">Join Code: <strong>{{ user.player_team.join_code }}</strong></span>
+            <h3>{{ user.get_team.name }}</h3>
+            <span class="join-code">Join Code: <strong>{{ user.get_team.join_code }}</strong></span>
         </div>
         <table class="leaderboard-table">
             <thead>

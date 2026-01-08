@@ -24,9 +24,14 @@ Examples:
 """
 
 import sys
+import os
 import random
 import secrets
 from datetime import datetime
+
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from sqlmodel import Session, select
 from app.database import engine
 from app.models import User, Match, Prediction, Team, PlayerTeam
@@ -170,6 +175,9 @@ def seed_player(username: str, password: str, favorite_team: str, team_name: str
         favorite_team: Favorite World Cup team
         team_name: Optional player team to join
     """
+    from app.database import create_db_and_tables
+    create_db_and_tables()
+
     # Validate inputs
     is_valid, error_msg = validate_inputs(username, password, favorite_team, team_name)
     if not is_valid:
