@@ -364,7 +364,25 @@
     }
 
     .standings-grid-print {
-        gap: 0.4cm;
+        gap: 0.25cm;
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .group-standings-print {
+        font-size: 0.55rem;
+    }
+
+    .standings-table-print {
+        font-size: 0.55rem;
+    }
+
+    .standings-table-print th {
+        font-size: 0.53rem;
+        padding: 0.1cm 0.08cm;
+    }
+
+    .standings-table-print td {
+        padding: 0.1cm 0.06cm;
     }
 }
 
@@ -379,33 +397,80 @@
 
 /* Page 1 Styles - Group Standings */
 .print-page-1 {
-    padding-top: 0.5cm;
+    padding-top: 0;
+}
+
+.print-page-1 .print-header {
+    margin-bottom: 0.3cm;
+    padding-bottom: 0.2cm;
+}
+
+.print-page-1 .print-title h1 {
+    font-size: 1.2rem;
+}
+
+.print-page-1 .print-title p {
+    font-size: 0.75rem;
+}
+
+.print-page-1 .champion-content {
+    padding: 0.3rem 0.7rem;
+}
+
+.print-page-1 .champion-text strong {
+    font-size: 0.85rem;
+}
+
+.print-page-1 .champion-text small {
+    font-size: 0.65rem;
+}
+
+.print-page-1 .trophy-icon {
+    font-size: 1.2rem;
+}
+
+.print-page-1 .print-champion-flag {
+    height: 24px;
+    width: 36px;
+}
+
+.print-page-1 .print-score {
+    padding: 0.3rem 0.7rem;
+    min-width: 70px;
+}
+
+.print-page-1 .score-label {
+    font-size: 0.65rem;
+}
+
+.print-page-1 .score-number {
+    font-size: 1.5rem;
 }
 
 .page-1-header {
     text-align: center;
-    margin-bottom: 0.5cm;
-    padding-bottom: 0.3cm;
-    border-bottom: 3px solid #2c5282;
+    margin-bottom: 0.3cm;
+    padding-bottom: 0.2cm;
+    border-bottom: 2px solid #2c5282;
 }
 
 .page-1-header h2 {
-    margin: 0 0 0.2cm 0;
-    font-size: 1.5rem;
+    margin: 0;
+    font-size: 1.1rem;
     color: #2c5282;
 }
 
 .page-1-subtitle {
     margin: 0;
-    font-size: 0.9rem;
+    font-size: 0.75rem;
     color: #666;
 }
 
-/* Standings Grid for Page 1 */
+/* Standings Grid for Page 1 - 4 columns */
 .standings-grid-print {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.5cm;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.3cm;
 }
 
 .group-standings-print {
@@ -419,15 +484,15 @@
     background: #2c5282;
     color: white;
     margin: 0;
-    padding: 0.3cm;
-    font-size: 0.9rem;
+    padding: 0.2cm;
+    font-size: 0.75rem;
     text-align: center;
 }
 
 .standings-table-print {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.75rem;
+    font-size: 0.6rem;
 }
 
 .standings-table-print thead {
@@ -436,11 +501,11 @@
 }
 
 .standings-table-print th {
-    padding: 0.2cm 0.15cm;
+    padding: 0.15cm 0.1cm;
     text-align: center;
     font-weight: 600;
     color: #2c5282;
-    font-size: 0.7rem;
+    font-size: 0.58rem;
 }
 
 .standings-table-print tbody tr {
@@ -456,7 +521,7 @@
 }
 
 .standings-table-print td {
-    padding: 0.2cm 0.15cm;
+    padding: 0.12cm 0.08cm;
     text-align: center;
 }
 
@@ -468,13 +533,13 @@
 .team-cell-print {
     display: flex;
     align-items: center;
-    gap: 0.2cm;
+    gap: 0.15cm;
     text-align: left !important;
 }
 
 .team-flag-print {
-    height: 14px;
-    width: 21px;
+    height: 12px;
+    width: 18px;
     object-fit: cover;
     border: 1px solid #ddd;
     border-radius: 2px;
@@ -483,6 +548,7 @@
 
 .team-code-print {
     font-weight: 500;
+    font-size: 0.6rem;
 }
 
 .stat-win {
@@ -509,13 +575,15 @@
 
 .points-cell {
     background: #f7fafc;
-    font-size: 0.85rem;
+    font-size: 0.7rem;
 }
 
 /* Fix flag loading */
 img {
     image-rendering: -webkit-optimize-contrast;
     image-rendering: crisp-edges;
+    max-width: 100%;
+    height: auto;
 }
 
 .print-champion-flag,
@@ -523,10 +591,30 @@ img {
 .team-flag-print {
     display: inline-block !important;
     visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Force flag visibility in print */
+@media print {
+    .print-champion-flag,
+    .bracket-team img,
+    .team-flag-print {
+        display: inline-block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
 }
 
 /* Responsive adjustments for screen preview */
-@media screen and (max-width: 1200px) {
+@media screen and (max-width: 1400px) {
+    .standings-grid-print {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media screen and (max-width: 900px) {
     .print-bracket {
         overflow-x: auto;
     }

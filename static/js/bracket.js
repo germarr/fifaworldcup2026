@@ -1,20 +1,22 @@
 // FIFA World Cup Bracket Prediction - Game Mode & Individual Mode
 
+const FLAG_MAPPING = {
+    "ARG": "ar", "AUS": "au", "BEL": "be", "BRA": "br", "CAN": "ca",
+    "CMR": "cm", "CRC": "cr", "CRO": "hr", "DEN": "dk", "ECU": "ec",
+    "ENG": "gb-eng", "ESP": "es", "FRA": "fr", "GER": "de", "GHA": "gh",
+    "IRN": "ir", "JPN": "jp", "KOR": "kr", "KSA": "sa", "MAR": "ma",
+    "MEX": "mx", "NED": "nl", "POL": "pl", "POR": "pt", "QAT": "qa",
+    "SEN": "sn", "SRB": "rs", "SUI": "ch", "TUN": "tn", "URU": "uy",
+    "USA": "us", "WAL": "gb-wls"
+};
+
 class BracketGame {
     constructor() {
         this.currentIndex = 0;
         this.matches = [];
         this.predictions = {};
         this.standings = {};
-        this.flagMapping = {
-            "ARG": "ar", "AUS": "au", "BEL": "be", "BRA": "br", "CAN": "ca",
-            "CMR": "cm", "CRC": "cr", "CRO": "hr", "DEN": "dk", "ECU": "ec",
-            "ENG": "gb-eng", "ESP": "es", "FRA": "fr", "GER": "de", "GHA": "gh",
-            "IRN": "ir", "JPN": "jp", "KOR": "kr", "KSA": "sa", "MAR": "ma",
-            "MEX": "mx", "NED": "nl", "POL": "pl", "POR": "pt", "QAT": "qa",
-            "SEN": "sn", "SRB": "rs", "SUI": "ch", "TUN": "tn", "URU": "uy",
-            "USA": "us", "WAL": "gb-wls"
-        };
+        this.flagMapping = FLAG_MAPPING;
     }
 
     async init() {
@@ -92,8 +94,8 @@ class BracketGame {
         const team2FlagContainer = document.getElementById('team2-flag');
 
         const updateFlag = (container, code, placeholder) => {
-            if (code && this.flagMapping[code]) {
-                const countryCode = this.flagMapping[code];
+            if (code && FLAG_MAPPING[code]) {
+                const countryCode = FLAG_MAPPING[code];
                 container.innerHTML = `<img src="https://flagcdn.com/w160/${countryCode}.png" alt="${code}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
                 container.className = 'team-flag has-img';
             } else {
@@ -283,10 +285,10 @@ class BracketGame {
 
         // Helper to build flag URL
         const buildFlagUrl = (teamCode) => {
-            if (!teamCode || !this.flagMapping[teamCode]) {
+            if (!teamCode || !FLAG_MAPPING[teamCode]) {
                 return '';
             }
-            const code = this.flagMapping[teamCode];
+            const code = FLAG_MAPPING[teamCode];
             return `https://flagcdn.com/w40/${code}.png`;
         };
 
@@ -584,10 +586,72 @@ document.addEventListener('DOMContentLoaded', function() {
     // Individual mode save buttons
     const saveIndividualBtns = document.querySelectorAll('.save-individual-btn');
 
+    const refreshIndividualMatches = async () => {
+        try {
+            const response = await fetch('/api/matches');
+            if (!response.ok) {
+                return;
+            }
+            const matches = await response.json();
+            const matchesMap = new Map(matches.map(match => [match.id, match]));
+
+            document.querySelectorAll('.individual-match-card').forEach(card => {
+                const matchId = parseInt(card.dataset.matchId, 10);
+                const match = matchesMap.get(matchId);
+                if (!match) {
+                    return;
+                }
+
+                const team1Container = card.querySelector('.individual-team:nth-child(1) .team-flag-small');
+                const team1Name = card.querySelector('.individual-team:nth-child(1) .team-name-individual');
+                const team2Container = card.querySelector('.individual-team:nth-child(3) .team-flag-small');
+                const team2Name = card.querySelector('.individual-team:nth-child(3) .team-name-individual');
+
+                const renderFlag = (container, code, placeholder) => {
+                    if (!container) {
+                        return;
+                    }
+                    if (code && FLAG_MAPPING[code]) {
+                        const countryCode = FLAG_MAPPING[code];
+                        container.innerHTML = `<img src="https://flagcdn.com/w40/${countryCode}.png" alt="${code}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 4px;">`;
+                    } else if (placeholder) {
+                        container.textContent = placeholder;
+                    } else {
+                        container.textContent = 'TBD';
+                    }
+                };
+
+                renderFlag(team1Container, match.team1_code, match.team1_placeholder);
+                renderFlag(team2Container, match.team2_code, match.team2_placeholder);
+
+                if (team1Name) {
+                    team1Name.textContent = match.team1_code || match.team1_placeholder || 'TBD';
+                }
+                if (team2Name) {
+                    team2Name.textContent = match.team2_code || match.team2_placeholder || 'TBD';
+                }
+
+                const penaltySelect = card.querySelector('.penalty-select-individual');
+                if (penaltySelect) {
+                    const options = penaltySelect.querySelectorAll('option');
+                    if (options.length >= 3) {
+                        options[1].textContent = match.team1_name || 'Team 1';
+                        options[2].textContent = match.team2_name || 'Team 2';
+                    }
+                }
+            });
+        } catch (error) {
+            console.error('Error refreshing matches:', error);
+        }
+    };
+
     saveIndividualBtns.forEach(btn => {
         btn.addEventListener('click', async function() {
             const matchId = this.dataset.matchId;
             const card = document.querySelector(`.individual-match-card[data-match-id="${matchId}"]`);
+            const originalLabel = this.textContent;
+            this.disabled = true;
+            this.textContent = 'Saving...';
 
             const team1Score = card.querySelector('.team1-score').value;
             const team2Score = card.querySelector('.team2-score').value;
@@ -595,6 +659,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Validate that scores are entered
             if (team1Score === '' || team2Score === '') {
                 showNotification('Please enter both scores', 'error');
+                this.disabled = false;
+                this.textContent = originalLabel;
                 return;
             }
 
@@ -612,6 +678,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (isTied && !penaltyValue) {
                     showNotification('Please select penalty shootout winner', 'error');
+                    this.disabled = false;
+                    this.textContent = originalLabel;
                     return;
                 }
 
@@ -651,17 +719,20 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Mark card as having prediction
                     card.classList.add('has-prediction');
 
-                    // Reload standings if game mode is active
-                    if (bracketGame) {
-                        await bracketGame.loadStandings();
-                        await bracketGame.loadMatches();
+                    // Reload standings if available and refresh individual matches
+                    if (typeof loadStandingsDashboard === 'function') {
+                        await loadStandingsDashboard();
                     }
+                    await refreshIndividualMatches();
                 } else {
                     const error = await response.json();
                     showNotification(error.detail || 'Failed to save prediction', 'error');
                 }
             } catch (error) {
                 showNotification('Network error. Please try again.', 'error');
+            } finally {
+                this.disabled = false;
+                this.textContent = originalLabel;
             }
         });
     });

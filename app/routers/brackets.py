@@ -354,6 +354,40 @@ async def knockout_bracket_print(
                 team2.id if team2 else None
             )
 
+        # Determine actual winner for template highlighting (handles swapped teams)
+        actual_winner_id = None
+        if match.is_finished:
+            if match.actual_team1_score > match.actual_team2_score:
+                actual_winner_id = match.team1_id
+            elif match.actual_team2_score > match.actual_team1_score:
+                actual_winner_id = match.team2_id
+            elif match.penalty_winner_id:
+                actual_winner_id = match.penalty_winner_id
+
+        # Determine winner position for display (1 or 2)
+        winner_position = None
+        if match.is_finished:
+            if match.actual_team1_score > match.actual_team2_score:
+                # Actual winner is team 1 slot in the match record
+                if team1 and match.team1_id == team1.id: winner_position = 1
+                elif team2 and match.team1_id == team2.id: winner_position = 2
+            elif match.actual_team2_score > match.actual_team1_score:
+                # Actual winner is team 2 slot in the match record
+                if team1 and match.team2_id == team1.id: winner_position = 1
+                elif team2 and match.team2_id == team2.id: winner_position = 2
+            elif match.penalty_winner_id:
+                if team1 and match.penalty_winner_id == team1.id: winner_position = 1
+                elif team2 and match.penalty_winner_id == team2.id: winner_position = 2
+
+        if winner_position is None and prediction:
+            if prediction.predicted_team1_score > prediction.predicted_team2_score:
+                winner_position = 1
+            elif prediction.predicted_team2_score > prediction.predicted_team1_score:
+                winner_position = 2
+            elif prediction.penalty_shootout_winner_id:
+                if team1 and prediction.penalty_shootout_winner_id == team1.id: winner_position = 1
+                elif team2 and prediction.penalty_shootout_winner_id == team2.id: winner_position = 2
+
         matches.append({
             "match": match,
             "team1": team1,
@@ -361,7 +395,10 @@ async def knockout_bracket_print(
             "team1_flag_url": flag_url(team1.code, 40) if team1 else None,
             "team2_flag_url": flag_url(team2.code, 40) if team2 else None,
             "prediction": prediction,
-            "scoring": scoring_result
+            "scoring": scoring_result,
+            "winner_position": winner_position,
+            "team1_is_actual_winner": (team1 and actual_winner_id and team1.id == actual_winner_id),
+            "team2_is_actual_winner": (team2 and actual_winner_id and team2.id == actual_winner_id),
         })
 
     # Get the champion (actual if finished, otherwise predicted)

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' https://flagcdn.com data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
     <title>World Cup Results - {{ user.username }}</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/knockout_print.css">
@@ -15,39 +16,38 @@
 </head>
 <body class="print-view">
     <div class="print-container">
-        <!-- Header Section -->
-        <div class="print-header">
-            <div class="print-title">
-                <h1>FIFA World Cup Results</h1>
-                <p class="print-username">{{ user.username }}</p>
-            </div>
-
-            {% if champion %}
-            <div class="print-champion">
-                <div class="champion-content">
-                    <span class="trophy-icon">🏆</span>
-                    {% if champion_flag_url %}
-                    <img class="print-champion-flag" src="{{ champion_flag_url }}" alt="{{ champion.name }}" loading="eager" crossorigin="anonymous">
-                    {% endif %}
-                    <span class="champion-text">
-                        <strong>{{ champion.name }}</strong>
-                        <small>{{ 'Champion' if is_actual_champion else 'Predicted Winner' }}</small>
-                    </span>
-                </div>
-            </div>
-            {% endif %}
-
-            <div class="print-score">
-                <span class="score-label">Total Score</span>
-                <span class="score-number">{{ total_score }}</span>
-            </div>
-        </div>
-
         <!-- Page 1: Group Stage Standings -->
         <div class="print-page-1">
+            <!-- Header Section -->
+            <div class="print-header">
+                <div class="print-title">
+                    <h1>FIFA World Cup Results</h1>
+                    <p class="print-username">{{ user.username }}</p>
+                </div>
+
+                {% if champion %}
+                <div class="print-champion">
+                    <div class="champion-content">
+                        <span class="trophy-icon">🏆</span>
+                        {% if champion_flag_url %}
+                        <img class="print-champion-flag" src="{{ champion_flag_url }}" alt="{{ champion.name }}" loading="eager" crossorigin="anonymous" referrerpolicy="no-referrer">
+                        {% endif %}
+                        <span class="champion-text">
+                            <strong>{{ champion.name }}</strong>
+                            <small>{{ 'Champion' if is_actual_champion else 'Predicted Winner' }}</small>
+                        </span>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="print-score">
+                    <span class="score-label">Total Score</span>
+                    <span class="score-number">{{ total_score }}</span>
+                </div>
+            </div>
+
             <div class="page-1-header">
                 <h2>Group Stage Standings</h2>
-                <p class="page-1-subtitle">{{ user.username }}'s Predictions</p>
             </div>
 
             {% if standings %}
@@ -77,7 +77,7 @@
                                     <td class="pos-cell">{{ loop.index }}</td>
                                     <td class="team-cell-print">
                                         {% if team_standing.team_flag_url %}
-                                        <img src="{{ team_standing.team_flag_url }}" alt="{{ team_standing.team.code }}" class="team-flag-print" loading="eager" crossorigin="anonymous">
+                                        <img src="{{ team_standing.team_flag_url }}" alt="{{ team_standing.team.code }}" class="team-flag-print" referrerpolicy="no-referrer">
                                         {% endif %}
                                         <span class="team-code-print">{{ team_standing.team.code }}</span>
                                     </td>
@@ -131,9 +131,9 @@
                 <h4>Round of 16</h4>
                 {% for item in round_of_16 %}
                 <div class="print-match">
-                    <div class="print-team {% if (item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.is_finished and item.match.actual_team1_score == item.match.actual_team2_score and item.team1 and item.match.penalty_winner_id == item.team1.id) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score and item.team1 and item.prediction.penalty_shootout_winner_id == item.team1.id) %}winner{% endif %}">
+                    <div class="print-team {% if item.winner_position == 1 %}winner{% endif %}">
                         {% if item.team1_flag_url %}
-                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ item.team1.code if item.team1 else 'TBD' }}</span>
                         <span class="score">
@@ -149,9 +149,9 @@
                             {% endif %}
                         </span>
                     </div>
-                    <div class="print-team {% if (item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.is_finished and item.match.actual_team1_score == item.match.actual_team2_score and item.team2 and item.match.penalty_winner_id == item.team2.id) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team2_score == item.prediction.predicted_team1_score and item.team2 and item.prediction.penalty_shootout_winner_id == item.team2.id) %}winner{% endif %}">
+                    <div class="print-team {% if item.winner_position == 2 %}winner{% endif %}">
                         {% if item.team2_flag_url %}
-                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ item.team2.code if item.team2 else 'TBD' }}</span>
                         <span class="score">
@@ -176,9 +176,9 @@
                 <h4>Quarter Finals</h4>
                 {% for item in quarter_finals %}
                 <div class="print-match">
-                    <div class="print-team {% if (item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.is_finished and item.match.actual_team1_score == item.match.actual_team2_score and item.team1 and item.match.penalty_winner_id == item.team1.id) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score and item.team1 and item.prediction.penalty_shootout_winner_id == item.team1.id) %}winner{% endif %}">
+                    <div class="print-team {% if item.winner_position == 1 %}winner{% endif %}">
                         {% if item.team1_flag_url %}
-                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ item.team1.code if item.team1 else 'TBD' }}</span>
                         <span class="score">
@@ -194,9 +194,9 @@
                             {% endif %}
                         </span>
                     </div>
-                    <div class="print-team {% if (item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.is_finished and item.match.actual_team1_score == item.match.actual_team2_score and item.team2 and item.match.penalty_winner_id == item.team2.id) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team2_score == item.prediction.predicted_team1_score and item.team2 and item.prediction.penalty_shootout_winner_id == item.team2.id) %}winner{% endif %}">
+                    <div class="print-team {% if item.winner_position == 2 %}winner{% endif %}">
                         {% if item.team2_flag_url %}
-                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ item.team2.code if item.team2 else 'TBD' }}</span>
                         <span class="score">
@@ -221,9 +221,9 @@
                 <h4>Semi Finals</h4>
                 {% for item in semi_finals %}
                 <div class="print-match">
-                    <div class="print-team {% if (item.match.is_finished and item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.is_finished and item.match.actual_team1_score == item.match.actual_team2_score and item.team1 and item.match.penalty_winner_id == item.team1.id) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team1_score > item.prediction.predicted_team2_score) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score and item.team1 and item.prediction.penalty_shootout_winner_id == item.team1.id) %}winner{% endif %}">
+                    <div class="print-team {% if item.winner_position == 1 %}winner{% endif %}">
                         {% if item.team1_flag_url %}
-                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ item.team1.code if item.team1 else 'TBD' }}</span>
                         <span class="score">
@@ -239,9 +239,9 @@
                             {% endif %}
                         </span>
                     </div>
-                    <div class="print-team {% if (item.match.is_finished and item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.is_finished and item.match.actual_team1_score == item.match.actual_team2_score and item.team2 and item.match.penalty_winner_id == item.team2.id) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team2_score > item.prediction.predicted_team1_score) or (not item.match.is_finished and item.prediction and item.prediction.predicted_team2_score == item.prediction.predicted_team1_score and item.team2 and item.prediction.penalty_shootout_winner_id == item.team2.id) %}winner{% endif %}">
+                    <div class="print-team {% if item.winner_position == 2 %}winner{% endif %}">
                         {% if item.team2_flag_url %}
-                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ item.team2.code if item.team2 else 'TBD' }}</span>
                         <span class="score">
@@ -266,9 +266,9 @@
                 <h4>Final</h4>
                 {% if knockout.final %}
                 <div class="print-match final">
-                    <div class="print-team {% if (knockout.final.match.is_finished and knockout.final.match.actual_team1_score > knockout.final.match.actual_team2_score) or (knockout.final.match.is_finished and knockout.final.match.actual_team1_score == knockout.final.match.actual_team2_score and knockout.final.team1 and knockout.final.match.penalty_winner_id == knockout.final.team1.id) or (not knockout.final.match.is_finished and knockout.final.prediction and knockout.final.prediction.predicted_team1_score > knockout.final.prediction.predicted_team2_score) or (not knockout.final.match.is_finished and knockout.final.prediction and knockout.final.prediction.predicted_team1_score == knockout.final.prediction.predicted_team2_score and knockout.final.team1 and knockout.final.prediction.penalty_shootout_winner_id == knockout.final.team1.id) %}winner{% endif %}">
+                    <div class="print-team {% if knockout.final.winner_position == 1 %}winner{% endif %}">
                         {% if knockout.final.team1_flag_url %}
-                        <img src="{{ knockout.final.team1_flag_url }}" alt="{{ knockout.final.team1.code if knockout.final.team1 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ knockout.final.team1_flag_url }}" alt="{{ knockout.final.team1.code if knockout.final.team1 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ knockout.final.team1.code if knockout.final.team1 else 'TBD' }}</span>
                         <span class="score">
@@ -284,9 +284,9 @@
                             {% endif %}
                         </span>
                     </div>
-                    <div class="print-team {% if (knockout.final.match.is_finished and knockout.final.match.actual_team2_score > knockout.final.match.actual_team1_score) or (knockout.final.match.is_finished and knockout.final.match.actual_team1_score == knockout.final.match.actual_team2_score and knockout.final.team2 and knockout.final.match.penalty_winner_id == knockout.final.team2.id) or (not knockout.final.match.is_finished and knockout.final.prediction and knockout.final.prediction.predicted_team2_score > knockout.final.prediction.predicted_team1_score) or (not knockout.final.match.is_finished and knockout.final.prediction and knockout.final.prediction.predicted_team2_score == knockout.final.prediction.predicted_team1_score and knockout.final.team2 and knockout.final.prediction.penalty_shootout_winner_id == knockout.final.team2.id) %}winner{% endif %}">
+                    <div class="print-team {% if knockout.final.winner_position == 2 %}winner{% endif %}">
                         {% if knockout.final.team2_flag_url %}
-                        <img src="{{ knockout.final.team2_flag_url }}" alt="{{ knockout.final.team2.code if knockout.final.team2 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ knockout.final.team2_flag_url }}" alt="{{ knockout.final.team2.code if knockout.final.team2 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ knockout.final.team2.code if knockout.final.team2 else 'TBD' }}</span>
                         <span class="score">
@@ -308,9 +308,9 @@
                 <h4>3rd Place</h4>
                 {% if knockout.third_place %}
                 <div class="print-match third">
-                    <div class="print-team {% if (knockout.third_place.match.is_finished and knockout.third_place.match.actual_team1_score > knockout.third_place.match.actual_team2_score) or (knockout.third_place.match.is_finished and knockout.third_place.match.actual_team1_score == knockout.third_place.match.actual_team2_score and knockout.third_place.team1 and knockout.third_place.match.penalty_winner_id == knockout.third_place.team1.id) or (not knockout.third_place.match.is_finished and knockout.third_place.prediction and knockout.third_place.prediction.predicted_team1_score > knockout.third_place.prediction.predicted_team2_score) or (not knockout.third_place.match.is_finished and knockout.third_place.prediction and knockout.third_place.prediction.predicted_team1_score == knockout.third_place.prediction.predicted_team2_score and knockout.third_place.team1 and knockout.third_place.prediction.penalty_shootout_winner_id == knockout.third_place.team1.id) %}winner{% endif %}">
+                    <div class="print-team {% if knockout.third_place.winner_position == 1 %}winner{% endif %}">
                         {% if knockout.third_place.team1_flag_url %}
-                        <img src="{{ knockout.third_place.team1_flag_url }}" alt="{{ knockout.third_place.team1.code if knockout.third_place.team1 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ knockout.third_place.team1_flag_url }}" alt="{{ knockout.third_place.team1.code if knockout.third_place.team1 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ knockout.third_place.team1.code if knockout.third_place.team1 else 'TBD' }}</span>
                         <span class="score">
@@ -326,9 +326,9 @@
                             {% endif %}
                         </span>
                     </div>
-                    <div class="print-team {% if (knockout.third_place.match.is_finished and knockout.third_place.match.actual_team2_score > knockout.third_place.match.actual_team1_score) or (knockout.third_place.match.is_finished and knockout.third_place.match.actual_team1_score == knockout.third_place.match.actual_team2_score and knockout.third_place.team2 and knockout.third_place.match.penalty_winner_id == knockout.third_place.team2.id) or (not knockout.third_place.match.is_finished and knockout.third_place.prediction and knockout.third_place.prediction.predicted_team2_score > knockout.third_place.prediction.predicted_team1_score) or (not knockout.third_place.match.is_finished and knockout.third_place.prediction and knockout.third_place.prediction.predicted_team2_score == knockout.third_place.prediction.predicted_team1_score and knockout.third_place.team2 and knockout.third_place.prediction.penalty_shootout_winner_id == knockout.third_place.team2.id) %}winner{% endif %}">
+                    <div class="print-team {% if knockout.third_place.winner_position == 2 %}winner{% endif %}">
                         {% if knockout.third_place.team2_flag_url %}
-                        <img src="{{ knockout.third_place.team2_flag_url }}" alt="{{ knockout.third_place.team2.code if knockout.third_place.team2 else 'TBD' }}" loading="eager" crossorigin="anonymous">
+                        <img src="{{ knockout.third_place.team2_flag_url }}" alt="{{ knockout.third_place.team2.code if knockout.third_place.team2 else 'TBD' }}" referrerpolicy="no-referrer">
                         {% endif %}
                         <span class="team-code">{{ knockout.third_place.team2.code if knockout.third_place.team2 else 'TBD' }}</span>
                         <span class="score">
@@ -357,8 +357,44 @@
     </div>
 
     <script>
-        // Auto-trigger print dialog on load (optional)
-        // window.onload = function() { window.print(); };
+        // Ensure all images are loaded before printing
+        window.addEventListener('load', function() {
+            const images = document.querySelectorAll('img');
+            let loadedCount = 0;
+            const totalImages = images.length;
+
+            if (totalImages === 0) {
+                console.log('No images to load');
+                return;
+            }
+
+            images.forEach(img => {
+                if (img.complete) {
+                    loadedCount++;
+                } else {
+                    img.addEventListener('load', function() {
+                        loadedCount++;
+                        console.log(`Loaded ${loadedCount}/${totalImages} images`);
+                    });
+                    img.addEventListener('error', function() {
+                        loadedCount++;
+                        console.error(`Failed to load image: ${img.src}`);
+                        this.style.display = 'none';
+                    });
+                }
+            });
+
+            console.log(`Total images: ${totalImages}, Initially loaded: ${loadedCount}`);
+        });
+
+        // Debug: Log flag URLs
+        document.addEventListener('DOMContentLoaded', function() {
+            const flagImages = document.querySelectorAll('img[src*="flagcdn"]');
+            console.log(`Found ${flagImages.length} flag images`);
+            flagImages.forEach((img, index) => {
+                console.log(`Flag ${index + 1}: ${img.src}`);
+            });
+        });
     </script>
 </body>
 </html>
