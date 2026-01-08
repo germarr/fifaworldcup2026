@@ -316,12 +316,6 @@ def simulate_full_tournament(user_id: int = None, db = None):
 
         # Update user scores based on full tournament results
         update_user_scores(session)
-        
-        # Create predictions for the user with simulated scores
-        if user_id:
-            print(f"--- Creating predictions for user {user_id} ---")
-            create_user_predictions_from_simulation(user_id, session)
-            print("User predictions created.")
     
     finally:
         if should_close:
@@ -329,28 +323,42 @@ def simulate_full_tournament(user_id: int = None, db = None):
 
 
 def create_user_predictions_from_simulation(user_id: int, session: Session):
-    """Create predictions for a user with all the simulated match results."""
+    """
+    Create random predictions for a user to auto-populate their bracket.
+    
+    This is called when user clicks "Pick the entire Tournament" to instantly
+    fill in all match predictions with random values. This allows:
+    1. Users to have a complete bracket immediately
+    2. Predictions to potentially differ from actual results (for scoring)
+    3. Users can still edit predictions manually before committing
+    """
     from app.models import Prediction
     
-    # Get all matches that have been simulated
-    matches = session.exec(select(Match).where(Match.is_finished == True)).all()
+    # Get all matches
+    matches = session.exec(select(Match)).all()
     
-    # Delete any existing predictions for this user
+    # Delete any existing predictions for this user (clean slate)
     existing = session.exec(select(Prediction).where(Prediction.user_id == user_id)).all()
     for pred in existing:
         session.delete(pred)
     session.commit()
     
-    # Create new predictions from simulated results
+    # Create new RANDOM predictions for each match
+    # These are independent of actual_* scores (which may not exist yet)
     for match in matches:
+        # Generate random scores (0-3 for realistic match results)
+        score1 = random.randint(0, 3)
+        score2 = random.randint(0, 3)
+        
         prediction = Prediction(
             user_id=user_id,
             match_id=match.id,
-            predicted_team1_score=match.actual_team1_score,
-            predicted_team2_score=match.actual_team2_score,
-            penalty_shootout_winner_id=match.penalty_winner_id if match.actual_team1_score == match.actual_team2_score else None
+            predicted_team1_score=score1,
+            predicted_team2_score=score2,
+            # Handle penalty shootout for tied knockout matches
+            penalty_shootout_winner_id=None  # User would need to set this manually if tied
         )
         session.add(prediction)
     
     session.commit()
-    print(f"Created {len(matches)} predictions for user {user_id}")
+    print(f"Created {len(matches)} random predictions for user {user_id}")

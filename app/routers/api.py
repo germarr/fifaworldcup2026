@@ -294,10 +294,18 @@ async def simulate_tournament(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_session)
 ):
-    """Simulate the full tournament and persist official results, then create predictions for the user."""
+    """
+    Simulate the full tournament with actual results and populate user predictions.
+    
+    This:
+    1. Generates actual match results (stored in matches.actual_*)
+    2. Creates random predictions for the user (stored in predictions)
+    3. Predictions can differ from actual results, allowing for scoring
+    """
     try:
-        from simulations.simulate_full_tournament import simulate_full_tournament
-        simulate_full_tournament(user_id=current_user.id, db=db)
+        from simulations.simulate_full_tournament import simulate_full_tournament, create_user_predictions_from_simulation
+        simulate_full_tournament(db=db)  # Don't pass user_id - just set actual results
+        create_user_predictions_from_simulation(current_user.id, db)  # Create random predictions for user
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
