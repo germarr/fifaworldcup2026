@@ -211,10 +211,24 @@ def resolve_knockout_match(session, match, placeholder_map):
                 
     return changed
 
-def simulate_full_tournament():
-    with Session(engine) as session:
+def simulate_full_tournament(user_id: int = None, db = None):
+    """
+    Simulate full tournament and optionally create predictions for a user.
+    
+    Args:
+        user_id: If provided, create predictions for this user with simulated scores
+        db: Database session (required if user_id is provided)
+    """
+    # If no db provided, use default engine with context manager
+    if db is None:
+        session = Session(engine)
+        should_close = True
+    else:
+        session = db
+        should_close = False
+    
+    try:
         print("--- RESETTING TOURNAMENT ---")
-        # Reset all matches
         all_matches = session.exec(select(Match)).all()
         for m in all_matches:
             m.actual_team1_score = None
@@ -302,6 +316,41 @@ def simulate_full_tournament():
 
         # Update user scores based on full tournament results
         update_user_scores(session)
+        
+        # Create predictions for the user with simulated scores
+        if user_id:
+            print(f"--- Creating predictions for user {user_id} ---")
+            create_user_predictions_from_simulation(user_id, session)
+            print("User predictions created.")
+    
+    finally:
+        if should_close:
+            session.close()
 
-if __name__ == "__main__":
-    simulate_full_tournament()
+
+def create_user_predictions_from_simulation(user_id: int, session: Session):
+    """Create predictions for a user with all the simulated match results."""
+    from app.models import Prediction
+    
+    # Get all matches that have been simulated
+    matches = session.exec(select(Match).where(Match.is_finished == True)).all()
+    
+    # Delete any existing predictions for this user
+    existing = session.exec(select(Prediction).where(Prediction.user_id == user_id)).all()
+    for pred in existing:
+        session.delete(pred)
+    session.commit()
+    
+    # Create new predictions from simulated results
+    for match in matches:
+        prediction = Prediction(
+            user_id=user_id,
+            match_id=match.id,
+            predicted_team1_score=match.actual_team1_score,
+            predicted_team2_score=match.actual_team2_score,
+            penalty_shootout_winner_id=match.penalty_winner_id if match.actual_team1_score == match.actual_team2_score else None
+        )
+        session.add(prediction)
+    
+    session.commit()
+    print(f"Created {len(matches)} predictions for user {user_id}")

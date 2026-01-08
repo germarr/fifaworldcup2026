@@ -291,12 +291,13 @@ async def get_standings(
 
 @router.post("/simulate-tournament")
 async def simulate_tournament(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_session)
 ):
-    """Simulate the full tournament and persist official results."""
+    """Simulate the full tournament and persist official results, then create predictions for the user."""
     try:
         from simulations.simulate_full_tournament import simulate_full_tournament
-        simulate_full_tournament()
+        simulate_full_tournament(user_id=current_user.id, db=db)
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
