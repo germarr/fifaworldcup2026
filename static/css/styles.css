@@ -1864,7 +1864,7 @@ main.container.main-wide {
 }
 
 .bracket-team.winner {
-    background-color: rgba(52, 168, 83, 0.15);
+    background-color: rgba(52, 168, 83, 0.2);
     border-color: var(--success-color);
     font-weight: 600;
 }
@@ -2165,8 +2165,8 @@ main.container.main-wide {
 }
 
 .third-place-match .bracket-team.winner {
-    background-color: rgba(205, 127, 50, 0.15);
-    border-left: 4px solid #cd7f32;
+    background-color: rgba(52, 168, 83, 0.2);
+    border-left: 4px solid var(--success-color);
 }
 
 /* Bracket View - Predictions vs Reality Redesign */

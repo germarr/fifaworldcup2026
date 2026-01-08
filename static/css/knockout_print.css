@@ -1,0 +1,541 @@
+/* Print-Optimized Knockout Bracket Styles */
+
+.print-view {
+    background: white;
+    color: #000;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+.print-container {
+    max-width: 100%;
+    padding: 0.5cm;
+}
+
+/* Header Section */
+.print-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5cm;
+    padding-bottom: 0.3cm;
+    border-bottom: 2px solid #2c5282;
+}
+
+.print-title h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c5282;
+}
+
+.print-username {
+    margin: 0.2rem 0 0 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.print-champion {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+}
+
+.champion-content {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.trophy-icon {
+    font-size: 1.5rem;
+}
+
+.print-champion-flag {
+    height: 30px;
+    width: 45px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.champion-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.champion-text strong {
+    font-size: 1rem;
+    color: #2c5282;
+}
+
+.champion-text small {
+    font-size: 0.7rem;
+    color: #555;
+}
+
+.print-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #2c5282;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.score-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.score-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+}
+
+/* Group Qualifiers Section */
+.print-qualifiers {
+    margin-bottom: 0.5cm;
+}
+
+.print-qualifiers h3 {
+    margin: 0 0 0.3cm 0;
+    font-size: 1rem;
+    color: #2c5282;
+    text-align: center;
+}
+
+.qualifiers-grid {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: 0.3cm;
+}
+
+.qualifier-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #f7fafc;
+    padding: 0.3cm;
+    border-radius: 6px;
+    border: 1px solid #e2e8f0;
+}
+
+.group-label {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #2c5282;
+    margin-bottom: 0.2cm;
+}
+
+.qualifier-team {
+    display: flex;
+    align-items: center;
+    gap: 0.2cm;
+    margin: 0.1cm 0;
+}
+
+.qualifier-team img {
+    height: 16px;
+    width: 24px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+}
+
+.qualifier-team span {
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Knockout Bracket */
+.print-bracket {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.4cm;
+    align-items: flex-start;
+}
+
+.bracket-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.bracket-column h4 {
+    text-align: center;
+    margin: 0 0 0.3cm 0;
+    font-size: 0.85rem;
+    color: #2c5282;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding-bottom: 0.2cm;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.print-match {
+    background: white;
+    border: 1px solid #cbd5e0;
+    border-radius: 6px;
+    margin-bottom: 0.3cm;
+    overflow: hidden;
+}
+
+.print-team {
+    display: flex;
+    align-items: center;
+    padding: 0.15cm 0.2cm;
+    gap: 0.2cm;
+    border-bottom: 1px solid #e2e8f0;
+    transition: background-color 0.2s;
+}
+
+.print-team:last-child {
+    border-bottom: none;
+}
+
+.print-team.winner {
+    background: #c6f6d5;
+    font-weight: bold;
+}
+
+.print-team img {
+    height: 18px;
+    width: 27px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.team-code {
+    flex: 1;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.score {
+    font-size: 0.85rem;
+    font-weight: bold;
+    min-width: 25px;
+    text-align: right;
+    color: #2c5282;
+}
+
+.score small {
+    font-size: 0.65rem;
+    color: #718096;
+    margin-left: 2px;
+}
+
+/* Special styling for Finals */
+.print-match.final {
+    border: 2px solid #ffd700;
+    background: #fffdf0;
+}
+
+.print-match.third {
+    border: 2px solid #cd7f32;
+    background: #fff9f0;
+}
+
+/* Round-specific spacing */
+.r16 .print-match {
+    margin-bottom: 0.25cm;
+}
+
+.quarters .print-match {
+    margin-bottom: 0.4cm;
+}
+
+.semis .print-match {
+    margin-bottom: 0.6cm;
+}
+
+.finals .print-match {
+    margin-bottom: 0.4cm;
+}
+
+/* Print Actions (hidden when printing) */
+.print-actions {
+    text-align: center;
+    margin-top: 1cm;
+    padding-top: 0.5cm;
+    border-top: 2px solid #e2e8f0;
+}
+
+.btn-print, .btn-back {
+    display: inline-block;
+    padding: 0.5rem 1.5rem;
+    margin: 0 0.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-size: 1rem;
+}
+
+.btn-print {
+    background: #2c5282;
+    color: white;
+}
+
+.btn-print:hover {
+    background: #2a4365;
+}
+
+.btn-back {
+    background: #e2e8f0;
+    color: #2c5282;
+}
+
+.btn-back:hover {
+    background: #cbd5e0;
+}
+
+/* Print-specific styles */
+@media print {
+    @page {
+        size: landscape;
+        margin: 0.5cm;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+    }
+
+    .print-container {
+        padding: 0;
+    }
+
+    .no-print, .print-actions {
+        display: none !important;
+    }
+
+    .print-match {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .bracket-column {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    .group-standings-print {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    /* Ensure colors print */
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
+    }
+
+    /* Ensure images print */
+    img {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Slightly reduce sizes for print */
+    .print-header {
+        margin-bottom: 0.4cm;
+    }
+
+    .print-bracket {
+        gap: 0.3cm;
+    }
+
+    /* Ensure knockout bracket starts on page 2 */
+    .print-bracket {
+        page-break-before: always;
+    }
+
+    .standings-grid-print {
+        gap: 0.4cm;
+    }
+}
+
+/* Page Break */
+.page-break {
+    page-break-after: always;
+    break-after: page;
+    height: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/* Page 1 Styles - Group Standings */
+.print-page-1 {
+    padding-top: 0.5cm;
+}
+
+.page-1-header {
+    text-align: center;
+    margin-bottom: 0.5cm;
+    padding-bottom: 0.3cm;
+    border-bottom: 3px solid #2c5282;
+}
+
+.page-1-header h2 {
+    margin: 0 0 0.2cm 0;
+    font-size: 1.5rem;
+    color: #2c5282;
+}
+
+.page-1-subtitle {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+/* Standings Grid for Page 1 */
+.standings-grid-print {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.5cm;
+}
+
+.group-standings-print {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.group-title-print {
+    background: #2c5282;
+    color: white;
+    margin: 0;
+    padding: 0.3cm;
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.standings-table-print {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+}
+
+.standings-table-print thead {
+    background: #f7fafc;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.standings-table-print th {
+    padding: 0.2cm 0.15cm;
+    text-align: center;
+    font-weight: 600;
+    color: #2c5282;
+    font-size: 0.7rem;
+}
+
+.standings-table-print tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.standings-table-print tbody tr:last-child {
+    border-bottom: none;
+}
+
+.standings-table-print tbody tr.qualified-row {
+    background: #e6ffed;
+}
+
+.standings-table-print td {
+    padding: 0.2cm 0.15cm;
+    text-align: center;
+}
+
+.pos-cell {
+    font-weight: bold;
+    color: #2c5282;
+}
+
+.team-cell-print {
+    display: flex;
+    align-items: center;
+    gap: 0.2cm;
+    text-align: left !important;
+}
+
+.team-flag-print {
+    height: 14px;
+    width: 21px;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.team-code-print {
+    font-weight: 500;
+}
+
+.stat-win {
+    color: #22863a;
+}
+
+.stat-draw {
+    color: #6f42c1;
+}
+
+.stat-loss {
+    color: #d73a49;
+}
+
+.positive-gd {
+    color: #22863a;
+    font-weight: 500;
+}
+
+.negative-gd {
+    color: #d73a49;
+    font-weight: 500;
+}
+
+.points-cell {
+    background: #f7fafc;
+    font-size: 0.85rem;
+}
+
+/* Fix flag loading */
+img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+}
+
+.print-champion-flag,
+.bracket-team img,
+.team-flag-print {
+    display: inline-block !important;
+    visibility: visible !important;
+}
+
+/* Responsive adjustments for screen preview */
+@media screen and (max-width: 1200px) {
+    .print-bracket {
+        overflow-x: auto;
+    }
+
+    .bracket-column {
+        min-width: 150px;
+    }
+
+    .standings-grid-print {
+        grid-template-columns: 1fr;
+    }
+}

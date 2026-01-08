@@ -13,6 +13,7 @@
         {% if user.player_team %}
         <button class="btn btn-secondary lb-tab-btn" onclick="showTab('myteam')">My Team: {{ user.player_team.name }}</button>
         {% endif %}
+        <a href="/leaderboard/compare" class="btn btn-secondary">Compare Players</a>
     </div>
 </div>
 

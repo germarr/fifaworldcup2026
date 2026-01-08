@@ -1,0 +1,403 @@
+{% extends "base.html" %}
+
+{% block title %}Compare Predictions - FIFA World Cup{% endblock %}
+{% block main_class %}main-wide{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/leaderboard_compare.css">
+{% endblock %}
+
+{% block content %}
+<div class="compare-header">
+    <div class="compare-title">
+        <h2>Compare Predictions</h2>
+        <p>Match your bracket against another player.</p>
+    </div>
+    <div class="compare-scoreboard">
+        <div class="compare-score">
+            <span class="score-label">You</span>
+            <span class="score-value">{{ total_points_current }}</span>
+        </div>
+        <div class="compare-score">
+            <span class="score-label">{{ other_user.username if other_user else "Other Player" }}</span>
+            <span class="score-value">{% if total_points_other is not none %}{{ total_points_other }}{% else %}-{% endif %}</span>
+        </div>
+        {% if winner_label %}
+        <div class="compare-winner">
+            <span class="winner-label">Winner</span>
+            <span class="winner-name">{{ winner_label }}</span>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if other_user %}
+<div class="compare-champions">
+    <div class="champion-card">
+        <span class="champion-label">Your World Cup Winner</span>
+        <div class="champion-team">
+            {% if current_champion_flag %}
+            <img src="{{ current_champion_flag }}" alt="{{ current_champion.name }} flag">
+            {% endif %}
+            <span>{{ current_champion.name if current_champion else "TBD" }}</span>
+        </div>
+    </div>
+    <div class="champion-card">
+        <span class="champion-label">{{ other_user.username }}'s World Cup Winner</span>
+        <div class="champion-team">
+            {% if other_champion_flag %}
+            <img src="{{ other_champion_flag }}" alt="{{ other_champion.name }} flag">
+            {% endif %}
+            <span>{{ other_champion.name if other_champion else "TBD" }}</span>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="compare-filters">
+    <form method="GET" action="/leaderboard/compare" class="compare-filter-form" id="compare-form">
+        <div class="filter-group">
+            <label for="team-select">Team</label>
+            <select id="team-select" name="team_id" class="form-input">
+                <option value="">Select a team</option>
+                {% for team in teams %}
+                <option value="{{ team.id }}" {% if selected_team_id == team.id %}selected{% endif %}>
+                    {{ team.name }}{% if team.id in my_team_ids %} (My team){% endif %}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="filter-group">
+            <label for="player-select">Player</label>
+            <div class="player-select-row">
+                <select id="player-select" name="player_id" class="form-input" {% if not team_members %}disabled{% endif %}>
+                    <option value="">{% if team_members %}Select a player{% else %}Select a team first{% endif %}</option>
+                    {% for member in team_members %}
+                    <option value="{{ member.id }}" {% if selected_player_id == member.id %}selected{% endif %}>
+                        {{ member.username }} ({{ member.total_points }} pts)
+                    </option>
+                    {% endfor %}
+                </select>
+                <span class="player-spinner" aria-hidden="true"></span>
+            </div>
+        </div>
+        <div class="filter-group compare-action">
+            <button type="submit" class="btn btn-secondary">Compare</button>
+        </div>
+    </form>
+    <form method="GET" action="/leaderboard/compare" class="compare-search-form" id="search-form">
+        <input type="hidden" name="team_id" id="search-team-id" value="{{ selected_team_id if selected_team_id }}">
+        <input type="hidden" name="player_id" id="search-player-id" value="{{ selected_player_id if selected_player_id }}">
+        <div class="filter-group">
+            <label for="player-search">Global Search</label>
+            <div class="search-row">
+                <input id="player-search" type="text" name="q" value="{{ search_query }}" class="form-input" placeholder="Search by username">
+                <button type="submit" class="btn btn-secondary btn-small" id="search-button">
+                    <span class="search-button-text">Search</span>
+                    <span class="search-spinner" aria-hidden="true"></span>
+                </button>
+            </div>
+        </div>
+    </form>
+    {% if search_results %}
+    <div class="search-results">
+        <h4>Search Results</h4>
+        <div class="search-list">
+            {% for result in search_results %}
+            <a class="search-result" href="/leaderboard/compare?player_id={{ result.id }}">
+                <span class="result-name">{{ result.username }}</span>
+                <span class="result-points">{{ result.total_points }} pts</span>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% if other_user %}
+{% set group_cards = [] %}
+{% set knockout_cards = [] %}
+{% for card in match_cards %}
+    {% if card.match.round.startswith('Group') %}
+        {% set _ = group_cards.append(card) %}
+    {% else %}
+        {% set _ = knockout_cards.append(card) %}
+    {% endif %}
+{% endfor %}
+
+<div class="compare-cards compare-cards-group">
+    {% for card in group_cards %}
+    {% set round_class = 'knockout-round' %}
+    {% if 'Group A' in card.match.round %}{% set round_class = 'group-a' %}
+    {% elif 'Group B' in card.match.round %}{% set round_class = 'group-b' %}
+    {% elif 'Group C' in card.match.round %}{% set round_class = 'group-c' %}
+    {% elif 'Group D' in card.match.round %}{% set round_class = 'group-d' %}
+    {% elif 'Group E' in card.match.round %}{% set round_class = 'group-e' %}
+    {% elif 'Group F' in card.match.round %}{% set round_class = 'group-f' %}
+    {% elif 'Group G' in card.match.round %}{% set round_class = 'group-g' %}
+    {% elif 'Group H' in card.match.round %}{% set round_class = 'group-h' %}
+    {% endif %}
+    <div class="prediction-card {{ round_class }}">
+        <div class="prediction-header">
+            <span class="match-round">{{ card.match.round }}</span>
+            <span class="match-meta">Match #{{ card.match.match_number }}</span>
+        </div>
+        <div class="prediction-body">
+            <div class="match-teams-display">
+                <div class="team-display team-left">
+                    {% if card.current_team1_flag_url %}
+                    <img class="team-flag-circle" src="{{ card.current_team1_flag_url }}" alt="{{ card.current_team1.name }} flag">
+                    {% endif %}
+                    <span class="team-flag-mini">{{ card.current_team1.code if card.current_team1 else card.match.team1_placeholder or 'TBD' }}</span>
+                </div>
+                <div class="vs-display">vs</div>
+                <div class="team-display team-right">
+                    <span class="team-flag-mini">{{ card.current_team2.code if card.current_team2 else card.match.team2_placeholder or 'TBD' }}</span>
+                    {% if card.current_team2_flag_url %}
+                    <img class="team-flag-circle" src="{{ card.current_team2_flag_url }}" alt="{{ card.current_team2.name }} flag">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="comparison-grid">
+                <div class="comparison-col prediction-col">
+                    <span class="col-label">My Prediction</span>
+                    <div class="score-display">
+                        <span class="score-val">{% if card.current_prediction %}{{ card.current_prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="score-sep">-</span>
+                        <span class="score-val">{% if card.current_prediction %}{{ card.current_prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+                <div class="comparison-col">
+                    <span class="col-label">{{ other_user.username }} Prediction</span>
+                    <div class="score-display">
+                        <span class="score-val">{% if card.other_prediction %}{{ card.other_prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="score-sep">-</span>
+                        <span class="score-val">{% if card.other_prediction %}{{ card.other_prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="prediction-footer-points">
+            {% if card.actual_available %}
+                <div class="points-result">
+                    <span class="points-total">You: +{{ card.current_scoring.points }} pts</span>
+                    {% if card.current_scoring.breakdown %}
+                    <span class="points-details">({{ card.current_scoring.breakdown|join(', ') }})</span>
+                    {% endif %}
+                </div>
+                <div class="points-result">
+                    <span class="points-total">{{ other_user.username }}: +{{ card.other_scoring.points }} pts</span>
+                    {% if card.other_scoring.breakdown %}
+                    <span class="points-details">({{ card.other_scoring.breakdown|join(', ') }})</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="points-pending">Points pending...</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if knockout_cards %}
+<div class="compare-divider">
+    <span>Knockout Phase Results</span>
+</div>
+<div class="compare-cards compare-cards-knockout">
+    {% for card in knockout_cards %}
+    {% set round_class = 'knockout-round' %}
+    {% if card.match.round == 'Final' %}{% set round_class = 'final-round' %}{% endif %}
+    <div class="prediction-card {{ round_class }}">
+        <div class="prediction-header">
+            <span class="match-round">{{ card.match.round }}</span>
+            <span class="match-meta">Match #{{ card.match.match_number }}</span>
+        </div>
+        <div class="prediction-body">
+            <div class="knockout-compare">
+                <div class="knockout-player">
+                    <span class="knockout-label">You</span>
+                    <div class="knockout-teams">
+                        <div class="knockout-team">
+                            {% if card.current_team1_flag_url %}
+                            <img class="team-flag-circle" src="{{ card.current_team1_flag_url }}" alt="{{ card.current_team1.name }} flag">
+                            {% endif %}
+                            <span>{{ card.current_team1.code if card.current_team1 else card.match.team1_placeholder or 'TBD' }}</span>
+                        </div>
+                        <span class="knockout-vs">vs</span>
+                        <div class="knockout-team">
+                            {% if card.current_team2_flag_url %}
+                            <img class="team-flag-circle" src="{{ card.current_team2_flag_url }}" alt="{{ card.current_team2.name }} flag">
+                            {% endif %}
+                            <span>{{ card.current_team2.code if card.current_team2 else card.match.team2_placeholder or 'TBD' }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="knockout-player">
+                    <span class="knockout-label">{{ other_user.username }}</span>
+                    <div class="knockout-teams">
+                        <div class="knockout-team">
+                            {% if card.other_team1_flag_url %}
+                            <img class="team-flag-circle" src="{{ card.other_team1_flag_url }}" alt="{{ card.other_team1.name }} flag">
+                            {% endif %}
+                            <span>{{ card.other_team1.code if card.other_team1 else card.match.team1_placeholder or 'TBD' }}</span>
+                        </div>
+                        <span class="knockout-vs">vs</span>
+                        <div class="knockout-team">
+                            {% if card.other_team2_flag_url %}
+                            <img class="team-flag-circle" src="{{ card.other_team2_flag_url }}" alt="{{ card.other_team2.name }} flag">
+                            {% endif %}
+                            <span>{{ card.other_team2.code if card.other_team2 else card.match.team2_placeholder or 'TBD' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="comparison-grid">
+                <div class="comparison-col prediction-col">
+                    <span class="col-label">My Prediction</span>
+                    <div class="score-display">
+                        <span class="score-val">{% if card.current_prediction %}{{ card.current_prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="score-sep">-</span>
+                        <span class="score-val">{% if card.current_prediction %}{{ card.current_prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    {% if card.current_prediction and card.current_prediction.predicted_team1_score == card.current_prediction.predicted_team2_score %}
+                    <div class="penalty-indicator">⚽ Penalties
+                        {% if card.current_prediction.penalty_shootout_winner_id %}
+                            {% if card.current_team1 and card.current_prediction.penalty_shootout_winner_id == card.current_team1.id %}
+                                ({{ card.current_team1.code }} wins)
+                            {% elif card.current_team2 and card.current_prediction.penalty_shootout_winner_id == card.current_team2.id %}
+                                ({{ card.current_team2.code }} wins)
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="comparison-col">
+                    <span class="col-label">{{ other_user.username }} Prediction</span>
+                    <div class="score-display">
+                        <span class="score-val">{% if card.other_prediction %}{{ card.other_prediction.predicted_team1_score }}{% else %}-{% endif %}</span>
+                        <span class="score-sep">-</span>
+                        <span class="score-val">{% if card.other_prediction %}{{ card.other_prediction.predicted_team2_score }}{% else %}-{% endif %}</span>
+                    </div>
+                    {% if card.other_prediction and card.other_prediction.predicted_team1_score == card.other_prediction.predicted_team2_score %}
+                    <div class="penalty-indicator">⚽ Penalties
+                        {% if card.other_prediction.penalty_shootout_winner_id %}
+                            {% if card.other_team1 and card.other_prediction.penalty_shootout_winner_id == card.other_team1.id %}
+                                ({{ card.other_team1.code }} wins)
+                            {% elif card.other_team2 and card.other_prediction.penalty_shootout_winner_id == card.other_team2.id %}
+                                ({{ card.other_team2.code }} wins)
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="prediction-footer-points">
+            {% if card.actual_available %}
+                <div class="points-result">
+                    <span class="points-total">You: +{{ card.current_scoring.points }} pts</span>
+                    {% if card.current_scoring.breakdown %}
+                    <span class="points-details">({{ card.current_scoring.breakdown|join(', ') }})</span>
+                    {% endif %}
+                </div>
+                <div class="points-result">
+                    <span class="points-total">{{ other_user.username }}: +{{ card.other_scoring.points }} pts</span>
+                    {% if card.other_scoring.breakdown %}
+                    <span class="points-details">({{ card.other_scoring.breakdown|join(', ') }})</span>
+                    {% endif %}
+                </div>
+            {% else %}
+                <div class="points-pending">Points pending...</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% else %}
+<div class="compare-empty">
+    <h3>Select a player to compare</h3>
+    <p>Pick a team and player or search globally to start a comparison.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const searchForm = document.getElementById('search-form');
+const searchButton = document.getElementById('search-button');
+const searchSpinner = searchButton ? searchButton.querySelector('.search-spinner') : null;
+const searchButtonText = searchButton ? searchButton.querySelector('.search-button-text') : null;
+const teamSelect = document.getElementById('team-select');
+const playerSelect = document.getElementById('player-select');
+const playerSpinner = document.querySelector('.player-spinner');
+const searchTeamId = document.getElementById('search-team-id');
+const searchPlayerId = document.getElementById('search-player-id');
+
+const updateSearchHidden = () => {
+    if (searchTeamId && teamSelect) {
+        searchTeamId.value = teamSelect.value;
+    }
+    if (searchPlayerId && playerSelect) {
+        searchPlayerId.value = playerSelect.value;
+    }
+};
+
+if (searchForm && searchButton && searchSpinner && searchButtonText) {
+    searchForm.addEventListener('submit', () => {
+        searchButton.disabled = true;
+        searchSpinner.classList.add('is-visible');
+        searchButtonText.textContent = 'Searching...';
+        updateSearchHidden();
+    });
+}
+
+const renderPlayerOptions = (players) => {
+    if (!playerSelect) return;
+    playerSelect.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = players.length ? 'Select a player' : 'No players found';
+    playerSelect.appendChild(placeholder);
+
+    players.forEach((player) => {
+        const option = document.createElement('option');
+        option.value = player.id;
+        option.textContent = `${player.username} (${player.total_points} pts)`;
+        playerSelect.appendChild(option);
+    });
+
+    playerSelect.disabled = players.length === 0;
+    updateSearchHidden();
+};
+
+const setPlayerLoading = (isLoading) => {
+    if (!playerSelect || !playerSpinner) return;
+    playerSelect.disabled = isLoading;
+    playerSpinner.classList.toggle('is-visible', isLoading);
+};
+
+if (teamSelect && playerSelect) {
+    teamSelect.addEventListener('change', async () => {
+        const teamId = teamSelect.value;
+        if (!teamId) {
+            renderPlayerOptions([]);
+            return;
+        }
+        setPlayerLoading(true);
+        try {
+            const response = await fetch(`/api/teams/${teamId}/members`);
+            const players = response.ok ? await response.json() : [];
+            renderPlayerOptions(players);
+        } catch (error) {
+            renderPlayerOptions([]);
+        } finally {
+            setPlayerLoading(false);
+        }
+    });
+
+    playerSelect.addEventListener('change', updateSearchHidden);
+    updateSearchHidden();
+}
+</script>
+{% endblock %}

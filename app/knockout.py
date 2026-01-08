@@ -91,27 +91,57 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
                     winner_team = team2
                     loser_team = team1
         
-        # 2. If no actual result (or match not finished), use PREDICTION
-        if not winner_team and prediction:
-            if prediction.predicted_team1_score > prediction.predicted_team2_score:
-                winner_team = team1
-                loser_team = team2
-            elif prediction.predicted_team2_score > prediction.predicted_team1_score:
-                winner_team = team2
-                loser_team = team1
-            else:
-                # Tie - check penalty shootout winner
-                if prediction.penalty_shootout_winner_id:
-                    penalty_winner = teams_map.get(prediction.penalty_shootout_winner_id)
-                    if penalty_winner:
-                        winner_team = penalty_winner
-                        loser_team = team2 if winner_team == team1 else team1
-                    else:
-                        winner_team = team1
-                        loser_team = team2
-                else:
+        # 1. Check PREDICTION first (User's Fantasy Path)
+        # The user's bracket should always follow their predictions,
+        # even if the actual match result (reality) differs.
+        if prediction:
+            # Check explicit winner ID first (handles swapped teams)
+            winner_found = False
+            if prediction.predicted_winner_id:
+                if team1 and prediction.predicted_winner_id == team1.id:
                     winner_team = team1
                     loser_team = team2
+                    winner_found = True
+                elif team2 and prediction.predicted_winner_id == team2.id:
+                    winner_team = team2
+                    loser_team = team1
+                    winner_found = True
+            
+            if not winner_found:
+                if prediction.predicted_team1_score > prediction.predicted_team2_score:
+                    winner_team = team1
+                    loser_team = team2
+                elif prediction.predicted_team2_score > prediction.predicted_team1_score:
+                    winner_team = team2
+                    loser_team = team1
+                else:
+                    # Tie - check penalty shootout winner
+                    if prediction.penalty_shootout_winner_id:
+                        # Caution: The stored penalty_shootout_winner_id might be a Team ID.
+                        # We need to map it back to team1 or team2 objects if possible.
+                        # Ideally, it matches one of the resolved teams.
+                        if team1 and prediction.penalty_shootout_winner_id == team1.id:
+                            winner_team = team1
+                            loser_team = team2
+                        elif team2 and prediction.penalty_shootout_winner_id == team2.id:
+                            winner_team = team2
+                            loser_team = team1
+                        else:
+                            # Fallback if penalty winner ID doesn't match resolved teams
+                            # (e.g. if teams were different than expected).
+                            # In this case, we can't reliably pick, but let's default to team1 for now or check ID map.
+                            penalty_winner = teams_map.get(prediction.penalty_shootout_winner_id)
+                            if penalty_winner:
+                                winner_team = penalty_winner
+                                loser_team = team2 if winner_team == team1 else team1
+                            else:
+                                winner_team = team1
+                                loser_team = team2
+
+                    if not winner_team:
+                        # Default fallback for tie without penalty data (shouldn't happen in valid predictions)
+                        winner_team = team1
+                        loser_team = team2
 
         resolution[f"W{match.match_number}"] = winner_team
         resolution[f"L{match.match_number}"] = loser_team

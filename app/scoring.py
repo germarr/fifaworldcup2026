@@ -180,7 +180,50 @@ def get_tournament_champion(user_id: int, db) -> tuple[Team | None, str | None, 
     if not final_match:
         return None, None, False
         
-    # Check if final is finished and has a winner
+    # 1. Check Prediction First (User's Bracket View)
+    pred_statement = select(Prediction).where(
+        Prediction.user_id == user_id,
+        Prediction.match_id == final_match.id
+    )
+    prediction = db.exec(pred_statement).first()
+    
+    if prediction:
+        # Resolve teams for final match
+        team1, team2 = resolve_match_teams(final_match, user_id, db)
+        
+        if team1 and team2:
+            # Determine champion based on prediction
+            champion = None
+            
+            # Prioritize explicit winner ID if available (handles swapped teams)
+            if prediction.predicted_winner_id:
+                if team1.id == prediction.predicted_winner_id:
+                    champion = team1
+                elif team2.id == prediction.predicted_winner_id:
+                    champion = team2
+            
+            # Fallback to scores if no winner ID or mismatch
+            if not champion:
+                if prediction.predicted_team1_score > prediction.predicted_team2_score:
+                    champion = team1
+                elif prediction.predicted_team2_score > prediction.predicted_team1_score:
+                    champion = team2
+                elif prediction.penalty_shootout_winner_id:
+                    # Check if penalty winner matches resolved teams
+                    if team1 and prediction.penalty_shootout_winner_id == team1.id:
+                        champion = team1
+                    elif team2 and prediction.penalty_shootout_winner_id == team2.id:
+                        champion = team2
+                    else:
+                        # Fallback if IDs mismatch
+                        champ_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
+                        champion = db.exec(champ_statement).first()
+            
+            if champion:
+                champion_flag_url = flag_url(champion.code, 80)
+                return champion, champion_flag_url, False
+
+    # 2. Fallback to Actual Champion (if finished and no prediction/resolution failed)
     if final_match.is_finished:
         winner = None
         if final_match.actual_team1_score > final_match.actual_team2_score:
@@ -194,34 +237,4 @@ def get_tournament_champion(user_id: int, db) -> tuple[Team | None, str | None, 
         if winner:
             return winner, flag_url(winner.code, 80), True
     
-    # Get prediction for final match
-    pred_statement = select(Prediction).where(
-        Prediction.user_id == user_id,
-        Prediction.match_id == final_match.id
-    )
-    prediction = db.exec(pred_statement).first()
-    
-    if not prediction:
-        return None, None, False
-    
-    # Resolve teams for final match
-    team1, team2 = resolve_match_teams(final_match, user_id, db)
-    
-    if not team1 or not team2:
-        return None, None, False
-    
-    # Determine champion based on prediction
-    champion = None
-    if prediction.predicted_team1_score > prediction.predicted_team2_score:
-        champion = team1
-    elif prediction.predicted_team2_score > prediction.predicted_team1_score:
-        champion = team2
-    elif prediction.penalty_shootout_winner_id:
-        champ_statement = select(Team).where(Team.id == prediction.penalty_shootout_winner_id)
-        champion = db.exec(champ_statement).first()
-    
-    if not champion:
-        return None, None, False
-    
-    champion_flag_url = flag_url(champion.code, 80)
-    return champion, champion_flag_url, False
+    return None, None, False

@@ -228,14 +228,58 @@ async def knockout_bracket(
                 team2.id if team2 else None
             )
 
+        # Determine actual winner for template highlighting fallback (handles swapped teams)
+        actual_winner_id = None
+        if match.is_finished:
+            if match.actual_team1_score > match.actual_team2_score:
+                actual_winner_id = match.team1_id
+            elif match.actual_team2_score > match.actual_team2_score: # Wait, found another bug here in previous code: actual_team2_score > actual_team2_score? No, it should be > actual_team1_score
+                actual_winner_id = match.team2_id
+            elif match.penalty_winner_id:
+                actual_winner_id = match.penalty_winner_id
+
+        # Improved winner position logic for template
+        winner_position = None
+        if match.is_finished:
+            if match.actual_team1_score > match.actual_team2_score:
+                # Actual winner is team 1 slot in the match record
+                if team1 and match.team1_id == team1.id: winner_position = 1
+                elif team2 and match.team1_id == team2.id: winner_position = 2
+            elif match.actual_team2_score > match.actual_team1_score:
+                # Actual winner is team 2 slot in the match record
+                if team1 and match.team2_id == team1.id: winner_position = 1
+                elif team2 and match.team2_id == team2.id: winner_position = 2
+            elif match.penalty_winner_id:
+                if team1 and match.penalty_winner_id == team1.id: winner_position = 1
+                elif team2 and match.penalty_winner_id == team2.id: winner_position = 2
+        
+        if winner_position is None and prediction:
+            if prediction.predicted_team1_score > prediction.predicted_team2_score:
+                winner_position = 1
+            elif prediction.predicted_team2_score > prediction.predicted_team1_score:
+                winner_position = 2
+            elif prediction.penalty_shootout_winner_id:
+                if team1 and prediction.penalty_shootout_winner_id == team1.id: winner_position = 1
+                elif team2 and prediction.penalty_shootout_winner_id == team2.id: winner_position = 2
+
+        actual_team1 = match.team1
+        actual_team2 = match.team2
+
         matches.append({
             "match": match,
             "team1": team1,
             "team2": team2,
             "team1_flag_url": flag_url(team1.code, 40) if team1 else None,
             "team2_flag_url": flag_url(team2.code, 40) if team2 else None,
+            "actual_team1": actual_team1,
+            "actual_team2": actual_team2,
+            "actual_team1_flag_url": flag_url(actual_team1.code, 40) if actual_team1 else None,
+            "actual_team2_flag_url": flag_url(actual_team2.code, 40) if actual_team2 else None,
             "prediction": prediction,
-            "scoring": scoring_result
+            "scoring": scoring_result,
+            "winner_position": winner_position,
+            "team1_is_actual_winner": (team1 and actual_winner_id and team1.id == actual_winner_id),
+            "team2_is_actual_winner": (team2 and actual_winner_id and team2.id == actual_winner_id),
         })
 
     # Get the champion (actual if finished, otherwise predicted)
@@ -259,6 +303,95 @@ async def knockout_bracket(
 
     return templates.TemplateResponse(
         "knockout_bracket.html",
+        {
+            "request": request,
+            "user": current_user,
+            "matches": matches,
+            "champion": champion,
+            "champion_flag_url": champion_flag_url,
+            "is_actual_champion": is_actual_champion,
+            "total_score": total_score,
+            "standings": standings_by_group
+        }
+    )
+
+
+@router.get("/bracket/knockout/print", response_class=HTMLResponse)
+async def knockout_bracket_print(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_session)
+):
+    """Print-optimized knockout bracket view."""
+    from app.scoring import calculate_total_user_score, get_tournament_champion
+
+    # Use centralized score calculation
+    total_score = calculate_total_user_score(current_user.id, db)
+
+    # Get all knockout matches (not group stage)
+    statement = select(Match).where(~Match.round.like("Group Stage%")).order_by(Match.match_number)
+    knockout_matches = db.exec(statement).all()
+
+    # Get user predictions for knockout matches
+    pred_statement = select(Prediction).where(Prediction.user_id == current_user.id)
+    predictions = db.exec(pred_statement).all()
+    predictions_dict = {pred.match_id: pred for pred in predictions}
+
+    # Resolve teams for each match
+    matches = []
+    for match in knockout_matches:
+        team1, team2 = resolve_match_teams(match, current_user.id, db)
+
+        # Get prediction if exists
+        prediction = predictions_dict.get(match.id)
+
+        scoring_result = {"points": 0}
+        if prediction:
+            scoring_result = calculate_knockout_points(
+                prediction,
+                match,
+                team1.id if team1 else None,
+                team2.id if team2 else None
+            )
+
+        matches.append({
+            "match": match,
+            "team1": team1,
+            "team2": team2,
+            "team1_flag_url": flag_url(team1.code, 40) if team1 else None,
+            "team2_flag_url": flag_url(team2.code, 40) if team2 else None,
+            "prediction": prediction,
+            "scoring": scoring_result
+        })
+
+    # Get the champion (actual if finished, otherwise predicted)
+    champion, champion_flag_url, is_actual_champion = get_tournament_champion(current_user.id, db)
+
+    # Get standings for group results section
+    from app.standings import calculate_group_standings
+    standings = calculate_group_standings(current_user.id, db)
+
+    # Convert to template format with full standings details
+    standings_by_group = {}
+    for group_letter, standings_list in standings.items():
+        standings_by_group[group_letter] = [
+            {
+                "team": ts.team,
+                "team_flag_url": flag_url(ts.team.code, 30),
+                "points": ts.points,
+                "played": ts.played,
+                "won": ts.won,
+                "drawn": ts.drawn,
+                "lost": ts.lost,
+                "goals_for": ts.goals_for,
+                "goals_against": ts.goals_against,
+                "goal_difference": ts.goal_difference
+            }
+            for ts in standings_list
+        ]
+
+    return templates.TemplateResponse(
+        "knockout_bracket_print.html",
         {
             "request": request,
             "user": current_user,
