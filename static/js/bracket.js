@@ -222,6 +222,9 @@ class BracketGame {
                 const savedPrediction = await response.json();
                 this.predictions[match.id] = savedPrediction;
 
+                // Sync individual mode inputs with updated predictions
+                this.syncIndividualModeInputs();
+
                 // Reload standings if this was a group stage match
                 if (match.round.includes('Group Stage')) {
                     await this.loadStandings();
@@ -507,6 +510,28 @@ class BracketGame {
             }
         });
     }
+
+    syncIndividualModeInputs() {
+        /**
+         * Sync individual mode inputs with BracketGame predictions.
+         * This keeps both sections in sync whenever predictions change.
+         */
+        for (const [matchId, prediction] of Object.entries(this.predictions)) {
+            const matchIdNum = parseInt(matchId, 10);
+            const card = document.querySelector(`.individual-match-card[data-match-id="${matchIdNum}"]`);
+            if (!card) continue;
+
+            const team1Input = card.querySelector('.team1-score');
+            const team2Input = card.querySelector('.team2-score');
+            const penaltySelect = card.querySelector('.penalty-select-individual');
+
+            if (team1Input) team1Input.value = prediction.predicted_team1_score;
+            if (team2Input) team2Input.value = prediction.predicted_team2_score;
+            if (penaltySelect && prediction.penalty_shootout_winner_id) {
+                penaltySelect.value = prediction.penalty_shootout_winner_id;
+            }
+        }
+    }
 }
 
 // Initialize game mode
@@ -727,10 +752,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (response.ok) {
+                    const savedPrediction = await response.json();
                     showNotification('Prediction saved!', 'success');
 
                     // Mark card as having prediction
                     card.classList.add('has-prediction');
+
+                    // Update BracketGame predictions if it exists
+                    if (bracketGame) {
+                        bracketGame.predictions[parseInt(matchId)] = savedPrediction;
+                        // Show the saved match in game mode if we're on that match
+                        if (bracketGame.currentIndex !== undefined) {
+                            const currentMatch = bracketGame.matches[bracketGame.currentIndex];
+                            if (currentMatch && currentMatch.id === parseInt(matchId)) {
+                                bracketGame.showMatch(bracketGame.currentIndex);
+                            }
+                        }
+                    }
 
                     // Reload standings if available and refresh individual matches
                     if (typeof loadStandingsDashboard === 'function') {
