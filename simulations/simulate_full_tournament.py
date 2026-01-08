@@ -156,19 +156,26 @@ def resolve_knockout_match(session, match, placeholder_map):
             prev_match = session.exec(select(Match).where(Match.match_number == prev_match_num)).first()
             
             if prev_match and prev_match.is_finished:
-                if ph.startswith('W'):
-                    # Winner
-                    if prev_match.actual_team1_score > prev_match.actual_team2_score:
-                        match.team1_id = prev_match.team1_id
+                # Determine winner of previous match
+                winner_id = None
+                loser_id = None
+                
+                if prev_match.actual_team1_score > prev_match.actual_team2_score:
+                    winner_id = prev_match.team1_id
+                    loser_id = prev_match.team2_id
+                elif prev_match.actual_team2_score > prev_match.actual_team1_score:
+                    winner_id = prev_match.team2_id
+                    loser_id = prev_match.team1_id
+                elif prev_match.penalty_winner_id:
+                    winner_id = prev_match.penalty_winner_id
+                    loser_id = prev_match.team2_id if winner_id == prev_match.team1_id else prev_match.team1_id
+                
+                if winner_id:
+                    if ph.startswith('W'):
+                        match.team1_id = winner_id
                     else:
-                        match.team1_id = prev_match.team2_id
-                else:
-                    # Loser (Third Place)
-                    if prev_match.actual_team1_score > prev_match.actual_team2_score:
-                        match.team1_id = prev_match.team2_id
-                    else:
-                        match.team1_id = prev_match.team1_id
-                changed = True
+                        match.team1_id = loser_id
+                    changed = True
 
     # Resolve Team 2 (Same logic)
     if not match.team2_id and match.team2_placeholder:
@@ -181,17 +188,26 @@ def resolve_knockout_match(session, match, placeholder_map):
             prev_match = session.exec(select(Match).where(Match.match_number == prev_match_num)).first()
             
             if prev_match and prev_match.is_finished:
-                if ph.startswith('W'):
-                    if prev_match.actual_team1_score > prev_match.actual_team2_score:
-                        match.team2_id = prev_match.team1_id
+                # Determine winner of previous match
+                winner_id = None
+                loser_id = None
+                
+                if prev_match.actual_team1_score > prev_match.actual_team2_score:
+                    winner_id = prev_match.team1_id
+                    loser_id = prev_match.team2_id
+                elif prev_match.actual_team2_score > prev_match.actual_team1_score:
+                    winner_id = prev_match.team2_id
+                    loser_id = prev_match.team1_id
+                elif prev_match.penalty_winner_id:
+                    winner_id = prev_match.penalty_winner_id
+                    loser_id = prev_match.team2_id if winner_id == prev_match.team1_id else prev_match.team1_id
+                
+                if winner_id:
+                    if ph.startswith('W'):
+                        match.team2_id = winner_id
                     else:
-                        match.team2_id = prev_match.team2_id
-                else:
-                    if prev_match.actual_team1_score > prev_match.actual_team2_score:
-                        match.team2_id = prev_match.team2_id
-                    else:
-                        match.team2_id = prev_match.team1_id
-                changed = True
+                        match.team2_id = loser_id
+                    changed = True
                 
     return changed
 
@@ -246,21 +262,41 @@ def simulate_full_tournament():
                 
                 # Check if we have teams now
                 if m.team1_id and m.team2_id and not m.is_finished:
-                    # 2. Simulate Result (Knockout cannot be a draw)
-                    score1 = 0
-                    score2 = 0
-                    while score1 == score2:
-                        score1 = random.randint(0, 3)
-                        score2 = random.randint(0, 3)
+                    # 2. Simulate Result
+                    # Allow draws (which lead to penalties)
+                    score1 = random.randint(0, 3)
+                    score2 = random.randint(0, 3)
                     
                     m.actual_team1_score = score1
                     m.actual_team2_score = score2
-                    m.is_finished = True
-                    session.add(m)
                     
                     t1 = session.get(Team, m.team1_id).name
                     t2 = session.get(Team, m.team2_id).name
-                    print(f"Match {m.match_number}: {t1} {score1} - {score2} {t2}")
+                    
+                    if score1 == score2:
+                        # Simulate Penalties
+                        pen_score1 = 0
+                        pen_score2 = 0
+                        while pen_score1 == pen_score2:
+                            pen_score1 = random.randint(1, 5)
+                            pen_score2 = random.randint(1, 5)
+                        
+                        m.actual_team1_penalty_score = pen_score1
+                        m.actual_team2_penalty_score = pen_score2
+                        
+                        if pen_score1 > pen_score2:
+                            m.penalty_winner_id = m.team1_id
+                            winner_name = t1
+                        else:
+                            m.penalty_winner_id = m.team2_id
+                            winner_name = t2
+                            
+                        print(f"Match {m.match_number}: {t1} {score1} - {score2} {t2} (Penalties: {pen_score1}-{pen_score2}, Winner: {winner_name})")
+                    else:
+                        print(f"Match {m.match_number}: {t1} {score1} - {score2} {t2}")
+                        
+                    m.is_finished = True
+                    session.add(m)
                 
             session.commit() # Commit after each round so next round can see winners
 

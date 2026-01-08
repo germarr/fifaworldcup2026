@@ -197,7 +197,7 @@ async def knockout_bracket(
     db: Session = Depends(get_session)
 ):
     """Visual knockout bracket tree with predictions."""
-    from app.scoring import calculate_total_user_score, get_champion_prediction
+    from app.scoring import calculate_total_user_score, get_tournament_champion
     
     # Use centralized score calculation
     total_score = calculate_total_user_score(current_user.id, db)
@@ -238,8 +238,8 @@ async def knockout_bracket(
             "scoring": scoring_result
         })
 
-    # Get the predicted champion (winner of the final)
-    champion, champion_flag_url = get_champion_prediction(current_user.id, db)
+    # Get the champion (actual if finished, otherwise predicted)
+    champion, champion_flag_url, is_actual_champion = get_tournament_champion(current_user.id, db)
     
     # Get standings for group results section (from API via calculate_group_standings)
     from app.standings import calculate_group_standings
@@ -251,7 +251,7 @@ async def knockout_bracket(
         standings_by_group[group_letter] = [
             {
                 "team": ts.team,
-                "team_flag_url": ts.team_flag_url,
+                "team_flag_url": flag_url(ts.team.code, 40),
                 "points": ts.points
             }
             for ts in standings_list
@@ -265,6 +265,7 @@ async def knockout_bracket(
             "matches": matches,
             "champion": champion,
             "champion_flag_url": champion_flag_url,
+            "is_actual_champion": is_actual_champion,
             "total_score": total_score,
             "standings": standings_by_group
         }

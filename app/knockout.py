@@ -58,15 +58,35 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
     teams_statement = select(Team)
     teams_map = {t.id: t for t in db.exec(teams_statement).all()}
 
-    # Resolve match winners and losers based on predictions
+    # Resolve match winners and losers based on predictions AND actual results
     for match in knockout_matches:
         prediction = predictions_map.get(match.id)
+        
+        # First, resolve the teams in this match
+        # We need to pass the current state of resolution to resolve this match's participants
+        team1, team2 = resolve_match_teams_with_cache(match, resolution, teams_map, user_id, db)
 
-        if prediction:
-            # First, resolve the teams in this match
-            team1, team2 = resolve_match_teams_with_cache(match, resolution, teams_map, user_id, db)
+        # Determine winner and loser
+        winner_team = None
+        loser_team = None
 
-            # Determine winner and loser based on predicted scores
+        # 1. Check ACTUAL result first (Visual consistency with finished matches)
+        if match.is_finished:
+            if match.actual_team1_score > match.actual_team2_score:
+                winner_team = team1
+                loser_team = team2
+            elif match.actual_team2_score > match.actual_team1_score:
+                winner_team = team2
+                loser_team = team1
+            elif match.penalty_winner_id:
+                # Penalty shootout result
+                p_winner = teams_map.get(match.penalty_winner_id)
+                if p_winner:
+                    winner_team = p_winner
+                    loser_team = team2 if winner_team == team1 else team1
+        
+        # 2. If no actual result (or not finished), use PREDICTION
+        if not winner_team and prediction:
             if prediction.predicted_team1_score > prediction.predicted_team2_score:
                 winner_team = team1
                 loser_team = team2
@@ -76,27 +96,19 @@ def resolve_knockout_teams(user_id: int, db: Session) -> Dict[str, Optional[Team
             else:
                 # Tie - check penalty shootout winner
                 if prediction.penalty_shootout_winner_id:
-                    # Get the penalty winner team from cache
                     penalty_winner = teams_map.get(prediction.penalty_shootout_winner_id)
-
                     if penalty_winner:
                         winner_team = penalty_winner
                         loser_team = team2 if winner_team == team1 else team1
                     else:
-                        # Fallback if penalty winner not found
                         winner_team = team1
                         loser_team = team2
                 else:
-                    # No penalty shootout prediction - default to team1
                     winner_team = team1
                     loser_team = team2
 
-            resolution[f"W{match.match_number}"] = winner_team
-            resolution[f"L{match.match_number}"] = loser_team
-        else:
-            # No prediction yet - team is TBD
-            resolution[f"W{match.match_number}"] = None
-            resolution[f"L{match.match_number}"] = None
+        resolution[f"W{match.match_number}"] = winner_team
+        resolution[f"L{match.match_number}"] = loser_team
 
     return resolution
 
@@ -125,17 +137,44 @@ def resolve_match_teams_with_cache(match: Match, resolution: Dict[str, Optional[
     team1 = None
     team2 = None
 
+    # Helper to resolve a single placeholder
+    def resolve_placeholder(ph):
+        if not ph:
+            return None
+        
+        # Check cache first (contains prediction-based or group-based resolution)
+        team = resolution.get(ph)
+        if team:
+            return team
+
+        # If not in cache, and it's a W/L placeholder, check if the previous match is ACTUALLY finished
+        if ph.startswith('W') or ph.startswith('L'):
+            try:
+                prev_match_num = int(ph[1:])
+                # Find match in DB (or pass matches map if optimization needed)
+                # For now, we query DB or assume resolution map should have handled it if we wanted strictly prediction logic.
+                # BUT, to fix "Teams that lost go to next round" visually, we should check ACTUAL results if prediction logic failed/wasn't populated.
+                # However, resolution map is built from predictions. 
+                
+                # BETTER APPROACH: The resolution map construction in resolve_knockout_teams should have handled this.
+                # If we are here, it means resolution[ph] is None.
+                pass 
+            except ValueError:
+                pass
+        return None
+
     if match.team1_placeholder:
         team1 = resolution.get(match.team1_placeholder)
 
     if match.team2_placeholder:
         team2 = resolution.get(match.team2_placeholder)
 
-    # Fallback to teams_map if placeholders didn't resolve
-    if not team1 and match.team1_id:
+    # Fallback to direct IDs if placeholders didn't resolve OR if the match is actually set in DB
+    # This is critical: if the simulation/admin set the actual teams, we should use them
+    if match.team1_id:
         team1 = teams_map.get(match.team1_id)
 
-    if not team2 and match.team2_id:
+    if match.team2_id:
         team2 = teams_map.get(match.team2_id)
 
     return team1, team2

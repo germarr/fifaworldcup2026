@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+
+{% block title %}CRM - FIFA World Cup{% endblock %}
+
+{% block main_class %}main-wide{% endblock %}
+
+{% block content %}
+<div class="crm-header">
+    <div>
+        <h2>CRM: Official Results</h2>
+        <p>Update match results manually. Knockout teams will populate from finished results.</p>
+    </div>
+    <div class="crm-actions">
+        <form action="/crm/recalculate" method="POST">
+            <button type="submit" class="btn btn-secondary">Recalculate Knockouts</button>
+        </form>
+        <button type="button" class="btn btn-primary" id="randomize-results">Randomize All Results</button>
+    </div>
+</div>
+
+<div class="crm-rounds">
+    {% for round_name, matches in matches_by_round.items() %}
+    <section class="crm-round">
+        <h3>{{ round_name }}</h3>
+        <div class="crm-round-list">
+            {% for entry in matches %}
+            {% set match = entry.match %}
+            <form class="crm-match" method="POST" action="/crm/match/{{ match.id }}">
+                <div class="crm-match-header">
+                    <div class="crm-match-title">
+                        <span class="crm-match-number">Match {{ match.match_number }}</span>
+                        <span class="crm-match-date">
+                            <input
+                                class="form-input"
+                                type="datetime-local"
+                                name="match_date"
+                                value="{{ entry.match_date_value }}"
+                            >
+                        </span>
+                    </div>
+                    <label class="crm-finished">
+                        <input type="checkbox" name="is_finished" {% if match.is_finished %}checked{% endif %}>
+                        Finished
+                    </label>
+                </div>
+
+                <div class="crm-match-body">
+                    <div class="crm-team">
+                        <div class="crm-team-info">
+                            {% if entry.team1_flag_url %}
+                                <img src="{{ entry.team1_flag_url }}" alt="{{ entry.team1.name }} flag">
+                            {% endif %}
+                            <span>{{ entry.team1.name if entry.team1 else (match.team1_placeholder or "TBD") }}</span>
+                        </div>
+                        <input
+                            class="form-input crm-score"
+                            type="number"
+                            min="0"
+                            name="actual_team1_score"
+                            value="{{ match.actual_team1_score if match.actual_team1_score is not none }}"
+                            placeholder="-"
+                        >
+                        <input
+                            class="form-input crm-score"
+                            type="number"
+                            min="0"
+                            name="actual_team1_penalty_score"
+                            value="{{ match.actual_team1_penalty_score if match.actual_team1_penalty_score is not none }}"
+                            placeholder="PK"
+                        >
+                    </div>
+
+                    <div class="crm-team">
+                        <div class="crm-team-info">
+                            {% if entry.team2_flag_url %}
+                                <img src="{{ entry.team2_flag_url }}" alt="{{ entry.team2.name }} flag">
+                            {% endif %}
+                            <span>{{ entry.team2.name if entry.team2 else (match.team2_placeholder or "TBD") }}</span>
+                        </div>
+                        <input
+                            class="form-input crm-score"
+                            type="number"
+                            min="0"
+                            name="actual_team2_score"
+                            value="{{ match.actual_team2_score if match.actual_team2_score is not none }}"
+                            placeholder="-"
+                        >
+                        <input
+                            class="form-input crm-score"
+                            type="number"
+                            min="0"
+                            name="actual_team2_penalty_score"
+                            value="{{ match.actual_team2_penalty_score if match.actual_team2_penalty_score is not none }}"
+                            placeholder="PK"
+                        >
+                    </div>
+                </div>
+
+                <div class="crm-match-footer">
+                    <div class="crm-penalty">
+                        <label>Penalty Winner</label>
+                        <select class="form-input" name="penalty_winner">
+                            <option value="">None</option>
+                            {% if entry.team1 %}
+                            <option value="team1" {% if match.penalty_winner_id == entry.team1.id %}selected{% endif %}>
+                                {{ entry.team1.name }}
+                            </option>
+                            {% endif %}
+                            {% if entry.team2 %}
+                            <option value="team2" {% if match.penalty_winner_id == entry.team2.id %}selected{% endif %}>
+                                {{ entry.team2.name }}
+                            </option>
+                            {% endif %}
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-secondary btn-small">Save</button>
+                </div>
+            </form>
+            {% endfor %}
+        </div>
+    </section>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('randomize-results').addEventListener('click', async () => {
+    const button = document.getElementById('randomize-results');
+    button.disabled = true;
+    button.textContent = 'Randomizing...';
+
+    try {
+        const response = await fetch('/api/simulate-tournament', {
+            method: 'POST',
+            credentials: 'same-origin'
+        });
+
+        if (!response.ok) {
+            throw new Error('Simulation failed');
+        }
+
+        window.location.href = '/crm?success=randomized';
+    } catch (error) {
+        window.location.href = '/crm?error=simulation_failed';
+    }
+});
+</script>
+{% endblock %}

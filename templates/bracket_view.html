@@ -153,8 +153,14 @@
                     <div class="score-display {% if not actual_available %}tbd{% endif %}">
                         {% if actual_available %}
                             <span class="score-val">{{ item.match.actual_team1_score }}</span>
+                            {% if item.match.actual_team1_penalty_score is not none %}
+                            <span class="penalty-sub">({{ item.match.actual_team1_penalty_score }})</span>
+                            {% endif %}
                             <span class="score-sep">-</span>
                             <span class="score-val">{{ item.match.actual_team2_score }}</span>
+                            {% if item.match.actual_team2_penalty_score is not none %}
+                            <span class="penalty-sub">({{ item.match.actual_team2_penalty_score }})</span>
+                            {% endif %}
                         {% else %}
                             <span class="tbd-text">? - ?</span>
                         {% endif %}
@@ -252,23 +258,41 @@
                         <div class="knockout-col">
                             <span class="knockout-col-title">Actual Result</span>
                             <div class="bracket-teams">
-                                <div class="bracket-team {% if item.match.actual_team1_score is not none and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% endif %}">
+                                <div class="bracket-team {% if item.match.actual_team1_score is not none and ((item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.actual_team1_score == item.match.actual_team2_score and item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if item.actual_team1_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ item.actual_team1_flag_url }}" alt="{{ item.actual_team1.name }} flag">
                                         {% endif %}
                                         {{ item.actual_team1.code if item.actual_team1 else item.match.team1_placeholder or 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if item.match.actual_team1_score is not none %}{{ item.match.actual_team1_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team1_score is not none %}
+                                            {{ item.match.actual_team1_score }}
+                                            {% if item.match.actual_team1_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team1_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
-                                <div class="bracket-team {% if item.match.actual_team2_score is not none and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% endif %}">
+                                <div class="bracket-team {% if item.match.actual_team2_score is not none and ((item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.actual_team2_score == item.match.actual_team1_score and item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if item.actual_team2_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ item.actual_team2_flag_url }}" alt="{{ item.actual_team2.name }} flag">
                                         {% endif %}
                                         {{ item.actual_team2.code if item.actual_team2 else item.match.team2_placeholder or 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if item.match.actual_team2_score is not none %}{{ item.match.actual_team2_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team2_score is not none %}
+                                            {{ item.match.actual_team2_score }}
+                                            {% if item.match.actual_team2_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team2_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -337,23 +361,41 @@
                         <div class="knockout-col">
                             <span class="knockout-col-title">Actual Result</span>
                             <div class="bracket-teams">
-                                <div class="bracket-team {% if item.match.actual_team1_score is not none and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% endif %}">
+                                <div class="bracket-team {% if item.match.actual_team1_score is not none and ((item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.actual_team1_score == item.match.actual_team2_score and item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if item.actual_team1_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ item.actual_team1_flag_url }}" alt="{{ item.actual_team1.name }} flag">
                                         {% endif %}
                                         {{ item.actual_team1.code if item.actual_team1 else item.match.team1_placeholder or 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if item.match.actual_team1_score is not none %}{{ item.match.actual_team1_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team1_score is not none %}
+                                            {{ item.match.actual_team1_score }}
+                                            {% if item.match.actual_team1_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team1_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
-                                <div class="bracket-team {% if item.match.actual_team2_score is not none and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% endif %}">
+                                <div class="bracket-team {% if item.match.actual_team2_score is not none and ((item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.actual_team2_score == item.match.actual_team1_score and item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if item.actual_team2_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ item.actual_team2_flag_url }}" alt="{{ item.actual_team2.name }} flag">
                                         {% endif %}
                                         {{ item.actual_team2.code if item.actual_team2 else item.match.team2_placeholder or 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if item.match.actual_team2_score is not none %}{{ item.match.actual_team2_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team2_score is not none %}
+                                            {{ item.match.actual_team2_score }}
+                                            {% if item.match.actual_team2_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team2_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -422,23 +464,41 @@
                         <div class="knockout-col">
                             <span class="knockout-col-title">Actual Result</span>
                             <div class="bracket-teams">
-                                <div class="bracket-team {% if item.match.actual_team1_score is not none and item.match.actual_team1_score > item.match.actual_team2_score %}winner{% endif %}">
+                                <div class="bracket-team {% if item.match.actual_team1_score is not none and ((item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.actual_team1_score == item.match.actual_team2_score and item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if item.actual_team1_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ item.actual_team1_flag_url }}" alt="{{ item.actual_team1.name }} flag">
                                         {% endif %}
                                         {{ item.actual_team1.code if item.actual_team1 else item.match.team1_placeholder or 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if item.match.actual_team1_score is not none %}{{ item.match.actual_team1_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team1_score is not none %}
+                                            {{ item.match.actual_team1_score }}
+                                            {% if item.match.actual_team1_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team1_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
-                                <div class="bracket-team {% if item.match.actual_team2_score is not none and item.match.actual_team2_score > item.match.actual_team1_score %}winner{% endif %}">
+                                <div class="bracket-team {% if item.match.actual_team2_score is not none and ((item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.actual_team2_score == item.match.actual_team1_score and item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if item.actual_team2_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ item.actual_team2_flag_url }}" alt="{{ item.actual_team2.name }} flag">
                                         {% endif %}
                                         {{ item.actual_team2.code if item.actual_team2 else item.match.team2_placeholder or 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if item.match.actual_team2_score is not none %}{{ item.match.actual_team2_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team2_score is not none %}
+                                            {{ item.match.actual_team2_score }}
+                                            {% if item.match.actual_team2_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team2_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -507,23 +567,41 @@
                         <div class="knockout-col">
                             <span class="knockout-col-title">Actual Result</span>
                             <div class="bracket-teams">
-                                <div class="bracket-team {% if knockout.final.match.actual_team1_score is not none and knockout.final.match.actual_team1_score > knockout.final.match.actual_team2_score %}winner{% endif %}">
+                                <div class="bracket-team {% if knockout.final.match.actual_team1_score is not none and ((knockout.final.match.actual_team1_score > knockout.final.match.actual_team2_score) or (knockout.final.match.actual_team1_score == knockout.final.match.actual_team2_score and knockout.final.actual_team1 and knockout.final.match.penalty_winner_id == knockout.final.actual_team1.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if knockout.final.actual_team1_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ knockout.final.actual_team1_flag_url }}" alt="{{ knockout.final.actual_team1.name }} flag">
                                         {% endif %}
                                         {{ knockout.final.actual_team1.code if knockout.final.actual_team1 else 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if knockout.final.match.actual_team1_score is not none %}{{ knockout.final.match.actual_team1_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if knockout.final.match.actual_team1_score is not none %}
+                                            {{ knockout.final.match.actual_team1_score }}
+                                            {% if knockout.final.match.actual_team1_penalty_score is not none %}
+                                            <span class="penalty-score">({{ knockout.final.match.actual_team1_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
-                                <div class="bracket-team {% if knockout.final.match.actual_team2_score is not none and knockout.final.match.actual_team2_score > knockout.final.match.actual_team1_score %}winner{% endif %}">
+                                <div class="bracket-team {% if knockout.final.match.actual_team2_score is not none and ((knockout.final.match.actual_team2_score > knockout.final.match.actual_team1_score) or (knockout.final.match.actual_team2_score == knockout.final.match.actual_team1_score and knockout.final.actual_team2 and knockout.final.match.penalty_winner_id == knockout.final.actual_team2.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if knockout.final.actual_team2_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ knockout.final.actual_team2_flag_url }}" alt="{{ knockout.final.actual_team2.name }} flag">
                                         {% endif %}
                                         {{ knockout.final.actual_team2.code if knockout.final.actual_team2 else 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if knockout.final.match.actual_team2_score is not none %}{{ knockout.final.match.actual_team2_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if knockout.final.match.actual_team2_score is not none %}
+                                            {{ knockout.final.match.actual_team2_score }}
+                                            {% if knockout.final.match.actual_team2_penalty_score is not none %}
+                                            <span class="penalty-score">({{ knockout.final.match.actual_team2_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -584,23 +662,41 @@
                         <div class="knockout-col">
                             <span class="knockout-col-title">Actual Result</span>
                             <div class="bracket-teams">
-                                <div class="bracket-team {% if knockout.third_place.match.actual_team1_score is not none and knockout.third_place.match.actual_team1_score > knockout.third_place.match.actual_team2_score %}winner{% endif %}">
+                                <div class="bracket-team {% if knockout.third_place.match.actual_team1_score is not none and ((knockout.third_place.match.actual_team1_score > knockout.third_place.match.actual_team2_score) or (knockout.third_place.match.actual_team1_score == knockout.third_place.match.actual_team2_score and knockout.third_place.actual_team1 and knockout.third_place.match.penalty_winner_id == knockout.third_place.actual_team1.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if knockout.third_place.actual_team1_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ knockout.third_place.actual_team1_flag_url }}" alt="{{ knockout.third_place.actual_team1.name }} flag">
                                         {% endif %}
                                         {{ knockout.third_place.actual_team1.code if knockout.third_place.actual_team1 else 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if knockout.third_place.match.actual_team1_score is not none %}{{ knockout.third_place.match.actual_team1_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if knockout.third_place.match.actual_team1_score is not none %}
+                                            {{ knockout.third_place.match.actual_team1_score }}
+                                            {% if knockout.third_place.match.actual_team1_penalty_score is not none %}
+                                            <span class="penalty-score">({{ knockout.third_place.match.actual_team1_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
-                                <div class="bracket-team {% if knockout.third_place.match.actual_team2_score is not none and knockout.third_place.match.actual_team2_score > knockout.third_place.match.actual_team1_score %}winner{% endif %}">
+                                <div class="bracket-team {% if knockout.third_place.match.actual_team2_score is not none and ((knockout.third_place.match.actual_team2_score > knockout.third_place.match.actual_team1_score) or (knockout.third_place.match.actual_team2_score == knockout.third_place.match.actual_team1_score and knockout.third_place.actual_team2 and knockout.third_place.match.penalty_winner_id == knockout.third_place.actual_team2.id)) %}winner{% endif %}">
                                     <span class="team-name">
                                         {% if knockout.third_place.actual_team2_flag_url %}
                                         <img class="team-flag-circle team-flag-small" src="{{ knockout.third_place.actual_team2_flag_url }}" alt="{{ knockout.third_place.actual_team2.name }} flag">
                                         {% endif %}
                                         {{ knockout.third_place.actual_team2.code if knockout.third_place.actual_team2 else 'TBD' }}
                                     </span>
-                                    <span class="team-score">{% if knockout.third_place.match.actual_team2_score is not none %}{{ knockout.third_place.match.actual_team2_score }}{% else %}-{% endif %}</span>
+                                    <span class="team-score">
+                                        {% if knockout.third_place.match.actual_team2_score is not none %}
+                                            {{ knockout.third_place.match.actual_team2_score }}
+                                            {% if knockout.third_place.match.actual_team2_penalty_score is not none %}
+                                            <span class="penalty-score">({{ knockout.third_place.match.actual_team2_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
                                 </div>
                             </div>
                         </div>

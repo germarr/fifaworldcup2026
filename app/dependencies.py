@@ -43,3 +43,16 @@ def get_current_user_optional(
         return None
 
     return get_user_by_session_token(db, session_token)
+
+
+def get_admin_user(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Dependency to ensure the current user is the admin."""
+    if current_user.username != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required"
+        )
+
+    return current_user

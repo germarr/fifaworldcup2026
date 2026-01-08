@@ -128,6 +128,9 @@ class Match(SQLModel, table=True):
     match_date: datetime
     actual_team1_score: Optional[int] = Field(default=None)
     actual_team2_score: Optional[int] = Field(default=None)
+    actual_team1_penalty_score: Optional[int] = Field(default=None)
+    actual_team2_penalty_score: Optional[int] = Field(default=None)
+    penalty_winner_id: Optional[int] = Field(default=None, foreign_key="teams.id")
     is_finished: bool = Field(default=False)
 
     # Relationships

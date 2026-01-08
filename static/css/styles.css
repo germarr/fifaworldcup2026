@@ -259,6 +259,140 @@ main.container.main-wide {
     color: var(--text-secondary);
 }
 
+/* CRM */
+.crm-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.crm-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.crm-rounds {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.crm-round {
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 20px;
+}
+
+.crm-round h3 {
+    margin-bottom: 16px;
+    color: var(--primary-color);
+}
+
+.crm-round-list {
+    display: grid;
+    gap: 16px;
+}
+
+.crm-match {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 14px;
+    background: #fcfcfd;
+    display: grid;
+    gap: 12px;
+}
+
+.crm-match-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.crm-match-title {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.crm-match-number {
+    font-weight: 600;
+}
+
+.crm-match-body {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.crm-team {
+    display: grid;
+    grid-template-columns: minmax(120px, 1fr) repeat(2, 80px);
+    gap: 8px;
+    align-items: center;
+}
+
+.crm-team-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 500;
+}
+
+.crm-team-info img {
+    width: 28px;
+    height: 20px;
+    object-fit: cover;
+    border-radius: 2px;
+    border: 1px solid var(--border-color);
+}
+
+.crm-score {
+    text-align: center;
+}
+
+.crm-match-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.crm-penalty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.crm-finished {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+@media (max-width: 900px) {
+    .crm-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .crm-match-body {
+        grid-template-columns: 1fr;
+    }
+
+    .crm-team {
+        grid-template-columns: minmax(140px, 1fr) repeat(2, 70px);
+    }
+}
+
 .auth-footer a {
     color: var(--primary-color);
     text-decoration: none;

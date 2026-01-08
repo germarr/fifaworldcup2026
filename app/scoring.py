@@ -169,19 +169,16 @@ def calculate_total_user_score(user_id: int, db) -> int:
     return total_score
 
 
-def get_champion_prediction(user_id: int, db) -> tuple[Team | None, str | None]:
+def get_tournament_champion(user_id: int, db) -> tuple[Team | None, str | None, bool]:
     """
-    Get the predicted champion from the user's final match prediction.
-    
-    Resolves the final match teams using group stage predictions,
-    then determines the winner based on the prediction scores.
+    Get the tournament champion (actual if finished, otherwise predicted).
     
     Args:
         user_id: User ID to get champion for
         db: Database session
         
     Returns:
-        Tuple of (champion_team, champion_flag_url) or (None, None) if invalid
+        Tuple of (champion_team, champion_flag_url, is_actual)
     """
     from sqlmodel import Session, select
     from app.knockout import resolve_match_teams
@@ -192,7 +189,21 @@ def get_champion_prediction(user_id: int, db) -> tuple[Team | None, str | None]:
     final_match = db.exec(final_statement).first()
     
     if not final_match:
-        return None, None
+        return None, None, False
+        
+    # Check if final is finished and has a winner
+    if final_match.is_finished:
+        winner = None
+        if final_match.actual_team1_score > final_match.actual_team2_score:
+            winner = final_match.team1
+        elif final_match.actual_team2_score > final_match.actual_team1_score:
+            winner = final_match.team2
+        elif final_match.penalty_winner_id:
+             winner_statement = select(Team).where(Team.id == final_match.penalty_winner_id)
+             winner = db.exec(winner_statement).first()
+             
+        if winner:
+            return winner, flag_url(winner.code, 80), True
     
     # Get prediction for final match
     pred_statement = select(Prediction).where(
@@ -202,13 +213,13 @@ def get_champion_prediction(user_id: int, db) -> tuple[Team | None, str | None]:
     prediction = db.exec(pred_statement).first()
     
     if not prediction:
-        return None, None
+        return None, None, False
     
     # Resolve teams for final match
     team1, team2 = resolve_match_teams(final_match, user_id, db)
     
     if not team1 or not team2:
-        return None, None
+        return None, None, False
     
     # Determine champion based on prediction
     champion = None
@@ -221,7 +232,7 @@ def get_champion_prediction(user_id: int, db) -> tuple[Team | None, str | None]:
         champion = db.exec(champ_statement).first()
     
     if not champion:
-        return None, None
+        return None, None, False
     
     champion_flag_url = flag_url(champion.code, 80)
-    return champion, champion_flag_url
+    return champion, champion_flag_url, False
