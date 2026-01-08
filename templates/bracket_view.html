@@ -315,6 +315,15 @@
                                     </span>
                                 </div>
                             </div>
+                            {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.penalty_winner_id %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id %}
+                                    ({{ item.actual_team1.code }} wins)
+                                {% elif item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id %}
+                                    ({{ item.actual_team2.code }} wins)
+                                {% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -438,6 +447,15 @@
                                     </span>
                                 </div>
                             </div>
+                            {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.penalty_winner_id %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id %}
+                                    ({{ item.actual_team1.code }} wins)
+                                {% elif item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id %}
+                                    ({{ item.actual_team2.code }} wins)
+                                {% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -561,6 +579,15 @@
                                     </span>
                                 </div>
                             </div>
+                            {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.penalty_winner_id %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id %}
+                                    ({{ item.actual_team1.code }} wins)
+                                {% elif item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id %}
+                                    ({{ item.actual_team2.code }} wins)
+                                {% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -672,6 +699,15 @@
                                     </span>
                                 </div>
                             </div>
+                            {% if knockout.final.match.actual_team1_score == knockout.final.match.actual_team2_score and knockout.final.match.penalty_winner_id %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if knockout.final.actual_team1 and knockout.final.match.penalty_winner_id == knockout.final.actual_team1.id %}
+                                    ({{ knockout.final.actual_team1.code }} wins)
+                                {% elif knockout.final.actual_team2 and knockout.final.match.penalty_winner_id == knockout.final.actual_team2.id %}
+                                    ({{ knockout.final.actual_team2.code }} wins)
+                                {% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -778,6 +814,15 @@
                                     </span>
                                 </div>
                             </div>
+                            {% if knockout.third_place.match.actual_team1_score == knockout.third_place.match.actual_team2_score and knockout.third_place.match.penalty_winner_id %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if knockout.third_place.actual_team1 and knockout.third_place.match.penalty_winner_id == knockout.third_place.actual_team1.id %}
+                                    ({{ knockout.third_place.actual_team1.code }} wins)
+                                {% elif knockout.third_place.actual_team2 and knockout.third_place.match.penalty_winner_id == knockout.third_place.actual_team2.id %}
+                                    ({{ knockout.third_place.actual_team2.code }} wins)
+                                {% endif %}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
