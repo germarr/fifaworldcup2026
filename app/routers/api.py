@@ -40,6 +40,9 @@ class MatchResponse(BaseModel):
     team2_placeholder: Optional[str]
     match_date: datetime
     is_finished: bool
+    actual_team1_score: Optional[int] = None
+    actual_team2_score: Optional[int] = None
+    penalty_winner_id: Optional[int] = None
 
 
 class PredictionResponse(BaseModel):
