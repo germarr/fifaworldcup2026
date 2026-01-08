@@ -225,6 +225,10 @@ class BracketGame {
                 // Reload standings if this was a group stage match
                 if (match.round.includes('Group Stage')) {
                     await this.loadStandings();
+                    // Also refresh the dashboard if the global function exists
+                    if (typeof loadStandingsDashboard === 'function') {
+                        await loadStandingsDashboard();
+                    }
                 }
 
                 // Reload matches to update knockout teams

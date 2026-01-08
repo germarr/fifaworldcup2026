@@ -233,8 +233,18 @@ async def get_standings(
     db: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Get group standings based on actual results first, then fallback to user predictions."""
-    # First check if there are actual finished group matches
+    """Get group standings based on user predictions first, then fallback to actual results if no predictions exist."""
+    # Try to get user predictions first
+    standings = calculate_group_standings(current_user.id, db)
+    
+    # If user has made predictions, return those
+    if standings and any(len(teams) > 0 for teams in standings.values()):
+        response = {}
+        for group_letter, standings_list in standings.items():
+            response[group_letter] = [ts.to_dict() for ts in standings_list]
+        return response
+    
+    # Fallback to official/simulated standings if user has no predictions yet
     finished_group_matches = db.exec(
         select(Match).where(
             Match.round.like("Group Stage%"),
@@ -275,15 +285,8 @@ async def get_standings(
                 )
             return response
     
-    # Fallback to user predictions if no actual results yet
-    standings = calculate_group_standings(current_user.id, db)
-
-    # Convert to JSON-serializable format
-    response = {}
-    for group_letter, standings_list in standings.items():
-        response[group_letter] = [ts.to_dict() for ts in standings_list]
-
-    return response
+    # Return empty standings if nothing available
+    return {}
 
 
 @router.post("/simulate-tournament")
