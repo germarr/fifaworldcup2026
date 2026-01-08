@@ -165,16 +165,12 @@ def resolve_match_teams_with_cache(match: Match, resolution: Dict[str, Optional[
 
     if match.team1_placeholder:
         team1 = resolution.get(match.team1_placeholder)
+    elif match.team1_id:
+        team1 = teams_map.get(match.team1_id)
 
     if match.team2_placeholder:
         team2 = resolution.get(match.team2_placeholder)
-
-    # Fallback to direct IDs if placeholders didn't resolve OR if the match is actually set in DB
-    # This is critical: if the simulation/admin set the actual teams, we should use them
-    if match.team1_id:
-        team1 = teams_map.get(match.team1_id)
-
-    if match.team2_id:
+    elif match.team2_id:
         team2 = teams_map.get(match.team2_id)
 
     return team1, team2

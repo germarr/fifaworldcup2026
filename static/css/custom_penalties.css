@@ -1,0 +1,29 @@
+
+/* Penalty Score Styling */
+.penalty-score {
+    font-size: 0.75em;
+    font-weight: normal;
+    opacity: 0.8;
+    margin-left: 4px;
+}
+
+/* Ensure score doesn't wrap or shrink */
+.bracket-team .team-score {
+    white-space: nowrap;
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+}
+
+/* Penalty Indicator Refinement */
+.penalty-indicator {
+    font-size: 11px;
+    padding: 2px 6px;
+    margin-top: 4px;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    color: #555;
+    border: 1px solid #ddd;
+    display: inline-block;
+}
