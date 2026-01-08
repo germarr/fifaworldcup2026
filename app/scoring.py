@@ -69,9 +69,9 @@ def calculate_knockout_points(
     Calculate points for knockout matches.
     
     Rules:
-    - Full scoring (with 2x multiplier) when predicted teams match stored teams
-    - Partial scoring based on match position when teams mismatch (team resolution mismatch)
-    - Penalty shootout predictions are supported
+    - Points are ONLY awarded if predicted teams match actual teams
+    - When teams match, use full scoring rules (outcome + score x2 multiplier)
+    - If teams don't match, return 0 points (pending status)
     """
     if match.actual_team1_score is None or match.actual_team2_score is None:
         return {"points": 0, "breakdown": [], "status": "pending"}
@@ -82,64 +82,23 @@ def calculate_knockout_points(
     predicted_ids = {predicted_team1_id, predicted_team2_id}
     actual_ids = {match.team1_id, match.team2_id} if match.team1_id and match.team2_id else set()
 
-    # Check if teams match for full scoring
-    teams_match = predicted_ids and actual_ids and predicted_ids == actual_ids
+    # Teams must match for any points to be awarded
+    if not (predicted_ids and actual_ids and predicted_ids == actual_ids):
+        # Teams don't match - no points awarded
+        return {
+            "points": 0,
+            "breakdown": [],
+            "status": "pending",
+            "outcome_correct": False,
+            "score_correct": False
+        }
     
-    if teams_match:
-        # Teams match - can safely use actual results with IDs
-        full = calculate_match_points(prediction, match)
-        full["points"] *= 2
-        if full["breakdown"]:
-            full["breakdown"] = [f"{b} x2" for b in full["breakdown"]]
-        return full
-
-    # Teams don't match - actual results are for different team IDs
-    # But we can still score based on POSITION (who won position 1 vs position 2)
-    points = 0
-    breakdown = []
-
-    # Determine predicted winner
-    predicted_winner_position = None
-    if prediction.predicted_team1_score > prediction.predicted_team2_score:
-        predicted_winner_position = 1  # Position 1 predicted to win
-    elif prediction.predicted_team2_score > prediction.predicted_team1_score:
-        predicted_winner_position = 2  # Position 2 predicted to win
-    elif prediction.predicted_team1_score == prediction.predicted_team2_score and prediction.penalty_shootout_winner_id:
-        # Tie - determine which position contains the penalty shootout winner
-        if prediction.penalty_shootout_winner_id == predicted_team1_id:
-            predicted_winner_position = 1
-        elif prediction.penalty_shootout_winner_id == predicted_team2_id:
-            predicted_winner_position = 2
-
-    # Determine actual winner position
-    actual_winner_position = None
-    if match.actual_team1_score > match.actual_team2_score:
-        actual_winner_position = 1
-    elif match.actual_team2_score > match.actual_team1_score:
-        actual_winner_position = 2
-    elif match.actual_team1_score == match.actual_team2_score and match.penalty_winner_id:
-        # Tie - determine which position contains the penalty winner
-        if match.penalty_winner_id == match.team1_id:
-            actual_winner_position = 1
-        elif match.penalty_winner_id == match.team2_id:
-            actual_winner_position = 2
-
-    # Award point if predicted position matches actual position
-    if predicted_winner_position and actual_winner_position and predicted_winner_position == actual_winner_position:
-        points += 1
-        breakdown.append("Correct Outcome (+1)")
-
-    if points > 0:
-        points *= 2
-        breakdown = [f"{b} x2" for b in breakdown]
-
-    return {
-        "points": points,
-        "breakdown": breakdown,
-        "status": "complete" if points > 0 else "pending",
-        "outcome_correct": points > 0,
-        "score_correct": False
-    }
+    # Teams match - use full scoring with 2x multiplier
+    full = calculate_match_points(prediction, match)
+    full["points"] *= 2
+    if full["breakdown"]:
+        full["breakdown"] = [f"{b} x2" for b in full["breakdown"]]
+    return full
 
 
 def calculate_total_user_score(user_id: int, db) -> int:
