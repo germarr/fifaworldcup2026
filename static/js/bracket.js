@@ -440,7 +440,17 @@ class BracketGame {
 
             await this.loadStandings();
             await this.loadMatches();
+            await this.loadPredictions();
             this.showMatch(this.currentIndex);
+            
+            // Sync individual mode with simulated predictions
+            this.syncIndividualModeInputs();
+            
+            // Refresh individual matches grid if available
+            if (typeof refreshIndividualMatches === 'function') {
+                await refreshIndividualMatches();
+            }
+            
             showNotification('🏆 Tournament simulated! Actual results are now available.', 'success');
         } catch (error) {
             console.error('Error simulating tournament:', error);
@@ -626,16 +636,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const refreshIndividualMatches = async () => {
         try {
-            const response = await fetch('/api/matches');
-            if (!response.ok) {
+            // Fetch both matches and predictions
+            const matchResponse = await fetch('/api/matches');
+            if (!matchResponse.ok) {
                 return;
             }
-            const matches = await response.json();
+            const matches = await matchResponse.json();
             const matchesMap = new Map(matches.map(match => [match.id, match]));
+
+            // Fetch predictions
+            const predResponse = await fetch('/api/predictions');
+            let predictions = {};
+            if (predResponse.ok) {
+                const predArray = await predResponse.json();
+                predictions = Object.fromEntries(predArray.map(p => [p.match_id, p]));
+            }
 
             document.querySelectorAll('.individual-match-card').forEach(card => {
                 const matchId = parseInt(card.dataset.matchId, 10);
                 const match = matchesMap.get(matchId);
+                const prediction = predictions[matchId];
+                
                 if (!match) {
                     return;
                 }
@@ -669,12 +690,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     team2Name.textContent = match.team2_code || match.team2_placeholder || 'TBD';
                 }
 
+                // Update score inputs if prediction exists
+                if (prediction) {
+                    const team1ScoreInput = card.querySelector('.team1-score');
+                    const team2ScoreInput = card.querySelector('.team2-score');
+                    
+                    if (team1ScoreInput) {
+                        team1ScoreInput.value = prediction.predicted_team1_score;
+                    }
+                    if (team2ScoreInput) {
+                        team2ScoreInput.value = prediction.predicted_team2_score;
+                    }
+                    
+                    // Mark card as having prediction
+                    card.classList.add('has-prediction');
+                } else {
+                    // No prediction, reset to 0-0
+                    const team1ScoreInput = card.querySelector('.team1-score');
+                    const team2ScoreInput = card.querySelector('.team2-score');
+                    if (team1ScoreInput) team1ScoreInput.value = 0;
+                    if (team2ScoreInput) team2ScoreInput.value = 0;
+                    card.classList.remove('has-prediction');
+                }
+
                 const penaltySelect = card.querySelector('.penalty-select-individual');
                 if (penaltySelect) {
                     const options = penaltySelect.querySelectorAll('option');
                     if (options.length >= 3) {
                         options[1].textContent = match.team1_name || 'Team 1';
                         options[2].textContent = match.team2_name || 'Team 2';
+                    }
+                    // Set penalty shootout winner if applicable
+                    if (prediction && prediction.penalty_shootout_winner_id) {
+                        penaltySelect.value = prediction.penalty_shootout_winner_id;
                     }
                 }
             });
