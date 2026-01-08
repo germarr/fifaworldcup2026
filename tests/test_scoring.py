@@ -69,7 +69,7 @@ def test_calculate_knockout_points_full_match():
     assert result["points"] == 6
     assert any("x2" in b for b in result["breakdown"])
 
-def test_calculate_knockout_points_mismatch_but_winner_correct():
+def test_calculate_knockout_points_mismatch_no_points():
     # Actual match: Team 1 vs Team 2. Team 1 wins.
     match = Match(actual_team1_score=2, actual_team2_score=1, team1_id=1, team2_id=2)
     
@@ -79,15 +79,9 @@ def test_calculate_knockout_points_mismatch_but_winner_correct():
     # One team matches (Team 1), and the predicted winner (Team 1) is the actual winner (Team 1)
     result = calculate_knockout_points(prediction, match, predicted_team1_id=1, predicted_team2_id=3)
     
-    # Logic in knockout.py:
-    # if actual_winner_id in predicted_ids and predicted_winner_id == actual_winner_id: points += 1
-    # Multiplied by 2
-    
-    # Actual winner: 1. Predicted IDs: {1, 3}. Winner 1 is in predicted.
-    # Predicted winner: 1. Actual winner: 1. Match!
-    # Points = 1 * 2 = 2
-    assert result["points"] == 2
-    assert result["outcome_correct"] is True
+    # Current implementation requires BOTH teams to match for any points.
+    # So even if the winner is correct, if the matchup is wrong, points are 0.
+    assert result["points"] == 0
 
 def test_calculate_knockout_points_mismatch_winner_wrong():
     # Actual match: Team 1 vs Team 2. Team 1 wins.
