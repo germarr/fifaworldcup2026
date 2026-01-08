@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
-from app.models import User, Match, Prediction, Team
+from app.models import User, Match, Prediction, Team, GroupStanding
 from app.database import get_session
 from app.dependencies import get_current_user
 from app.standings import calculate_group_standings
@@ -233,7 +233,49 @@ async def get_standings(
     db: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Get group standings based on user predictions."""
+    """Get group standings based on actual results first, then fallback to user predictions."""
+    # First check if there are actual finished group matches
+    finished_group_matches = db.exec(
+        select(Match).where(
+            Match.round.like("Group Stage%"),
+            Match.is_finished == True
+        )
+    ).all()
+    
+    # If there are actual tournament results, use those
+    if finished_group_matches:
+        official_standings = db.exec(select(GroupStanding)).all()
+        if official_standings:
+            # Organize by group
+            response = {}
+            for standing in official_standings:
+                group = standing.group_letter
+                if group not in response:
+                    response[group] = []
+                response[group].append({
+                    "team_id": standing.team_id,
+                    "team_name": standing.team.name,
+                    "team_code": standing.team.code,
+                    "team_flag_url": f"https://flagcdn.com/w40/{standing.team.code.lower()}.png",
+                    "played": standing.played,
+                    "won": standing.won,
+                    "drawn": standing.drawn,
+                    "lost": standing.lost,
+                    "goals_for": standing.goals_for,
+                    "goals_against": standing.goals_against,
+                    "goal_difference": standing.goal_difference,
+                    "points": standing.points,
+                })
+            
+            # Sort each group
+            for group in response:
+                response[group].sort(
+                    key=lambda x: (x["points"], x["goal_difference"], x["goals_for"]),
+                    reverse=True
+                )
+            return response
+    
+    # Fallback to user predictions if no actual results yet
     standings = calculate_group_standings(current_user.id, db)
 
     # Convert to JSON-serializable format
