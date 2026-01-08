@@ -7,7 +7,7 @@ def calculate_match_points(prediction: Prediction, match: Match) -> dict:
     Rules:
     - Correct Outcome (Winner/Draw): 1 point
     - Exact Score: +2 points (Total 3)
-    - Penalty Winner (if applicable): +1 point
+    - Handles penalty shootout outcomes
     """
     if match.actual_team1_score is None or match.actual_team2_score is None:
         return {"points": 0, "breakdown": [], "status": "pending"}
@@ -21,6 +21,9 @@ def calculate_match_points(prediction: Prediction, match: Match) -> dict:
         actual_winner_id = match.team1_id
     elif match.actual_team2_score > match.actual_team1_score:
         actual_winner_id = match.team2_id
+    elif match.actual_team1_score == match.actual_team2_score and match.penalty_winner_id:
+        # Tie with penalty shootout
+        actual_winner_id = match.penalty_winner_id
     
     # 2. Determine Predicted Outcome
     predicted_winner_id = None
@@ -28,6 +31,9 @@ def calculate_match_points(prediction: Prediction, match: Match) -> dict:
         predicted_winner_id = match.team1_id
     elif prediction.predicted_team2_score > prediction.predicted_team1_score:
         predicted_winner_id = match.team2_id
+    elif prediction.predicted_team1_score == prediction.predicted_team2_score and prediction.penalty_shootout_winner_id:
+        # Tie with penalty shootout prediction
+        predicted_winner_id = prediction.penalty_shootout_winner_id
 
     # Check Outcome
     outcome_correct = False
@@ -60,10 +66,12 @@ def calculate_knockout_points(
     predicted_team2_id: int | None
 ) -> dict:
     """
-    Calculate points for knockout matches with team mismatch handling.
-    - Full scoring only when the predicted teams match the actual teams.
-    - If at least one predicted team matches, allow outcome points when winner aligns.
-    - Handles penalty shootout predictions.
+    Calculate points for knockout matches.
+    
+    Rules:
+    - Full scoring (with 2x multiplier) when predicted teams match stored teams
+    - Partial scoring based on match position when teams mismatch (team resolution mismatch)
+    - Penalty shootout predictions are supported
     """
     if match.actual_team1_score is None or match.actual_team2_score is None:
         return {"points": 0, "breakdown": [], "status": "pending"}
@@ -78,39 +86,46 @@ def calculate_knockout_points(
     teams_match = predicted_ids and actual_ids and predicted_ids == actual_ids
     
     if teams_match:
+        # Teams match - can safely use actual results with IDs
         full = calculate_match_points(prediction, match)
         full["points"] *= 2
         if full["breakdown"]:
             full["breakdown"] = [f"{b} x2" for b in full["breakdown"]]
         return full
 
+    # Teams don't match - actual results are for different team IDs
+    # But we can still score based on POSITION (who won position 1 vs position 2)
     points = 0
     breakdown = []
 
     # Determine predicted winner
-    predicted_winner_id = None
+    predicted_winner_position = None
     if prediction.predicted_team1_score > prediction.predicted_team2_score:
-        predicted_winner_id = predicted_team1_id
+        predicted_winner_position = 1  # Position 1 predicted to win
     elif prediction.predicted_team2_score > prediction.predicted_team1_score:
-        predicted_winner_id = predicted_team2_id
+        predicted_winner_position = 2  # Position 2 predicted to win
     elif prediction.predicted_team1_score == prediction.predicted_team2_score and prediction.penalty_shootout_winner_id:
-        # Tie - check penalty shootout winner
-        predicted_winner_id = prediction.penalty_shootout_winner_id
+        # Tie - determine which position contains the penalty shootout winner
+        if prediction.penalty_shootout_winner_id == predicted_team1_id:
+            predicted_winner_position = 1
+        elif prediction.penalty_shootout_winner_id == predicted_team2_id:
+            predicted_winner_position = 2
 
-    # Determine actual winner (based on resolved teams, not stale IDs)
-    actual_winner_id = None
+    # Determine actual winner position
+    actual_winner_position = None
     if match.actual_team1_score > match.actual_team2_score:
-        # Team in position 1 won
-        actual_winner_id = predicted_team1_id
+        actual_winner_position = 1
     elif match.actual_team2_score > match.actual_team1_score:
-        # Team in position 2 won
-        actual_winner_id = predicted_team2_id
+        actual_winner_position = 2
     elif match.actual_team1_score == match.actual_team2_score and match.penalty_winner_id:
-        # Tie - penalty shootout winner
-        actual_winner_id = match.penalty_winner_id
+        # Tie - determine which position contains the penalty winner
+        if match.penalty_winner_id == match.team1_id:
+            actual_winner_position = 1
+        elif match.penalty_winner_id == match.team2_id:
+            actual_winner_position = 2
 
-    # Award point if predicted winner matches actual winner
-    if predicted_winner_id and actual_winner_id and predicted_winner_id == actual_winner_id:
+    # Award point if predicted position matches actual position
+    if predicted_winner_position and actual_winner_position and predicted_winner_position == actual_winner_position:
         points += 1
         breakdown.append("Correct Outcome (+1)")
 
