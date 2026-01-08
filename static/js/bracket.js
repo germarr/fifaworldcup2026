@@ -129,8 +129,9 @@ class BracketGame {
                 document.getElementById('penalty-winner').value = '';
             }
         } else {
-            document.getElementById('team1-score').value = '';
-            document.getElementById('team2-score').value = '';
+            // Default to 0-0 instead of empty
+            document.getElementById('team1-score').value = 0;
+            document.getElementById('team2-score').value = 0;
             document.getElementById('penalty-shootout-container').style.display = 'none';
             document.getElementById('penalty-winner').value = '';
         }
@@ -174,14 +175,22 @@ class BracketGame {
         const team1Score = document.getElementById('team1-score').value;
         const team2Score = document.getElementById('team2-score').value;
 
-        // Skip if no scores entered
-        if (team1Score === '' || team2Score === '') {
-            return true; // Return success to allow navigation
+        // Allow empty/0 scores for navigation but need validation
+        // For group stage, allow empty (optional)
+        // For knockout, if different scores (no tie) allow empty, if tied need penalty
+        const isKnockout = !match.round.includes('Group Stage');
+        
+        // If scores are truly empty (not just 0), allow navigation without saving
+        if (team1Score === '' && team2Score === '') {
+            return true;
         }
 
+        // Ensure both scores have values (default to 0 if one is empty but not both)
+        const score1 = team1Score === '' ? 0 : parseInt(team1Score);
+        const score2 = team2Score === '' ? 0 : parseInt(team2Score);
+
         // Check if penalty shootout winner is needed
-        const isKnockout = !match.round.includes('Group Stage');
-        const isTied = parseInt(team1Score) === parseInt(team2Score);
+        const isTied = score1 === score2;
         const penaltyWinner = document.getElementById('penalty-winner').value;
 
         if (isKnockout && isTied && !penaltyWinner) {
@@ -192,8 +201,8 @@ class BracketGame {
         try {
             const payload = {
                 match_id: match.id,
-                predicted_team1_score: parseInt(team1Score),
-                predicted_team2_score: parseInt(team2Score)
+                predicted_team1_score: score1,
+                predicted_team2_score: score2
             };
 
             // Add penalty shootout winner if applicable
