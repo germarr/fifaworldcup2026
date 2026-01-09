@@ -1,0 +1,676 @@
+{% extends "base.html" %}
+
+{% block title %}Group Stage - Quick Game{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/static/css/quickgame.css">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
+    <div class="max-w-6xl mx-auto px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Group Stage Picks</h1>
+                    <p class="text-gray-600 mt-1">Game Code: <span class="font-mono font-bold text-green-600">{{ game_code }}</span></p>
+                </div>
+                <div class="text-right">
+                    <button
+                        id="auto-fill-scores-btn"
+                        class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors mr-2"
+                    >
+                        🎲 Auto Fill Results
+                    </button>
+                    <button
+                        id="view-standings-btn"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        📊 View Standings
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="bg-white rounded-xl shadow-md p-4 mb-6">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-sm font-semibold text-gray-700">Progress</span>
+                <span class="text-sm font-semibold text-gray-700"><span id="progress-count">0</span> / <span id="total-matches">{% set total = namespace(count=0) %}{% for group, matches in groups.items() %}{% set total.count = total.count + matches|length %}{% endfor %}{{ total.count }}</span></span>
+            </div>
+            <div class="w-full bg-gray-200 rounded-full h-3">
+                <div id="progress-bar" class="bg-gradient-to-r from-green-400 to-green-600 h-3 rounded-full transition-all" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Groups Grid -->
+        <div class="grid lg:grid-cols-2 gap-6 mb-8">
+            {% for group_letter, matches in groups.items() %}
+            <div class="bg-white rounded-2xl shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-green-400 pb-2">
+                    Group {{ group_letter }}
+                </h2>
+
+                <div class="space-y-4">
+                    {% for match_data in matches %}
+                    <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-green-300 transition-colors match-card" data-match-id="{{ match_data.match.id }}" data-group="{{ group_letter }}" data-team1-code="{{ match_data.team1.code if match_data.team1 else '' }}" data-team2-code="{{ match_data.team2.code if match_data.team2 else '' }}" data-team1-id="{{ match_data.team1.id if match_data.team1 else '' }}" data-team2-id="{{ match_data.team2.id if match_data.team2 else '' }}">
+                        <!-- Match Number -->
+                        <div class="text-xs font-semibold text-gray-500 mb-2">Match #{{ match_data.match.match_number }}</div>
+
+                        <!-- Teams -->
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="flex items-center gap-2 flex-1">
+                                {% if match_data.team1_flag %}
+                                <img src="{{ match_data.team1_flag }}" alt="{{ match_data.team1.code }}" class="w-8 h-6 object-cover rounded">
+                                {% endif %}
+                                <span class="font-semibold text-gray-800">{{ match_data.team1.code if match_data.team1 else 'TBD' }}</span>
+                            </div>
+                            <span class="text-gray-400 font-bold mx-2">VS</span>
+                            <div class="flex items-center gap-2 flex-1 justify-end">
+                                <span class="font-semibold text-gray-800">{{ match_data.team2.code if match_data.team2 else 'TBD' }}</span>
+                                {% if match_data.team2_flag %}
+                                <img src="{{ match_data.team2_flag }}" alt="{{ match_data.team2.code }}" class="w-8 h-6 object-cover rounded">
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Result Buttons -->
+                        <div class="grid grid-cols-3 gap-2">
+                            <button
+                                class="result-btn py-2 px-3 rounded-lg font-semibold transition-all border-2 border-transparent
+                                       {% if match_data.selected_result == 'team1' %}bg-green-500 text-white border-gray-800 scale-105{% else %}bg-gray-200 text-gray-700 hover:bg-green-100{% endif %}"
+                                data-match-id="{{ match_data.match.id }}"
+                                data-result="team1"
+                            >
+                                {{ match_data.team1.code if match_data.team1 else 'T1' }} Win
+                            </button>
+                            <button
+                                class="result-btn py-2 px-3 rounded-lg font-semibold transition-all border-2 border-transparent
+                                       {% if match_data.selected_result == 'draw' %}bg-gray-500 text-white border-gray-800 scale-105{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+                                data-match-id="{{ match_data.match.id }}"
+                                data-result="draw"
+                            >
+                                Draw
+                            </button>
+                            <button
+                                class="result-btn py-2 px-3 rounded-lg font-semibold transition-all border-2 border-transparent
+                                       {% if match_data.selected_result == 'team2' %}bg-green-500 text-white border-gray-800 scale-105{% else %}bg-gray-200 text-gray-700 hover:bg-green-100{% endif %}"
+                                data-match-id="{{ match_data.match.id }}"
+                                data-result="team2"
+                            >
+                                {{ match_data.team2.code if match_data.team2 else 'T2' }} Win
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-6 border-t-2 border-gray-100 pt-4">
+                    <h3 class="text-lg font-bold text-gray-800 mb-2">Group Standings</h3>
+                    <div class="group-standings" data-group-letter="{{ group_letter }}">
+                        <p class="text-sm text-gray-500">Loading standings...</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Continue Button -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
+            <button
+                id="continue-to-knockout-btn"
+                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+            >
+                Continue to Knockout Stage →
+            </button>
+            <p class="text-sm text-gray-500 mt-2">Pick all matches to continue</p>
+        </div>
+    </div>
+</div>
+
+<!-- Standings Modal -->
+<div id="standings-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="sticky top-0 bg-white border-b-2 border-gray-200 p-6 flex items-center justify-between">
+            <h2 class="text-2xl font-bold text-gray-800">Group Standings</h2>
+            <button id="close-standings-btn" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+        </div>
+        <div id="standings-content" class="p-6">
+            <p class="text-center text-gray-500">Loading...</p>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity">
+    <span id="notification-text"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const gameCode = "{{ game_code }}";
+let selectedCount = 0;
+const totalMatches = {% set total = namespace(count=0) %}{% for group, matches in groups.items() %}{% set total.count = total.count + matches|length %}{% endfor %}{{ total.count }};
+const POINTS_WIN = 3;
+const POINTS_DRAW = 1;
+const initialTiebreakers = {{ tiebreakers | tojson }};
+const groupTiebreakers = initialTiebreakers ? { ...initialTiebreakers } : {};
+
+function getSelectedResult(matchCard) {
+    const selectedBtn = matchCard.querySelector('.result-btn.bg-green-500, .result-btn.bg-gray-500');
+    return selectedBtn ? selectedBtn.dataset.result : null;
+}
+
+async function persistResult(matchId, result) {
+    const response = await fetch(`/quickgame/${gameCode}/match/${matchId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ result: result })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to save');
+    }
+}
+
+function applyResultToMatch(matchCard, result, options = {}) {
+    const allBtns = matchCard.querySelectorAll('.result-btn');
+    const wasSelected = Boolean(getSelectedResult(matchCard));
+    const selectedBtn = matchCard.querySelector(`.result-btn[data-result="${result}"]`);
+
+    allBtns.forEach(b => {
+        b.classList.remove('bg-green-500', 'bg-gray-500', 'text-white', 'border-gray-800', 'scale-105');
+        b.classList.add('bg-gray-200', 'text-gray-700');
+    });
+
+    if (!selectedBtn) {
+        return;
+    }
+
+    selectedBtn.classList.remove('bg-gray-200', 'text-gray-700');
+    if (result === 'draw') {
+        selectedBtn.classList.add('bg-gray-500', 'text-white', 'border-gray-800', 'scale-105');
+    } else {
+        selectedBtn.classList.add('bg-green-500', 'text-white', 'border-gray-800', 'scale-105');
+    }
+
+    if (!wasSelected) {
+        selectedCount++;
+    }
+
+    updateProgress();
+    updateGroupStandings();
+
+    if (options.persist !== false) {
+        persistResult(matchCard.dataset.matchId, result).catch(error => {
+            console.error('Error saving result:', error);
+            showNotification('Error saving selection', 'error');
+        });
+    }
+}
+
+function buildStandingsData() {
+    const standings = {};
+
+    document.querySelectorAll('.match-card').forEach(matchCard => {
+        const group = matchCard.dataset.group;
+        const team1Code = matchCard.dataset.team1Code;
+        const team2Code = matchCard.dataset.team2Code;
+        const team1Id = matchCard.dataset.team1Id;
+        const team2Id = matchCard.dataset.team2Id;
+
+        if (!group || !team1Code || !team2Code) {
+            return;
+        }
+
+        if (!standings[group]) {
+            standings[group] = {};
+        }
+
+        [[team1Code, team1Id], [team2Code, team2Id]].forEach(([teamCode, teamId]) => {
+            if (!standings[group][teamCode]) {
+                standings[group][teamCode] = {
+                    team_id: teamId ? parseInt(teamId) : null,
+                    team_code: teamCode,
+                    played: 0,
+                    won: 0,
+                    drawn: 0,
+                    lost: 0,
+                    points: 0
+                };
+            }
+        });
+
+        const result = getSelectedResult(matchCard);
+        if (!result) {
+            return;
+        }
+
+        const team1Stats = standings[group][team1Code];
+        const team2Stats = standings[group][team2Code];
+
+        team1Stats.played += 1;
+        team2Stats.played += 1;
+
+        if (result === 'team1') {
+            team1Stats.won += 1;
+            team1Stats.points += POINTS_WIN;
+            team2Stats.lost += 1;
+        } else if (result === 'team2') {
+            team2Stats.won += 1;
+            team2Stats.points += POINTS_WIN;
+            team1Stats.lost += 1;
+        } else {
+            team1Stats.drawn += 1;
+            team1Stats.points += POINTS_DRAW;
+            team2Stats.drawn += 1;
+            team2Stats.points += POINTS_DRAW;
+        }
+    });
+
+    return standings;
+}
+
+function applyTiebreakerOrder(groupTeams, group) {
+    const tiebreaker = groupTiebreakers[group];
+    if (!tiebreaker) {
+        return groupTeams;
+    }
+
+    const ordered = [...groupTeams];
+    const teamMap = new Map(groupTeams.map(team => [team.team_id, team]));
+
+    const moveToIndex = (teamId, index) => {
+        const team = teamMap.get(teamId);
+        if (!team) {
+            return;
+        }
+        const currentIndex = ordered.findIndex(item => item.team_id === teamId);
+        if (currentIndex === -1 || currentIndex === index) {
+            return;
+        }
+        if (ordered[index] && ordered[index].points !== team.points) {
+            return;
+        }
+        ordered.splice(currentIndex, 1);
+        ordered.splice(index, 0, team);
+    };
+
+    if (ordered.length >= 2 && ordered[0].points === ordered[1].points) {
+        if (tiebreaker.first_team_id) {
+            moveToIndex(tiebreaker.first_team_id, 0);
+        }
+        if (tiebreaker.second_team_id && tiebreaker.second_team_id !== tiebreaker.first_team_id) {
+            moveToIndex(tiebreaker.second_team_id, 1);
+        }
+    } else if (ordered.length >= 3 && ordered[1].points === ordered[2].points) {
+        if (tiebreaker.second_team_id && tiebreaker.second_team_id !== ordered[0].team_id) {
+            moveToIndex(tiebreaker.second_team_id, 1);
+        }
+    }
+
+    return ordered;
+}
+
+function getTieInfo(groupTeams) {
+    if (groupTeams.length < 2) {
+        return { tieForFirst: [], tieForSecond: [] };
+    }
+
+    const pointsFirst = groupTeams[0].points;
+    const pointsSecond = groupTeams[1].points;
+    const tieForFirst = groupTeams.filter(team => team.points === pointsFirst);
+    const tieForSecond = groupTeams.filter(team => team.points === pointsSecond);
+
+    if (tieForFirst.length > 1) {
+        return { tieForFirst, tieForSecond: [] };
+    }
+
+    if (tieForSecond.length > 1) {
+        return { tieForFirst: [], tieForSecond };
+    }
+
+    return { tieForFirst: [], tieForSecond: [] };
+}
+
+function renderTieBreakerControls(group, tieInfo) {
+    const controls = [];
+    const tiebreaker = groupTiebreakers[group] || {};
+
+    const buildOptions = (teams, selectedId, excludeId = null) => {
+        return teams
+            .filter(team => !excludeId || team.team_id !== excludeId)
+            .map(team => {
+                const selected = selectedId && team.team_id === selectedId ? 'selected' : '';
+                return `<option value="${team.team_id}" ${selected}>${team.team_code}</option>`;
+            })
+            .join('');
+    };
+
+    if (tieInfo.tieForFirst.length) {
+        const firstSelected = tiebreaker.first_team_id || tieInfo.tieForFirst[0].team_id;
+        const secondSelected = tiebreaker.second_team_id || tieInfo.tieForFirst[1]?.team_id || null;
+
+        controls.push(`
+            <div class="mt-3">
+                <p class="text-xs font-semibold text-amber-700 mb-2">Tie detected for 1st place. Pick the order:</p>
+                <div class="flex flex-col gap-2">
+                    <label class="text-xs text-gray-600">1st place</label>
+                    <select class="tie-breaker-select border border-gray-300 rounded-md p-2 text-sm" data-group="${group}" data-role="first">
+                        ${buildOptions(tieInfo.tieForFirst, firstSelected)}
+                    </select>
+                    <label class="text-xs text-gray-600">2nd place</label>
+                    <select class="tie-breaker-select border border-gray-300 rounded-md p-2 text-sm" data-group="${group}" data-role="second">
+                        ${buildOptions(tieInfo.tieForFirst, secondSelected, firstSelected)}
+                    </select>
+                </div>
+            </div>
+        `);
+    } else if (tieInfo.tieForSecond.length) {
+        const secondSelected = tiebreaker.second_team_id || tieInfo.tieForSecond[0].team_id;
+        controls.push(`
+            <div class="mt-3">
+                <p class="text-xs font-semibold text-amber-700 mb-2">Tie detected for 2nd place. Pick who advances:</p>
+                <select class="tie-breaker-select border border-gray-300 rounded-md p-2 text-sm" data-group="${group}" data-role="second">
+                    ${buildOptions(tieInfo.tieForSecond, secondSelected)}
+                </select>
+            </div>
+        `);
+    }
+
+    return controls.join('');
+}
+
+function renderGroupStandings(standings) {
+    document.querySelectorAll('.group-standings').forEach(container => {
+        const group = container.dataset.groupLetter;
+        const groupTeams = standings[group] ? Object.values(standings[group]) : [];
+
+        if (groupTeams.length === 0) {
+            container.innerHTML = '<p class="text-sm text-gray-500">No teams available.</p>';
+            return;
+        }
+
+        groupTeams.sort((a, b) => {
+            if (b.points !== a.points) {
+                return b.points - a.points;
+            }
+            if (b.won !== a.won) {
+                return b.won - a.won;
+            }
+            return a.team_code.localeCompare(b.team_code);
+        });
+
+        const orderedTeams = applyTiebreakerOrder(groupTeams, group);
+        const tieInfo = getTieInfo(groupTeams);
+
+        let html = `
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="text-xs text-gray-500 border-b border-gray-200">
+                        <th class="text-left pb-2">Team</th>
+                        <th class="text-center pb-2">P</th>
+                        <th class="text-center pb-2">W</th>
+                        <th class="text-center pb-2">D</th>
+                        <th class="text-center pb-2">L</th>
+                        <th class="text-center pb-2 font-bold">Pts</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+
+        orderedTeams.forEach((team, index) => {
+            const highlightClass = index < 2 ? 'bg-green-50 font-semibold' : '';
+            html += `
+                <tr class="${highlightClass}">
+                    <td class="py-2">${team.team_code}</td>
+                    <td class="text-center">${team.played}</td>
+                    <td class="text-center">${team.won}</td>
+                    <td class="text-center">${team.drawn}</td>
+                    <td class="text-center">${team.lost}</td>
+                    <td class="text-center font-bold">${team.points}</td>
+                </tr>
+            `;
+        });
+
+        html += `
+                </tbody>
+            </table>
+        `;
+
+        const tieControls = renderTieBreakerControls(group, tieInfo);
+        container.innerHTML = html + tieControls;
+    });
+
+    document.querySelectorAll('.tie-breaker-select').forEach(select => {
+        select.addEventListener('change', async function() {
+            const group = this.dataset.group;
+            const role = this.dataset.role;
+            const selectedId = parseInt(this.value);
+
+            if (!groupTiebreakers[group]) {
+                groupTiebreakers[group] = {};
+            }
+
+            if (role === 'first') {
+                groupTiebreakers[group].first_team_id = selectedId;
+                if (groupTiebreakers[group].second_team_id === selectedId) {
+                    groupTiebreakers[group].second_team_id = null;
+                }
+            } else {
+                groupTiebreakers[group].second_team_id = selectedId;
+                if (groupTiebreakers[group].first_team_id === selectedId) {
+                    groupTiebreakers[group].first_team_id = null;
+                }
+            }
+
+            try {
+                await persistTiebreaker(group);
+                updateGroupStandings();
+            } catch (error) {
+                console.error('Error saving tiebreaker:', error);
+                showNotification('Error saving tie-breaker', 'error');
+            }
+        });
+    });
+}
+
+function updateGroupStandings() {
+    const standings = buildStandingsData();
+    renderGroupStandings(standings);
+}
+
+// Count initial selections
+document.querySelectorAll('.match-card').forEach(matchCard => {
+    const result = getSelectedResult(matchCard);
+    if (result) {
+        selectedCount++;
+    }
+});
+
+updateProgress();
+updateGroupStandings();
+
+// Result button click handlers
+document.querySelectorAll('.result-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const result = this.dataset.result;
+        const matchCard = this.closest('.match-card');
+        applyResultToMatch(matchCard, result);
+    });
+});
+
+function updateProgress() {
+    const percentage = (selectedCount / totalMatches) * 100;
+    document.getElementById('progress-bar').style.width = percentage + '%';
+    document.getElementById('progress-count').textContent = selectedCount;
+
+    const continueBtn = document.getElementById('continue-to-knockout-btn');
+    if (selectedCount === totalMatches) {
+        continueBtn.disabled = false;
+    } else {
+        continueBtn.disabled = true;
+    }
+}
+
+// Auto fill scores
+document.getElementById('auto-fill-scores-btn').addEventListener('click', async function() {
+    const button = this;
+    const matchCards = Array.from(document.querySelectorAll('.match-card'));
+    const emptyMatchCards = matchCards.filter(matchCard => !getSelectedResult(matchCard));
+
+    button.disabled = true;
+    button.textContent = 'Filling...';
+
+    if (emptyMatchCards.length === 0) {
+        showNotification('All matches already have picks', 'success');
+        button.disabled = false;
+        button.textContent = '🎲 Auto Fill Results';
+        return;
+    }
+
+    const savePromises = emptyMatchCards.map(matchCard => {
+        let result = 'draw';
+
+        const randomRoll = Math.random();
+        if (randomRoll < 0.45) {
+            result = 'team1';
+        } else if (randomRoll < 0.9) {
+            result = 'team2';
+        }
+
+        applyResultToMatch(matchCard, result, {
+            persist: false
+        });
+
+        return persistResult(matchCard.dataset.matchId, result);
+    });
+
+    try {
+        await Promise.all(savePromises);
+        showNotification('Random results applied', 'success');
+    } catch (error) {
+        console.error('Error saving random scores:', error);
+        showNotification('Some selections failed to save', 'error');
+    } finally {
+        button.disabled = false;
+        button.textContent = '🎲 Auto Fill Results';
+    }
+});
+
+async function persistTiebreaker(group) {
+    const tiebreaker = groupTiebreakers[group] || {};
+    const response = await fetch(`/quickgame/${gameCode}/tiebreaker`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            group: group,
+            first_team_id: tiebreaker.first_team_id || null,
+            second_team_id: tiebreaker.second_team_id || null
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error('Failed to save tiebreaker');
+    }
+}
+
+// Continue button
+document.getElementById('continue-to-knockout-btn').addEventListener('click', function() {
+    window.location.href = `/quickgame/${gameCode}/knockout`;
+});
+
+// View standings
+document.getElementById('view-standings-btn').addEventListener('click', async function() {
+    const modal = document.getElementById('standings-modal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+
+    try {
+        const response = await fetch(`/quickgame/${gameCode}/standings`);
+        const standings = await response.json();
+
+        let html = '<div class="grid md:grid-cols-2 gap-6">';
+
+        for (const [group, teams] of Object.entries(standings).sort()) {
+            html += `
+                <div class="border-2 border-gray-200 rounded-xl p-4">
+                    <h3 class="text-xl font-bold text-gray-800 mb-3 border-b-2 border-green-400 pb-2">Group ${group}</h3>
+                    <table class="w-full">
+                        <thead>
+                            <tr class="text-xs text-gray-500 border-b border-gray-200">
+                                <th class="text-left pb-2">Team</th>
+                                <th class="text-center pb-2">P</th>
+                                <th class="text-center pb-2">W</th>
+                                <th class="text-center pb-2">D</th>
+                                <th class="text-center pb-2">L</th>
+                                <th class="text-center pb-2 font-bold">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            teams.forEach((team, index) => {
+                const qualifiedClass = index < 2 ? 'bg-green-50 font-semibold' : '';
+                html += `
+                    <tr class="${qualifiedClass}">
+                        <td class="py-2 text-sm">${team.team_code}</td>
+                        <td class="text-center text-sm">${team.played}</td>
+                        <td class="text-center text-sm">${team.won}</td>
+                        <td class="text-center text-sm">${team.drawn}</td>
+                        <td class="text-center text-sm">${team.lost}</td>
+                        <td class="text-center font-bold text-sm">${team.points}</td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        html += '</div>';
+        document.getElementById('standings-content').innerHTML = html;
+    } catch (error) {
+        console.error('Error loading standings:', error);
+        document.getElementById('standings-content').innerHTML = '<p class="text-center text-red-500">Error loading standings</p>';
+    }
+});
+
+document.getElementById('close-standings-btn').addEventListener('click', function() {
+    const modal = document.getElementById('standings-modal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+});
+
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notification-text');
+
+    notificationText.textContent = message;
+
+    if (type === 'error') {
+        notification.classList.remove('bg-green-500');
+        notification.classList.add('bg-red-500');
+    } else {
+        notification.classList.remove('bg-red-500');
+        notification.classList.add('bg-green-500');
+    }
+
+    notification.classList.remove('hidden');
+
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
+</script>
+{% endblock %}

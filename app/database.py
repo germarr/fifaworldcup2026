@@ -1,8 +1,11 @@
+import os
 from sqlmodel import SQLModel, create_engine, Session
 from typing import Generator
 
-# SQLite database URL
-DATABASE_URL = "sqlite:///./worldcup.db"
+# Get the project root directory
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Use absolute path for the SQLite database
+DATABASE_URL = f"sqlite:///{os.path.join(BASE_DIR, 'worldcup.db')}"
 
 # Create engine with check_same_thread=False for SQLite
 engine = create_engine(

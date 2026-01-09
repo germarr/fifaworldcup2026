@@ -57,13 +57,32 @@ async def leaderboard(
     
     # 2. Team Leaderboard (Ranked by average points per member or total points)
     # Using total points for now
-    teams = db.exec(select(PlayerTeam)).all()
+    # Eagerly load both memberships and members for accurate total_points calculation
+    from sqlalchemy.orm import selectinload
+    teams_stmt = select(PlayerTeam).options(
+        selectinload(PlayerTeam.memberships),
+        selectinload(PlayerTeam.members)
+    )
+    teams = db.exec(teams_stmt).all()
     # Sort teams by total points in python as property isn't a DB column
     teams_ranked = sorted(teams, key=lambda t: t.total_points, reverse=True)
     
     # 3. My Team Leaderboard
     my_team_members = []
-    if current_user.player_team:
+    my_team = None
+    
+    # Check new memberships relationship first
+    if current_user.team_memberships and len(current_user.team_memberships) > 0:
+        my_team = current_user.team_memberships[0].player_team
+        if my_team and my_team.memberships:
+            my_team_members = sorted(
+                [m.user for m in my_team.memberships],
+                key=lambda u: u.total_points,
+                reverse=True
+            )
+    # Fallback to old player_team relationship
+    elif current_user.player_team:
+        my_team = current_user.player_team
         my_team_members = sorted(current_user.player_team.members, key=lambda u: u.total_points, reverse=True)
 
     return templates.TemplateResponse(

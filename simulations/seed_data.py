@@ -3,6 +3,12 @@ Database seeder for FIFA World Cup teams and matches.
 Run this script to populate the database with sample data.
 """
 
+import sys
+import os
+
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from datetime import datetime, timedelta
 import random
 from sqlmodel import Session, select

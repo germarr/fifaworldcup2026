@@ -1,4 +1,10 @@
+import sys
+import os
 import random
+
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from sqlmodel import Session, select
 from app.database import engine
 from app.models import Match, Team, GroupStanding, User, Prediction
@@ -211,10 +217,24 @@ def resolve_knockout_match(session, match, placeholder_map):
                 
     return changed
 
-def simulate_full_tournament():
-    with Session(engine) as session:
+def simulate_full_tournament(user_id: int = None, db = None):
+    """
+    Simulate full tournament and optionally create predictions for a user.
+    
+    Args:
+        user_id: If provided, create predictions for this user with simulated scores
+        db: Database session (required if user_id is provided)
+    """
+    # If no db provided, use default engine with context manager
+    if db is None:
+        session = Session(engine)
+        should_close = True
+    else:
+        session = db
+        should_close = False
+    
+    try:
         print("--- RESETTING TOURNAMENT ---")
-        # Reset all matches
         all_matches = session.exec(select(Match)).all()
         for m in all_matches:
             m.actual_team1_score = None
@@ -302,6 +322,49 @@ def simulate_full_tournament():
 
         # Update user scores based on full tournament results
         update_user_scores(session)
+    
+    finally:
+        if should_close:
+            session.close()
 
-if __name__ == "__main__":
-    simulate_full_tournament()
+
+def create_user_predictions_from_simulation(user_id: int, session: Session):
+    """
+    Create random predictions for a user to auto-populate their bracket.
+    
+    This is called when user clicks "Pick the entire Tournament" to instantly
+    fill in all match predictions with random values. This allows:
+    1. Users to have a complete bracket immediately
+    2. Predictions to potentially differ from actual results (for scoring)
+    3. Users can still edit predictions manually before committing
+    """
+    from app.models import Prediction
+    
+    # Get all matches
+    matches = session.exec(select(Match)).all()
+    
+    # Delete any existing predictions for this user (clean slate)
+    existing = session.exec(select(Prediction).where(Prediction.user_id == user_id)).all()
+    for pred in existing:
+        session.delete(pred)
+    session.commit()
+    
+    # Create new RANDOM predictions for each match
+    # These are independent of actual_* scores (which may not exist yet)
+    for match in matches:
+        # Generate random scores (0-3 for realistic match results)
+        score1 = random.randint(0, 3)
+        score2 = random.randint(0, 3)
+        
+        prediction = Prediction(
+            user_id=user_id,
+            match_id=match.id,
+            predicted_team1_score=score1,
+            predicted_team2_score=score2,
+            # Handle penalty shootout for tied knockout matches
+            penalty_shootout_winner_id=None  # User would need to set this manually if tied
+        )
+        session.add(prediction)
+    
+    session.commit()
+    print(f"Created {len(matches)} random predictions for user {user_id}")

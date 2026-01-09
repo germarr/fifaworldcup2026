@@ -129,8 +129,9 @@ class BracketGame {
                 document.getElementById('penalty-winner').value = '';
             }
         } else {
-            document.getElementById('team1-score').value = '';
-            document.getElementById('team2-score').value = '';
+            // Default to 0-0 instead of empty
+            document.getElementById('team1-score').value = 0;
+            document.getElementById('team2-score').value = 0;
             document.getElementById('penalty-shootout-container').style.display = 'none';
             document.getElementById('penalty-winner').value = '';
         }
@@ -174,14 +175,22 @@ class BracketGame {
         const team1Score = document.getElementById('team1-score').value;
         const team2Score = document.getElementById('team2-score').value;
 
-        // Skip if no scores entered
-        if (team1Score === '' || team2Score === '') {
-            return true; // Return success to allow navigation
+        // Allow empty/0 scores for navigation but need validation
+        // For group stage, allow empty (optional)
+        // For knockout, if different scores (no tie) allow empty, if tied need penalty
+        const isKnockout = !match.round.includes('Group Stage');
+        
+        // If scores are truly empty (not just 0), allow navigation without saving
+        if (team1Score === '' && team2Score === '') {
+            return true;
         }
 
+        // Ensure both scores have values (default to 0 if one is empty but not both)
+        const score1 = team1Score === '' ? 0 : parseInt(team1Score);
+        const score2 = team2Score === '' ? 0 : parseInt(team2Score);
+
         // Check if penalty shootout winner is needed
-        const isKnockout = !match.round.includes('Group Stage');
-        const isTied = parseInt(team1Score) === parseInt(team2Score);
+        const isTied = score1 === score2;
         const penaltyWinner = document.getElementById('penalty-winner').value;
 
         if (isKnockout && isTied && !penaltyWinner) {
@@ -192,8 +201,8 @@ class BracketGame {
         try {
             const payload = {
                 match_id: match.id,
-                predicted_team1_score: parseInt(team1Score),
-                predicted_team2_score: parseInt(team2Score)
+                predicted_team1_score: score1,
+                predicted_team2_score: score2
             };
 
             // Add penalty shootout winner if applicable
@@ -213,9 +222,16 @@ class BracketGame {
                 const savedPrediction = await response.json();
                 this.predictions[match.id] = savedPrediction;
 
+                // Sync individual mode inputs with updated predictions
+                this.syncIndividualModeInputs();
+
                 // Reload standings if this was a group stage match
                 if (match.round.includes('Group Stage')) {
                     await this.loadStandings();
+                    // Also refresh the dashboard if the global function exists
+                    if (typeof loadStandingsDashboard === 'function') {
+                        await loadStandingsDashboard();
+                    }
                 }
 
                 // Reload matches to update knockout teams
@@ -424,7 +440,17 @@ class BracketGame {
 
             await this.loadStandings();
             await this.loadMatches();
+            await this.loadPredictions();
             this.showMatch(this.currentIndex);
+            
+            // Sync individual mode with simulated predictions
+            this.syncIndividualModeInputs();
+            
+            // Refresh individual matches grid if available
+            if (typeof refreshIndividualMatches === 'function') {
+                await refreshIndividualMatches();
+            }
+            
             showNotification('🏆 Tournament simulated! Actual results are now available.', 'success');
         } catch (error) {
             console.error('Error simulating tournament:', error);
@@ -493,6 +519,28 @@ class BracketGame {
                 this.goToNext();
             }
         });
+    }
+
+    syncIndividualModeInputs() {
+        /**
+         * Sync individual mode inputs with BracketGame predictions.
+         * This keeps both sections in sync whenever predictions change.
+         */
+        for (const [matchId, prediction] of Object.entries(this.predictions)) {
+            const matchIdNum = parseInt(matchId, 10);
+            const card = document.querySelector(`.individual-match-card[data-match-id="${matchIdNum}"]`);
+            if (!card) continue;
+
+            const team1Input = card.querySelector('.team1-score');
+            const team2Input = card.querySelector('.team2-score');
+            const penaltySelect = card.querySelector('.penalty-select-individual');
+
+            if (team1Input) team1Input.value = prediction.predicted_team1_score;
+            if (team2Input) team2Input.value = prediction.predicted_team2_score;
+            if (penaltySelect && prediction.penalty_shootout_winner_id) {
+                penaltySelect.value = prediction.penalty_shootout_winner_id;
+            }
+        }
     }
 }
 
@@ -588,16 +636,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const refreshIndividualMatches = async () => {
         try {
-            const response = await fetch('/api/matches');
-            if (!response.ok) {
+            // Fetch both matches and predictions
+            const matchResponse = await fetch('/api/matches');
+            if (!matchResponse.ok) {
                 return;
             }
-            const matches = await response.json();
+            const matches = await matchResponse.json();
             const matchesMap = new Map(matches.map(match => [match.id, match]));
+
+            // Fetch predictions
+            const predResponse = await fetch('/api/predictions');
+            let predictions = {};
+            if (predResponse.ok) {
+                const predArray = await predResponse.json();
+                predictions = Object.fromEntries(predArray.map(p => [p.match_id, p]));
+            }
 
             document.querySelectorAll('.individual-match-card').forEach(card => {
                 const matchId = parseInt(card.dataset.matchId, 10);
                 const match = matchesMap.get(matchId);
+                const prediction = predictions[matchId];
+                
                 if (!match) {
                     return;
                 }
@@ -631,12 +690,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     team2Name.textContent = match.team2_code || match.team2_placeholder || 'TBD';
                 }
 
+                // Update score inputs if prediction exists
+                if (prediction) {
+                    const team1ScoreInput = card.querySelector('.team1-score');
+                    const team2ScoreInput = card.querySelector('.team2-score');
+                    
+                    if (team1ScoreInput) {
+                        team1ScoreInput.value = prediction.predicted_team1_score;
+                    }
+                    if (team2ScoreInput) {
+                        team2ScoreInput.value = prediction.predicted_team2_score;
+                    }
+                    
+                    // Mark card as having prediction
+                    card.classList.add('has-prediction');
+                } else {
+                    // No prediction, reset to 0-0
+                    const team1ScoreInput = card.querySelector('.team1-score');
+                    const team2ScoreInput = card.querySelector('.team2-score');
+                    if (team1ScoreInput) team1ScoreInput.value = 0;
+                    if (team2ScoreInput) team2ScoreInput.value = 0;
+                    card.classList.remove('has-prediction');
+                }
+
                 const penaltySelect = card.querySelector('.penalty-select-individual');
                 if (penaltySelect) {
                     const options = penaltySelect.querySelectorAll('option');
                     if (options.length >= 3) {
                         options[1].textContent = match.team1_name || 'Team 1';
                         options[2].textContent = match.team2_name || 'Team 2';
+                    }
+                    // Set penalty shootout winner if applicable
+                    if (prediction && prediction.penalty_shootout_winner_id) {
+                        penaltySelect.value = prediction.penalty_shootout_winner_id;
                     }
                 }
             });
@@ -714,10 +800,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 if (response.ok) {
+                    const savedPrediction = await response.json();
                     showNotification('Prediction saved!', 'success');
 
                     // Mark card as having prediction
                     card.classList.add('has-prediction');
+
+                    // Update BracketGame predictions if it exists
+                    if (bracketGame) {
+                        bracketGame.predictions[parseInt(matchId)] = savedPrediction;
+                        // Show the saved match in game mode if we're on that match
+                        if (bracketGame.currentIndex !== undefined) {
+                            const currentMatch = bracketGame.matches[bracketGame.currentIndex];
+                            if (currentMatch && currentMatch.id === parseInt(matchId)) {
+                                bracketGame.showMatch(bracketGame.currentIndex);
+                            }
+                        }
+                    }
 
                     // Reload standings if available and refresh individual matches
                     if (typeof loadStandingsDashboard === 'function') {

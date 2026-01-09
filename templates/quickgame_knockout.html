@@ -1,0 +1,413 @@
+{% extends "base.html" %}
+
+{% block title %}Knockout Stage - Quick Game{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/static/css/quickgame.css">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
+    <div class="max-w-7xl mx-auto px-4">
+        <!-- Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Knockout Stage</h1>
+                    <p class="text-gray-600 mt-1">Game Code: <span class="font-mono font-bold text-green-600">{{ game_code }}</span></p>
+                </div>
+                <div class="flex gap-3">
+                    <a
+                        href="/quickgame/{{ game_code }}/groups"
+                        class="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        ← Back to Groups
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Knockout Matches by Round -->
+        {% set rounds_order = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"] %}
+        {% for round_name in rounds_order %}
+            {% set round_matches = knockout_matches | selectattr("match.round", "equalto", round_name) | list %}
+            {% if round_matches %}
+            <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b-2 border-green-400 pb-2">
+                    {{ round_name }}
+                </h2>
+
+                <div class="grid md:grid-cols-2 lg:grid-cols-{% if round_name == 'Final' or round_name == 'Third Place' %}1{% elif round_name == 'Semi Finals' %}2{% elif round_name == 'Quarter Finals' %}2{% else %}4{% endif %} gap-4">
+                    {% for match_data in round_matches %}
+                    <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-green-300 transition-colors knockout-match-card" data-match-id="{{ match_data.match.id }}" data-round="{{ match_data.match.round }}">
+                        <!-- Match Number -->
+                        <div class="text-xs font-semibold text-gray-500 mb-3 text-center">Match #{{ match_data.match.match_number }}</div>
+
+                        <!-- Teams -->
+                        <div class="space-y-3 mb-4">
+                            <!-- Team 1 -->
+                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-center gap-2">
+                                    {% if match_data.team1_flag %}
+                                    <img src="{{ match_data.team1_flag }}" alt="{{ match_data.team1.code }}" class="w-10 h-8 object-cover rounded">
+                                    {% endif %}
+                                    <span class="font-semibold text-gray-800">
+                                        {% if match_data.team1 %}
+                                            {{ match_data.team1.code }}
+                                        {% else %}
+                                            {{ match_data.match.team1_placeholder or 'TBD' }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <button
+                                    class="knockout-team-btn w-12 h-12 rounded-full font-bold transition-all border-2
+                                           {% if match_data.selected_result and (match_data.selected_result.result == 'team1' or (match_data.selected_result.result == 'draw' and match_data.team1 and match_data.selected_result.advancing_team_id == match_data.team1.id)) %}bg-green-500 text-white border-gray-800 scale-110{% else %}bg-white text-gray-400 border-gray-300 hover:border-green-400{% endif %}"
+                                    data-match-id="{{ match_data.match.id }}"
+                                    data-team="team1"
+                                    data-team-id="{{ match_data.team1.id if match_data.team1 else '' }}"
+                                    {% if not match_data.team1 %}disabled{% endif %}
+                                >
+                                    ✓
+                                </button>
+                            </div>
+
+                            <!-- Team 2 -->
+                            <div class="flex items-center justify-between bg-gray-50 rounded-lg p-3">
+                                <div class="flex items-center gap-2">
+                                    {% if match_data.team2_flag %}
+                                    <img src="{{ match_data.team2_flag }}" alt="{{ match_data.team2.code }}" class="w-10 h-8 object-cover rounded">
+                                    {% endif %}
+                                    <span class="font-semibold text-gray-800">
+                                        {% if match_data.team2 %}
+                                            {{ match_data.team2.code }}
+                                        {% else %}
+                                            {{ match_data.match.team2_placeholder or 'TBD' }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <button
+                                    class="knockout-team-btn w-12 h-12 rounded-full font-bold transition-all border-2
+                                           {% if match_data.selected_result and (match_data.selected_result.result == 'team2' or (match_data.selected_result.result == 'draw' and match_data.team2 and match_data.selected_result.advancing_team_id == match_data.team2.id)) %}bg-green-500 text-white border-gray-800 scale-110{% else %}bg-white text-gray-400 border-gray-300 hover:border-green-400{% endif %}"
+                                    data-match-id="{{ match_data.match.id }}"
+                                    data-team="team2"
+                                    data-team-id="{{ match_data.team2.id if match_data.team2 else '' }}"
+                                    {% if not match_data.team2 %}disabled{% endif %}
+                                >
+                                    ✓
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Draw Option -->
+                        <div class="text-center">
+                            <label class="inline-flex items-center cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    class="draw-checkbox hidden"
+                                    data-match-id="{{ match_data.match.id }}"
+                                    {% if match_data.selected_result and match_data.selected_result.result == 'draw' %}checked{% endif %}
+                                >
+                                <span class="text-sm text-gray-600 hover:text-gray-800">
+                                    <span class="draw-checkbox-custom inline-block w-5 h-5 border-2 border-gray-300 rounded mr-2 align-middle"></span>
+                                    Match ends in draw (penalties)
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-100 pt-4">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
+                        <p class="text-sm font-semibold text-amber-800">
+                            ⚠️ You need to save before continuing to the next round
+                        </p>
+                        <p class="text-xs text-amber-700 mt-1">
+                            After picking winners in this round, click Save Bracket to populate the next round.
+                        </p>
+                    </div>
+                    <button
+                        class="refresh-bracket-btn bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md whitespace-nowrap"
+                        data-round="{{ round_name }}"
+                    >
+                        💾 Save Bracket
+                    </button>
+                </div>
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        <!-- Complete Button -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
+            <button
+                id="complete-game-btn"
+                class="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled
+            >
+                Complete & View Results →
+            </button>
+            <p class="text-sm text-gray-500 mt-2">Pick all knockout matches to complete your bracket</p>
+        </div>
+    </div>
+</div>
+
+<div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity">
+    <span id="notification-text"></span>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const gameCode = "{{ game_code }}";
+function getSelectableMatchCount() {
+    return Array.from(document.querySelectorAll('.knockout-match-card')).filter(card => {
+        return card.querySelector('.knockout-team-btn:not([disabled])');
+    }).length;
+}
+
+function getSelectedMatchCount() {
+    return Array.from(document.querySelectorAll('.knockout-match-card')).filter(card => {
+        return Boolean(card.querySelector('.knockout-team-btn.bg-green-500'));
+    }).length;
+}
+
+updateCompleteButton();
+
+// Team selection buttons
+document.querySelectorAll('.knockout-team-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const matchId = this.dataset.matchId;
+        const team = this.dataset.team;
+        const teamId = this.dataset.teamId;
+        const matchCard = this.closest('.knockout-match-card');
+        const allBtns = matchCard.querySelectorAll('.knockout-team-btn');
+        const drawCheckbox = matchCard.querySelector('.draw-checkbox');
+
+        // Check if this match was previously selected
+        const wasSelected = Array.from(allBtns).some(b => b.classList.contains('bg-green-500'));
+
+        // Check if draw checkbox is checked (penalty shootout scenario)
+        const isPenaltyShootout = drawCheckbox.checked;
+
+        // Remove selection from all buttons
+        allBtns.forEach(b => {
+            b.classList.remove('bg-green-500', 'text-white', 'border-gray-800', 'scale-110');
+            b.classList.add('bg-white', 'text-gray-400', 'border-gray-300');
+        });
+
+        // Add selection to clicked button
+        this.classList.remove('bg-white', 'text-gray-400', 'border-gray-300');
+        this.classList.add('bg-green-500', 'text-white', 'border-gray-800', 'scale-110');
+
+        // Update count
+        updateCompleteButton();
+
+        // Determine the result type
+        let resultType = team;
+        if (isPenaltyShootout) {
+            resultType = 'draw';
+            showNotification(`${team === 'team1' ? 'Team 1' : 'Team 2'} wins on penalties`, 'success');
+        }
+
+        // Save to backend
+        try {
+            const response = await fetch(`/quickgame/${gameCode}/knockout/${matchId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    result: resultType,
+                    advancing_team_id: parseInt(teamId)
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to save');
+            }
+        } catch (error) {
+            console.error('Error saving result:', error);
+            showNotification('Error saving selection', 'error');
+        }
+    });
+});
+
+// Draw checkboxes
+document.querySelectorAll('.draw-checkbox').forEach(checkbox => {
+    updateCheckboxStyle(checkbox);
+
+    checkbox.addEventListener('change', async function() {
+        const matchId = this.dataset.matchId;
+        const matchCard = this.closest('.knockout-match-card');
+        const allBtns = matchCard.querySelectorAll('.knockout-team-btn');
+
+        updateCheckboxStyle(this);
+
+        if (this.checked) {
+            // Show prompt to select advancing team
+            const team1Btn = matchCard.querySelector('[data-team="team1"]');
+            const team2Btn = matchCard.querySelector('[data-team="team2"]');
+
+            // Clear previous selections
+            allBtns.forEach(b => {
+                b.classList.remove('bg-green-500', 'text-white', 'border-gray-800', 'scale-110');
+                b.classList.add('bg-white', 'text-gray-400', 'border-gray-300');
+            });
+
+            // Highlight both buttons to indicate they're selectable
+            allBtns.forEach(b => {
+                if (!b.disabled) {
+                    b.classList.remove('border-gray-300');
+                    b.classList.add('border-blue-400');
+                }
+            });
+
+            // User must click a team to indicate who advances on penalties
+            showNotification('🏁 Match ends in a draw! Click a team to select penalty shootout winner', 'info');
+        } else {
+            // Unchecked - clear selections and remove highlight
+            allBtns.forEach(b => {
+                b.classList.remove('bg-green-500', 'text-white', 'border-gray-800', 'scale-110', 'border-blue-400');
+                b.classList.add('bg-white', 'text-gray-400', 'border-gray-300');
+            });
+        }
+
+        updateCompleteButton();
+    });
+});
+
+function updateCheckboxStyle(checkbox) {
+    const customBox = checkbox.parentElement.querySelector('.draw-checkbox-custom');
+    if (checkbox.checked) {
+        customBox.classList.add('bg-blue-500', 'border-blue-500');
+        customBox.innerHTML = '<svg class="w-3 h-3 text-white mx-auto mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>';
+    } else {
+        customBox.classList.remove('bg-blue-500', 'border-blue-500');
+        customBox.innerHTML = '';
+    }
+}
+
+function updateCompleteButton() {
+    const completeBtn = document.getElementById('complete-game-btn');
+    const selectableMatches = getSelectableMatchCount();
+    const selectedMatches = getSelectedMatchCount();
+    if (selectableMatches > 0 && selectedMatches >= selectableMatches) {
+        completeBtn.disabled = false;
+    } else {
+        completeBtn.disabled = true;
+    }
+}
+
+document.querySelectorAll('.refresh-bracket-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const currentRound = this.dataset.round;
+        // Save the current round to localStorage so we can scroll to the next round after reload
+        localStorage.setItem('knockout_last_saved_round', currentRound);
+        window.location.reload();
+    });
+});
+
+// Auto-scroll to next round after save
+window.addEventListener('DOMContentLoaded', function() {
+    const lastSavedRound = localStorage.getItem('knockout_last_saved_round');
+    if (lastSavedRound) {
+        // Clear the saved round
+        localStorage.removeItem('knockout_last_saved_round');
+
+        // Map of rounds to their next round
+        const roundOrder = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"];
+        const currentIndex = roundOrder.indexOf(lastSavedRound);
+
+        if (currentIndex !== -1 && currentIndex < roundOrder.length - 1) {
+            // Find the next round's section
+            const nextRound = roundOrder[currentIndex + 1];
+            const nextRoundSection = Array.from(document.querySelectorAll('h2')).find(
+                h2 => h2.textContent.trim() === nextRound
+            );
+
+            if (nextRoundSection) {
+                // Scroll to the next round with smooth animation
+                setTimeout(() => {
+                    nextRoundSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Add a highlight effect
+                    const section = nextRoundSection.closest('.bg-white');
+                    if (section) {
+                        section.classList.add('ring-4', 'ring-green-400', 'ring-opacity-50');
+                        setTimeout(() => {
+                            section.classList.remove('ring-4', 'ring-green-400', 'ring-opacity-50');
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }
+    }
+});
+
+// Complete button
+document.getElementById('complete-game-btn').addEventListener('click', async function() {
+    // Get the final match winner (champion)
+    let championTeamId = null;
+
+    // Find the Final match and get the selected team
+    const finalMatchCard = document.querySelector('.knockout-match-card[data-round="Final"]');
+    if (finalMatchCard) {
+        const selectedBtn = finalMatchCard.querySelector('.knockout-team-btn.bg-green-500');
+        if (selectedBtn) {
+            championTeamId = selectedBtn.dataset.teamId;
+        }
+    }
+
+    if (!championTeamId) {
+        showNotification('Could not determine champion', 'error');
+        return;
+    }
+
+    this.disabled = true;
+    this.textContent = 'Completing...';
+
+    try {
+        const response = await fetch(`/quickgame/${gameCode}/complete`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ champion_team_id: parseInt(championTeamId) })
+        });
+
+        if (response.ok) {
+            window.location.href = `/quickgame/${gameCode}/results`;
+        } else {
+            throw new Error('Failed to complete game');
+        }
+    } catch (error) {
+        console.error('Error completing game:', error);
+        this.disabled = false;
+        this.textContent = 'Complete & View Results →';
+        showNotification('Error completing game', 'error');
+    }
+});
+
+function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    const notificationText = document.getElementById('notification-text');
+
+    notificationText.textContent = message;
+
+    notification.className = 'fixed top-4 right-4 px-6 py-3 rounded-lg shadow-lg transition-opacity';
+    if (type === 'error') {
+        notification.classList.add('bg-red-500', 'text-white');
+    } else if (type === 'info') {
+        notification.classList.add('bg-blue-500', 'text-white');
+    } else {
+        notification.classList.add('bg-green-500', 'text-white');
+    }
+
+    notification.classList.remove('hidden');
+
+    setTimeout(() => {
+        notification.classList.add('hidden');
+    }, 3000);
+}
+</script>
+{% endblock %}

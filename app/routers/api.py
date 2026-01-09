@@ -3,7 +3,7 @@ from typing import List, Optional, Dict
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 from sqlmodel import Session, select
-from app.models import User, Match, Prediction, Team
+from app.models import User, Match, Prediction, Team, GroupStanding
 from app.database import get_session
 from app.dependencies import get_current_user
 from app.standings import calculate_group_standings
@@ -40,6 +40,9 @@ class MatchResponse(BaseModel):
     team2_placeholder: Optional[str]
     match_date: datetime
     is_finished: bool
+    actual_team1_score: Optional[int] = None
+    actual_team2_score: Optional[int] = None
+    penalty_winner_id: Optional[int] = None
 
 
 class PredictionResponse(BaseModel):
@@ -233,25 +236,79 @@ async def get_standings(
     db: Session = Depends(get_session),
     current_user: User = Depends(get_current_user)
 ):
-    """Get group standings based on user predictions."""
+    """Get group standings based on user predictions first, then fallback to actual results if no predictions exist."""
+    # Try to get user predictions first
     standings = calculate_group_standings(current_user.id, db)
-
-    # Convert to JSON-serializable format
-    response = {}
-    for group_letter, standings_list in standings.items():
-        response[group_letter] = [ts.to_dict() for ts in standings_list]
-
-    return response
+    
+    # If user has made predictions, return those
+    if standings and any(len(teams) > 0 for teams in standings.values()):
+        response = {}
+        for group_letter, standings_list in standings.items():
+            response[group_letter] = [ts.to_dict() for ts in standings_list]
+        return response
+    
+    # Fallback to official/simulated standings if user has no predictions yet
+    finished_group_matches = db.exec(
+        select(Match).where(
+            Match.round.like("Group Stage%"),
+            Match.is_finished == True
+        )
+    ).all()
+    
+    # If there are actual tournament results, use those
+    if finished_group_matches:
+        official_standings = db.exec(select(GroupStanding)).all()
+        if official_standings:
+            # Organize by group
+            response = {}
+            for standing in official_standings:
+                group = standing.group_letter
+                if group not in response:
+                    response[group] = []
+                response[group].append({
+                    "team_id": standing.team_id,
+                    "team_name": standing.team.name,
+                    "team_code": standing.team.code,
+                    "team_flag_url": f"https://flagcdn.com/w40/{standing.team.code.lower()}.png",
+                    "played": standing.played,
+                    "won": standing.won,
+                    "drawn": standing.drawn,
+                    "lost": standing.lost,
+                    "goals_for": standing.goals_for,
+                    "goals_against": standing.goals_against,
+                    "goal_difference": standing.goal_difference,
+                    "points": standing.points,
+                })
+            
+            # Sort each group
+            for group in response:
+                response[group].sort(
+                    key=lambda x: (x["points"], x["goal_difference"], x["goals_for"]),
+                    reverse=True
+                )
+            return response
+    
+    # Return empty standings if nothing available
+    return {}
 
 
 @router.post("/simulate-tournament")
 async def simulate_tournament(
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_session)
 ):
-    """Simulate the full tournament and persist official results."""
+    """
+    Simulate the full tournament with actual results and populate user predictions.
+    
+    This:
+    1. Generates actual match results (stored in matches.actual_*)
+    2. Creates random predictions for the user (stored in predictions)
+    3. Predictions can differ from actual results, allowing for scoring
+    """
     try:
-        from simulations.simulate_full_tournament import simulate_full_tournament
-        simulate_full_tournament()
+        from simulations.simulate_full_tournament import simulate_full_tournament, create_user_predictions_from_simulation
+        simulate_full_tournament(db=db)  # Don't pass user_id - just set actual results
+        create_user_predictions_from_simulation(current_user.id, db)  # Create random predictions for user
     except Exception as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
