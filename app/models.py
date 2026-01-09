@@ -194,3 +194,52 @@ class Prediction(SQLModel, table=True):
     # Relationships
     user: Optional[User] = Relationship(back_populates="predictions")
     match: Optional[Match] = Relationship(back_populates="predictions")
+
+
+class QuickGame(SQLModel, table=True):
+    """Quick game instance - simplified prediction game without scores."""
+    __tablename__ = "quick_games"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    user_id: Optional[int] = Field(default=None, foreign_key="users.id", index=True)  # NULL for anonymous games
+    game_code: str = Field(unique=True, index=True, max_length=20)  # Shareable game ID
+    is_completed: bool = Field(default=False)
+    champion_team_id: Optional[int] = Field(default=None, foreign_key="teams.id")  # Final winner
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    completed_at: Optional[datetime] = Field(default=None)
+
+    # Relationships
+    matches: List["QuickGameMatch"] = Relationship(back_populates="quick_game")
+
+
+class QuickGameGroupTiebreaker(SQLModel, table=True):
+    """Tie-breaker selections for quick game group standings."""
+    __tablename__ = "quick_game_group_tiebreakers"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    quick_game_id: int = Field(foreign_key="quick_games.id", index=True)
+    group_letter: str = Field(max_length=1, index=True)
+    first_team_id: Optional[int] = Field(default=None, foreign_key="teams.id")
+    second_team_id: Optional[int] = Field(default=None, foreign_key="teams.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class QuickGameMatch(SQLModel, table=True):
+    """Match result in a quick game - stores only winner/draw outcome."""
+    __tablename__ = "quick_game_matches"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    quick_game_id: int = Field(foreign_key="quick_games.id", index=True)
+    match_id: int = Field(foreign_key="matches.id")  # Reference to actual match
+
+    # Result: "team1" = team1 wins, "team2" = team2 wins, "draw" = draw
+    result: str = Field(max_length=10)  # "team1", "team2", or "draw"
+
+    # For knockout stages (if draw, who advances)
+    advancing_team_id: Optional[int] = Field(default=None, foreign_key="teams.id")
+
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    # Relationships
+    quick_game: Optional["QuickGame"] = Relationship(back_populates="matches")
+    match: Optional["Match"] = Relationship()

@@ -1,0 +1,75 @@
+/* Custom Quick Game styles */
+.quick-game-container {
+  background: linear-gradient(135deg, #f0fdf4 0%, #dbeafe 100%);
+  min-height: 100vh;
+}
+
+.quick-card {
+  background: white;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.quick-card:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+}
+
+.match-result-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.match-result-btn.win {
+  background-color: #10b981;
+  color: white;
+}
+
+.match-result-btn.win:hover {
+  background-color: #059669;
+}
+
+.match-result-btn.draw {
+  background-color: #6b7280;
+  color: white;
+}
+
+.match-result-btn.draw:hover {
+  background-color: #4b5563;
+}
+
+.match-result-btn.loss {
+  background-color: #ef4444;
+  color: white;
+}
+
+.match-result-btn.loss:hover {
+  background-color: #dc2626;
+}
+
+.match-result-btn.selected {
+  border-color: #1f2937;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+  transform: scale(1.05);
+}
+
+/* Print styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  .quick-game-container {
+    background: white;
+  }
+
+  body {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+}

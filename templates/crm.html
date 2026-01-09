@@ -19,13 +19,20 @@
 </div>
 
 <div class="crm-rounds">
+    {% set ns = namespace(knockout_started=false) %}
     {% for round_name, matches in matches_by_round.items() %}
+    
+    {% if not ns.knockout_started and "Group" not in round_name %}
+        <div class="crm-divider"></div>
+        {% set ns.knockout_started = true %}
+    {% endif %}
+
     <section class="crm-round">
         <h3>{{ round_name }}</h3>
         <div class="crm-round-list">
             {% for entry in matches %}
             {% set match = entry.match %}
-            <form class="crm-match" method="POST" action="/crm/match/{{ match.id }}">
+            <form class="crm-match {{ entry.class_name }}" method="POST" action="/crm/match/{{ match.id }}">
                 <div class="crm-match-header">
                     <div class="crm-match-title">
                         <span class="crm-match-number">Match {{ match.match_number }}</span>

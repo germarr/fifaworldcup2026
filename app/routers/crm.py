@@ -62,13 +62,23 @@ async def crm_page(
         team1 = teams_map.get(match.team1_id)
         team2 = teams_map.get(match.team2_id)
 
+        # Determine CSS class for color coding
+        class_name = "knockout-round"
+        if "Group" in match.round:
+            # Extract group letter, e.g., "Group A" -> "group-a"
+            group_letter = match.round.split()[-1].lower()
+            class_name = f"group-{group_letter}"
+        elif match.round == "Final":
+            class_name = "final-round"
+
         matches_by_round.setdefault(match.round, []).append({
             "match": match,
             "team1": team1,
             "team2": team2,
-            "team1_flag_url": flag_url(team1.code, 28) if team1 else None,
-            "team2_flag_url": flag_url(team2.code, 28) if team2 else None,
+            "team1_flag_url": flag_url(team1.code, 40) if team1 else None,
+            "team2_flag_url": flag_url(team2.code, 40) if team2 else None,
             "match_date_value": format_match_date(match.match_date),
+            "class_name": class_name,
         })
 
     return templates.TemplateResponse(

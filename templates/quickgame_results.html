@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}Results - {{ game_code }}{% endblock %}
+
+{% block extra_css %}
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="/static/css/quickgame.css">
+<style>
+    @media print {
+        .no-print {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        .container {
+            max-width: 100% !important;
+        }
+
+        .print-page {
+            page-break-after: always;
+        }
+
+        .print-page:last-child {
+            page-break-after: auto;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-white">
+    <!-- No-Print Header -->
+    <div class="no-print bg-gradient-to-r from-green-500 to-blue-500 text-white py-6 mb-8">
+        <div class="max-w-6xl mx-auto px-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold">🏆 Your Quick Game Results</h1>
+                    <p class="mt-1">Game Code: <span class="font-mono font-bold">{{ game_code }}</span></p>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        onclick="window.print()"
+                        class="bg-white text-green-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                        🖨️ Print
+                    </button>
+                    <a
+                        href="/quickgame"
+                        class="bg-white text-blue-600 font-semibold py-2 px-6 rounded-lg hover:bg-gray-100 transition-colors"
+                    >
+                        New Game
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="max-w-6xl mx-auto px-4 pb-8">
+        <!-- Page 1: Champion & Group Standings -->
+        <div class="print-page">
+            <!-- Champion Banner -->
+            <div class="bg-gradient-to-r from-yellow-100 to-yellow-50 border-4 border-yellow-400 rounded-2xl p-8 mb-8 text-center">
+                <div class="text-6xl mb-4">🏆</div>
+                <h2 class="text-4xl font-bold text-gray-800 mb-2">World Cup Champion</h2>
+                {% if champion %}
+                <div class="flex items-center justify-center gap-4 mt-6">
+                    {% if champion_flag %}
+                    <img src="{{ champion_flag }}" alt="{{ champion.code }}" class="w-24 h-16 object-cover rounded-lg shadow-lg">
+                    {% endif %}
+                    <span class="text-5xl font-bold text-gray-900">{{ champion.name }}</span>
+                </div>
+                {% else %}
+                <p class="text-2xl text-gray-600">Not determined</p>
+                {% endif %}
+            </div>
+
+            <!-- Game Info -->
+            <div class="bg-gray-50 rounded-xl p-4 mb-8 text-center">
+                <p class="text-sm text-gray-600">
+                    Game Code: <span class="font-mono font-bold text-gray-800">{{ game_code }}</span> |
+                    Created: {{ quick_game.created_at.strftime('%B %d, %Y') }} |
+                    Completed: {{ quick_game.completed_at.strftime('%B %d, %Y at %I:%M %p') if quick_game.completed_at else 'In Progress' }}
+                </p>
+            </div>
+
+            <!-- Group Standings -->
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center">Group Stage Standings</h2>
+            <div class="grid md:grid-cols-2 gap-6 mb-8">
+                {% for group, teams in standings.items() | sort %}
+                <div class="border-2 border-gray-200 rounded-xl overflow-hidden">
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 text-white font-bold text-xl py-3 px-4">
+                        Group {{ group }}
+                    </div>
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr class="text-xs text-gray-600">
+                                <th class="text-left py-2 px-3">Pos</th>
+                                <th class="text-left py-2 px-3">Team</th>
+                                <th class="text-center py-2 px-3">P</th>
+                                <th class="text-center py-2 px-3">W</th>
+                                <th class="text-center py-2 px-3">D</th>
+                                <th class="text-center py-2 px-3">L</th>
+                                <th class="text-center py-2 px-3 font-bold">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for team in teams %}
+                            <tr class="{% if loop.index <= 2 %}bg-green-50 font-semibold{% endif %} border-t border-gray-100">
+                                <td class="py-2 px-3 text-sm">{{ loop.index }}</td>
+                                <td class="py-2 px-3 text-sm font-semibold">{{ team.team_code }}</td>
+                                <td class="text-center py-2 px-3 text-sm">{{ team.played }}</td>
+                                <td class="text-center py-2 px-3 text-sm">{{ team.won }}</td>
+                                <td class="text-center py-2 px-3 text-sm">{{ team.drawn }}</td>
+                                <td class="text-center py-2 px-3 text-sm">{{ team.lost }}</td>
+                                <td class="text-center py-2 px-3 text-sm font-bold">{{ team.points }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Page 2: All Match Results -->
+        <div class="print-page">
+            <h2 class="text-3xl font-bold text-gray-800 mb-6 text-center mt-8">Complete Match Results</h2>
+
+            {% set knockout_rounds = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"] %}
+
+            <!-- Group Stage Matches -->
+            <div class="mb-8">
+                <h3 class="text-2xl font-bold text-gray-700 mb-4 border-b-2 border-gray-300 pb-2">Group Stage</h3>
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for round_name, matches in rounds.items() if round_name.startswith('Group Stage') %}
+                        {% for match_result in matches %}
+                        <div class="border border-gray-200 rounded-lg p-3 bg-gray-50">
+                            <div class="text-xs text-gray-500 mb-1">Match #{{ match_result.match.match_number }}</div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-semibold text-sm">{{ match_result.team1.code if match_result.team1 else 'TBD' }}</span>
+                                <span class="text-xs font-bold px-2 py-1 rounded
+                                    {% if match_result.result == 'team1' %}bg-green-500 text-white
+                                    {% elif match_result.result == 'team2' %}bg-red-100 text-red-600
+                                    {% else %}bg-gray-300 text-gray-700
+                                    {% endif %}">
+                                    {% if match_result.result == 'team1' %}W
+                                    {% elif match_result.result == 'team2' %}L
+                                    {% else %}D
+                                    {% endif %}
+                                </span>
+                                <span class="text-xs font-bold px-2 py-1 rounded
+                                    {% if match_result.result == 'team2' %}bg-green-500 text-white
+                                    {% elif match_result.result == 'team1' %}bg-red-100 text-red-600
+                                    {% else %}bg-gray-300 text-gray-700
+                                    {% endif %}">
+                                    {% if match_result.result == 'team2' %}W
+                                    {% elif match_result.result == 'team1' %}L
+                                    {% else %}D
+                                    {% endif %}
+                                </span>
+                                <span class="font-semibold text-sm">{{ match_result.team2.code if match_result.team2 else 'TBD' }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Knockout Matches -->
+            {% for ko_round in knockout_rounds %}
+                {% if rounds.get(ko_round) %}
+                <div class="mb-6">
+                    <h3 class="text-xl font-bold text-gray-700 mb-3 border-b-2 border-green-400 pb-2">{{ ko_round }}</h3>
+                    <div class="grid {% if ko_round == 'Final' or ko_round == 'Third Place Play-off' %}md:grid-cols-1{% else %}md:grid-cols-2{% endif %} gap-4">
+                        {% for match_result in rounds[ko_round] %}
+                        <div class="border-2 border-gray-300 rounded-lg p-4 bg-gradient-to-r from-gray-50 to-white">
+                            <div class="text-xs text-gray-500 mb-2 text-center">Match #{{ match_result.match.match_number }}</div>
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between p-2 rounded
+                                    {% if match_result.result == 'team1' %}bg-green-100 border-2 border-green-500
+                                    {% else %}bg-white
+                                    {% endif %}">
+                                    <span class="font-bold">{{ match_result.team1.code if match_result.team1 else 'TBD' }}</span>
+                                    {% if match_result.result == 'team1' %}
+                                    <span class="text-green-600 font-bold">✓ WINNER</span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex items-center justify-between p-2 rounded
+                                    {% if match_result.result == 'team2' %}bg-green-100 border-2 border-green-500
+                                    {% else %}bg-white
+                                    {% endif %}">
+                                    <span class="font-bold">{{ match_result.team2.code if match_result.team2 else 'TBD' }}</span>
+                                    {% if match_result.result == 'team2' %}
+                                    <span class="text-green-600 font-bold">✓ WINNER</span>
+                                    {% endif %}
+                                </div>
+                                {% if match_result.result == 'draw' %}
+                                <div class="text-center text-xs text-blue-600 font-semibold">
+                                    Won on Penalties
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Footer -->
+        <div class="text-center text-gray-500 text-sm mt-8 pb-4">
+            <p>FIFA World Cup Quick Game Bracket</p>
+            <p class="mt-1">Generated by {{ user.username if user else 'Anonymous Player' }} | {{ quick_game.completed_at.strftime('%B %d, %Y') if quick_game.completed_at else 'In Progress' }}</p>
+            <p class="mt-1 font-mono text-xs">Game Code: {{ game_code }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
