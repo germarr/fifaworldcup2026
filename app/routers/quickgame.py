@@ -325,6 +325,68 @@ def calculate_quick_game_standings(quick_game: QuickGame, db: Session) -> Dict:
     return sorted_standings
 
 
+def build_quickgame_placeholder_resolution(quick_game: QuickGame, standings: Dict[str, List[Dict[str, Any]]], db: Session) -> Dict[str, Optional[Team]]:
+    placeholder_resolution: Dict[str, Optional[Team]] = {}
+
+    for group, teams in standings.items():
+        if teams:
+            first_team = db.get(Team, teams[0]["team_id"])
+            if first_team:
+                placeholder_resolution[f"1{group}"] = first_team
+
+        if len(teams) > 1:
+            second_team = db.get(Team, teams[1]["team_id"])
+            if second_team:
+                placeholder_resolution[f"2{group}"] = second_team
+
+    existing_selections = {
+        qgm.match_id: {
+            "result": qgm.result,
+            "advancing_team_id": qgm.advancing_team_id
+        }
+        for qgm in quick_game.matches
+    }
+
+    knockout_matches_statement = (
+        select(Match)
+        .where(~Match.round.like("Group Stage%"))
+        .order_by(Match.match_number)
+    )
+    knockout_matches = db.exec(knockout_matches_statement).all()
+
+    for match in knockout_matches:
+        team1 = placeholder_resolution.get(match.team1_placeholder) if match.team1_placeholder else None
+        team2 = placeholder_resolution.get(match.team2_placeholder) if match.team2_placeholder else None
+
+        selection = existing_selections.get(match.id)
+        if not selection:
+            continue
+
+        winner_team = None
+        winner_team_id = selection.get("advancing_team_id")
+
+        if winner_team_id:
+            winner_team = db.get(Team, winner_team_id)
+        elif selection.get("result") == "team1":
+            winner_team = team1
+        elif selection.get("result") == "team2":
+            winner_team = team2
+
+        placeholder_resolution[f"W{match.match_number}"] = winner_team
+
+        loser_team = None
+        if team1 and team2 and winner_team:
+            loser_team = team2 if winner_team.id == team1.id else team1
+        elif selection.get("result") == "team1" and team2:
+            loser_team = team2
+        elif selection.get("result") == "team2" and team1:
+            loser_team = team1
+
+        placeholder_resolution[f"L{match.match_number}"] = loser_team
+
+    return placeholder_resolution
+
+
 def apply_group_tiebreaker(teams: List[Dict[str, Any]], tiebreaker: Optional[QuickGameGroupTiebreaker]) -> List[Dict[str, Any]]:
     if not tiebreaker or len(teams) < 2:
         return teams
@@ -429,61 +491,21 @@ async def quickgame_knockout(
     )
     knockout_matches = db.exec(knockout_matches_statement).all()
 
-    # Get existing knockout selections
-    existing_selections = {}
-    for qgm in quick_game.matches:
-        existing_selections[qgm.match_id] = {
+    # Resolve knockout bracket teams based on group standings and quick game selections
+    placeholder_resolution = build_quickgame_placeholder_resolution(quick_game, standings, db)
+
+    existing_selections = {
+        qgm.match_id: {
             "result": qgm.result,
             "advancing_team_id": qgm.advancing_team_id
         }
-
-    # Resolve knockout bracket teams based on group standings and quick game selections
-    placeholder_resolution = {}
-
-    for group, teams in standings.items():
-        if teams:
-            first_team = db.get(Team, teams[0]["team_id"])
-            if first_team:
-                placeholder_resolution[f"1{group}"] = first_team
-
-        if len(teams) > 1:
-            second_team = db.get(Team, teams[1]["team_id"])
-            if second_team:
-                placeholder_resolution[f"2{group}"] = second_team
+        for qgm in quick_game.matches
+    }
 
     knockout_data = []
     for match in knockout_matches:
-        team1 = None
-        team2 = None
-
-        if match.team1_placeholder:
-            team1 = placeholder_resolution.get(match.team1_placeholder)
-        if match.team2_placeholder:
-            team2 = placeholder_resolution.get(match.team2_placeholder)
-
-        selection = existing_selections.get(match.id)
-        if selection:
-            winner_team = None
-            winner_team_id = selection.get("advancing_team_id")
-
-            if winner_team_id:
-                winner_team = db.get(Team, winner_team_id)
-            elif selection.get("result") == "team1":
-                winner_team = team1
-            elif selection.get("result") == "team2":
-                winner_team = team2
-
-            placeholder_resolution[f"W{match.match_number}"] = winner_team
-
-            loser_team = None
-            if team1 and team2 and winner_team:
-                loser_team = team2 if winner_team.id == team1.id else team1
-            elif selection.get("result") == "team1" and team2:
-                loser_team = team2
-            elif selection.get("result") == "team2" and team1:
-                loser_team = team1
-
-            placeholder_resolution[f"L{match.match_number}"] = loser_team
+        team1 = placeholder_resolution.get(match.team1_placeholder) if match.team1_placeholder else None
+        team2 = placeholder_resolution.get(match.team2_placeholder) if match.team2_placeholder else None
 
         match_info = {
             "match": match,
@@ -491,7 +513,7 @@ async def quickgame_knockout(
             "team2": team2,
             "team1_flag": flag_url(team1.code, 80) if team1 else None,
             "team2_flag": flag_url(team2.code, 80) if team2 else None,
-            "selected_result": selection
+            "selected_result": existing_selections.get(match.id)
         }
 
         knockout_data.append(match_info)
@@ -615,9 +637,6 @@ async def quickgame_results(
     if not quick_game:
         raise HTTPException(status_code=404, detail="Quick game not found")
 
-    # Get champion
-    champion = db.get(Team, quick_game.champion_team_id) if quick_game.champion_team_id else None
-
     # Get group standings
     standings = calculate_quick_game_standings(quick_game, db)
 
@@ -630,18 +649,44 @@ async def quickgame_results(
     )
     results = db.exec(results_statement).all()
 
+    placeholder_resolution = build_quickgame_placeholder_resolution(quick_game, standings, db)
+
+    final_winner_id = None
+    for qgm, match in results:
+        if match.round == "Final":
+            if qgm.advancing_team_id:
+                final_winner_id = qgm.advancing_team_id
+            elif qgm.result == "team1" and match.team1_id:
+                final_team = placeholder_resolution.get(match.team1_placeholder) if match.team1_placeholder else match.team1
+                final_winner_id = final_team.id if final_team else None
+            elif qgm.result == "team2" and match.team2_id:
+                final_team = placeholder_resolution.get(match.team2_placeholder) if match.team2_placeholder else match.team2
+                final_winner_id = final_team.id if final_team else None
+            break
+
+    champion_team_id = final_winner_id or quick_game.champion_team_id
+    champion = db.get(Team, champion_team_id) if champion_team_id else None
+
     # Organize by round
     rounds = {}
     for qgm, match in results:
+        advancing_team = db.get(Team, qgm.advancing_team_id) if qgm.advancing_team_id else None
         round_name = match.round
         if round_name not in rounds:
             rounds[round_name] = []
 
+        team1 = match.team1
+        team2 = match.team2
+        if not match.round.startswith("Group Stage"):
+            team1 = placeholder_resolution.get(match.team1_placeholder) if match.team1_placeholder else None
+            team2 = placeholder_resolution.get(match.team2_placeholder) if match.team2_placeholder else None
+
         rounds[round_name].append({
             "match": match,
             "result": qgm.result,
-            "team1": match.team1,
-            "team2": match.team2
+            "team1": team1,
+            "team2": team2,
+            "advancing_team": advancing_team
         })
 
     return templates.TemplateResponse(
@@ -654,6 +699,7 @@ async def quickgame_results(
             "champion": champion,
             "champion_flag": flag_url(champion.code, 160) if champion else None,
             "standings": standings,
-            "rounds": rounds
+            "rounds": rounds,
+            "flag_url": flag_url
         }
     )

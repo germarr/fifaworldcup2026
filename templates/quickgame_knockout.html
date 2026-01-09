@@ -119,13 +119,19 @@
                 </div>
 
                 <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-gray-100 pt-4">
-                    <p class="text-sm text-gray-500">
-                        After picking winners in this round, click Update Bracket to populate the next round.
-                    </p>
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-3 rounded">
+                        <p class="text-sm font-semibold text-amber-800">
+                            ⚠️ You need to save before continuing to the next round
+                        </p>
+                        <p class="text-xs text-amber-700 mt-1">
+                            After picking winners in this round, click Save Bracket to populate the next round.
+                        </p>
+                    </div>
                     <button
-                        class="refresh-bracket-btn bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                        class="refresh-bracket-btn bg-green-600 hover:bg-green-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md whitespace-nowrap"
+                        data-round="{{ round_name }}"
                     >
-                        ↻ Update Bracket
+                        💾 Save Bracket
                     </button>
                 </div>
             </div>
@@ -295,8 +301,47 @@ function updateCompleteButton() {
 
 document.querySelectorAll('.refresh-bracket-btn').forEach(btn => {
     btn.addEventListener('click', function() {
+        const currentRound = this.dataset.round;
+        // Save the current round to localStorage so we can scroll to the next round after reload
+        localStorage.setItem('knockout_last_saved_round', currentRound);
         window.location.reload();
     });
+});
+
+// Auto-scroll to next round after save
+window.addEventListener('DOMContentLoaded', function() {
+    const lastSavedRound = localStorage.getItem('knockout_last_saved_round');
+    if (lastSavedRound) {
+        // Clear the saved round
+        localStorage.removeItem('knockout_last_saved_round');
+
+        // Map of rounds to their next round
+        const roundOrder = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"];
+        const currentIndex = roundOrder.indexOf(lastSavedRound);
+
+        if (currentIndex !== -1 && currentIndex < roundOrder.length - 1) {
+            // Find the next round's section
+            const nextRound = roundOrder[currentIndex + 1];
+            const nextRoundSection = Array.from(document.querySelectorAll('h2')).find(
+                h2 => h2.textContent.trim() === nextRound
+            );
+
+            if (nextRoundSection) {
+                // Scroll to the next round with smooth animation
+                setTimeout(() => {
+                    nextRoundSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // Add a highlight effect
+                    const section = nextRoundSection.closest('.bg-white');
+                    if (section) {
+                        section.classList.add('ring-4', 'ring-green-400', 'ring-opacity-50');
+                        setTimeout(() => {
+                            section.classList.remove('ring-4', 'ring-green-400', 'ring-opacity-50');
+                        }, 2000);
+                    }
+                }, 500);
+            }
+        }
+    }
 });
 
 // Complete button
