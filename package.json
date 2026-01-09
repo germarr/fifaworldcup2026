@@ -8,7 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "postcss ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css",
+    "build:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css",
     "watch:css": "postcss ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css --watch",
     "build:css:prod": "NODE_ENV=production postcss ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css"
   },
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/germarr/fifaworldcup2026#readme",
   "dependencies": {
+    "@tailwindcss/cli": "^4.1.18",
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
