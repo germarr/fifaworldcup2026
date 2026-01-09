@@ -8,8 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css",
-    "watch:css": "tailwindcss -i ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css --watch"
+    "build:css": "postcss ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css",
+    "watch:css": "postcss ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css --watch",
+    "build:css:prod": "NODE_ENV=production postcss ./static/css/tailwind.input.css -o ./static/css/tailwind.output.css"
   },
   "repository": {
     "type": "git",
@@ -25,5 +26,12 @@
   "homepage": "https://github.com/germarr/fifaworldcup2026#readme",
   "dependencies": {
     "tailwindcss": "^4.1.18"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.1.18",
+    "autoprefixer": "^10.4.23",
+    "cssnano": "^7.1.2",
+    "postcss": "^8.5.6",
+    "postcss-cli": "^11.0.1"
   }
 }

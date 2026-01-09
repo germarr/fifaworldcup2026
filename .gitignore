@@ -51,3 +51,6 @@ htmlcov/
 # Node/npm
 node_modules/
 package-lock.json
+
+# CSS Build Output
+static/css/tailwind.output.css
