@@ -1,0 +1,49 @@
+match_number,round,group,match_date,team1_code,team1_name,team2_code,team2_name,actual_team1_score,actual_team2_score,is_finished
+1,Group Stage - Group A,A,2026-01-06,QAT,Qatar,ECU,Ecuador,3,0,TRUE
+2,Group Stage - Group A,A,2026-01-06,SEN,Senegal,NED,Netherlands,3,3,TRUE
+3,Group Stage - Group A,A,2026-01-06,QAT,Qatar,SEN,Senegal,3,0,TRUE
+4,Group Stage - Group A,A,2026-01-06,NED,Netherlands,ECU,Ecuador,2,2,TRUE
+5,Group Stage - Group A,A,2026-01-07,NED,Netherlands,QAT,Qatar,3,2,TRUE
+6,Group Stage - Group A,A,2026-01-07,ECU,Ecuador,SEN,Senegal,0,0,TRUE
+7,Group Stage - Group B,B,2026-01-07,ENG,England,IRN,Iran,2,3,TRUE
+8,Group Stage - Group B,B,2026-01-07,USA,USA,WAL,Wales,1,0,TRUE
+9,Group Stage - Group B,B,2026-01-08,WAL,Wales,IRN,Iran,1,3,TRUE
+10,Group Stage - Group B,B,2026-01-08,ENG,England,USA,USA,1,3,TRUE
+11,Group Stage - Group B,B,2026-01-08,WAL,Wales,ENG,England,2,0,TRUE
+12,Group Stage - Group B,B,2026-01-08,IRN,Iran,USA,USA,1,0,TRUE
+13,Group Stage - Group C,C,2026-01-09,ARG,Argentina,KSA,Saudi Arabia,1,1,TRUE
+14,Group Stage - Group C,C,2026-01-09,MEX,Mexico,POL,Poland,1,2,TRUE
+15,Group Stage - Group C,C,2026-01-09,POL,Poland,KSA,Saudi Arabia,1,2,TRUE
+16,Group Stage - Group C,C,2026-01-09,ARG,Argentina,MEX,Mexico,0,3,TRUE
+17,Group Stage - Group C,C,2026-01-10,POL,Poland,ARG,Argentina,0,3,TRUE
+18,Group Stage - Group C,C,2026-01-10,KSA,Saudi Arabia,MEX,Mexico,2,2,TRUE
+19,Group Stage - Group D,D,2026-01-10,FRA,France,AUS,Australia,2,0,TRUE
+20,Group Stage - Group D,D,2026-01-10,DEN,Denmark,TUN,Tunisia,0,0,TRUE
+21,Group Stage - Group D,D,2026-01-11,TUN,Tunisia,AUS,Australia,2,1,TRUE
+22,Group Stage - Group D,D,2026-01-11,FRA,France,DEN,Denmark,1,1,TRUE
+23,Group Stage - Group D,D,2026-01-11,TUN,Tunisia,FRA,France,1,3,TRUE
+24,Group Stage - Group D,D,2026-01-11,AUS,Australia,DEN,Denmark,0,1,TRUE
+25,Group Stage - Group E,E,2026-01-12,ESP,Spain,CRC,Costa Rica,3,0,TRUE
+26,Group Stage - Group E,E,2026-01-12,GER,Germany,JPN,Japan,1,2,TRUE
+27,Group Stage - Group E,E,2026-01-12,JPN,Japan,CRC,Costa Rica,0,2,TRUE
+28,Group Stage - Group E,E,2026-01-12,ESP,Spain,GER,Germany,1,2,TRUE
+29,Group Stage - Group E,E,2026-01-13,JPN,Japan,ESP,Spain,2,1,TRUE
+30,Group Stage - Group E,E,2026-01-13,CRC,Costa Rica,GER,Germany,1,0,TRUE
+31,Group Stage - Group F,F,2026-01-13,BEL,Belgium,CAN,Canada,1,1,TRUE
+32,Group Stage - Group F,F,2026-01-13,MAR,Morocco,CRO,Croatia,0,2,TRUE
+33,Group Stage - Group F,F,2026-01-14,CRO,Croatia,CAN,Canada,1,2,TRUE
+34,Group Stage - Group F,F,2026-01-14,BEL,Belgium,MAR,Morocco,3,2,TRUE
+35,Group Stage - Group F,F,2026-01-14,CRO,Croatia,BEL,Belgium,2,2,TRUE
+36,Group Stage - Group F,F,2026-01-14,CAN,Canada,MAR,Morocco,0,0,TRUE
+37,Group Stage - Group G,G,2026-01-15,BRA,Brazil,SRB,Serbia,2,0,TRUE
+38,Group Stage - Group G,G,2026-01-15,SUI,Switzerland,CMR,Cameroon,1,2,TRUE
+39,Group Stage - Group G,G,2026-01-15,CMR,Cameroon,SRB,Serbia,1,3,TRUE
+40,Group Stage - Group G,G,2026-01-15,BRA,Brazil,SUI,Switzerland,3,3,TRUE
+41,Group Stage - Group G,G,2026-01-16,CMR,Cameroon,BRA,Brazil,3,1,TRUE
+42,Group Stage - Group G,G,2026-01-16,SRB,Serbia,SUI,Switzerland,2,1,TRUE
+43,Group Stage - Group H,H,2026-01-16,POR,Portugal,GHA,Ghana,0,0,TRUE
+44,Group Stage - Group H,H,2026-01-16,URU,Uruguay,KOR,South Korea,2,1,TRUE
+45,Group Stage - Group H,H,2026-01-17,KOR,South Korea,GHA,Ghana,1,0,TRUE
+46,Group Stage - Group H,H,2026-01-17,POR,Portugal,URU,Uruguay,0,0,TRUE
+47,Group Stage - Group H,H,2026-01-17,KOR,South Korea,POR,Portugal,0,0,TRUE
+48,Group Stage - Group H,H,2026-01-17,GHA,Ghana,URU,Uruguay,1,1,TRUE

@@ -51,6 +51,3 @@ htmlcov/
 # Node/npm
 node_modules/
 package-lock.json
-
-# Mockups and test data
-mockups/
