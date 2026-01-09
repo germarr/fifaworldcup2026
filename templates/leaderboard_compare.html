@@ -110,6 +110,12 @@
             </a>
             {% endfor %}
         </div>
+        <p class="search-note">Select a player to compare with your predictions.</p>
+    </div>
+    {% elif search_query %}
+    <div class="search-results">
+        <h4>Search Results</h4>
+        <p class="search-empty">Player not found.</p>
     </div>
     {% endif %}
 </div>
@@ -337,9 +343,11 @@ const searchPlayerId = document.getElementById('search-player-id');
 const updateSearchHidden = () => {
     if (searchTeamId && teamSelect) {
         searchTeamId.value = teamSelect.value;
+        searchTeamId.disabled = !teamSelect.value;
     }
     if (searchPlayerId && playerSelect) {
         searchPlayerId.value = playerSelect.value;
+        searchPlayerId.disabled = !playerSelect.value;
     }
 };
 

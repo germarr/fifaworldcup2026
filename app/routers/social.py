@@ -111,7 +111,15 @@ def get_team_members(db: Session, team_id: int) -> list[User]:
         .where(UserTeamMembership.player_team_id == team_id)
         .order_by(User.total_points.desc())
     )
-    return db.exec(statement).all()
+    members = db.exec(statement).all()
+    legacy_members = db.exec(
+        select(User).where(User.player_team_id == team_id)
+    ).all()
+    members_by_id = {member.id: member for member in members}
+    for member in legacy_members:
+        if member.id not in members_by_id:
+            members_by_id[member.id] = member
+    return sorted(members_by_id.values(), key=lambda u: u.total_points, reverse=True)
 
 
 @router.get("/api/teams/{team_id}/members")
@@ -134,8 +142,8 @@ async def team_members(
 @router.get("/leaderboard/compare", response_class=HTMLResponse)
 async def leaderboard_compare(
     request: Request,
-    team_id: int | None = None,
-    player_id: int | None = None,
+    team_id: str | None = None,
+    player_id: str | None = None,
     q: str = "",
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_session)
@@ -146,7 +154,7 @@ async def leaderboard_compare(
     teams = db.exec(select(PlayerTeam).order_by(PlayerTeam.name)).all()
     my_team_ids = set(get_user_team_ids(db, current_user.id))
 
-    selected_team_id = team_id
+    selected_team_id = int(team_id) if team_id and team_id.isdigit() else None
     if selected_team_id is None and my_team_ids:
         selected_team_id = next(iter(my_team_ids))
 
@@ -154,7 +162,7 @@ async def leaderboard_compare(
     if selected_team_id:
         team_members = [member for member in get_team_members(db, selected_team_id) if member.id != current_user.id]
 
-    selected_player_id = player_id
+    selected_player_id = int(player_id) if player_id and player_id.isdigit() else None
     if selected_player_id is None and team_members:
         selected_player_id = team_members[0].id
 

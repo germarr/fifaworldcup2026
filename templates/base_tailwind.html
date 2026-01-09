@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}FIFA World Cup Bracket Predictor{% endblock %}</title>
+    <!-- Tailwind CSS only - no styles.css -->
+    <link rel="stylesheet" href="/static/css/tailwind.output.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <nav class="bg-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div>
+                    <h1 class="text-xl font-bold text-blue-600">FIFA World Cup Bracket Predictor</h1>
+                </div>
+                <div class="flex items-center gap-5">
+                    {% if user %}
+                        <span class="text-gray-600">Welcome, {{ user.username }}!</span>
+                        <a href="/" class="text-gray-700 hover:text-blue-600">Home</a>
+                        <a href="/bracket" class="text-gray-700 hover:text-blue-600">Predictions</a>
+                        <a href="/quickgame" class="text-green-600 font-semibold">⚡ Quick Game</a>
+                        <div class="relative group">
+                            <span class="text-gray-700 hover:text-blue-600 cursor-pointer">Results</span>
+                            <div class="absolute hidden group-hover:block bg-white shadow-lg rounded mt-2 py-2 min-w-[160px]">
+                                <a href="/bracket/knockout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My Results</a>
+                                <a href="/bracket/view" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Global Results</a>
+                            </div>
+                        </div>
+                        <a href="/leaderboard" class="text-gray-700 hover:text-blue-600">Leaderboard</a>
+                        {% if user.username == "admin" %}
+                            <a href="/crm" class="text-gray-700 hover:text-blue-600">CRM</a>
+                        {% endif %}
+                        <a href="/settings" class="text-gray-700 hover:text-blue-600">Settings</a>
+                        <form method="POST" action="/logout" style="display: inline;">
+                            <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="/" class="text-gray-700 hover:text-blue-600">Home</a>
+                        <a href="/quickgame" class="text-green-600 font-semibold">⚡ Quick Game</a>
+                        <a href="/login" class="text-gray-700 hover:text-blue-600">Login</a>
+                        <a href="/register" class="text-gray-700 hover:text-blue-600">Register</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main {% block main_class %}{% endblock %}>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white shadow-inner py-5 mt-auto no-print">
+        <div class="max-w-7xl mx-auto px-4 text-center text-gray-600">
+            <p>&copy; 2026 FIFA World Cup Bracket Predictor. Predict and compete!</p>
+        </div>
+    </footer>
+
+    <!-- Cookie Consent Banner -->
+    <div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-gray-900 text-white p-5 shadow-lg z-50 no-print" style="display: none;">
+        <div class="max-w-5xl mx-auto flex justify-between items-center gap-5 flex-wrap">
+            <p class="flex-1">We use cookies to keep you logged in and provide a better experience. By continuing to use this site, you accept our use of cookies.</p>
+            <div class="flex gap-3">
+                <button id="accept-cookies" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded transition-colors">Accept</button>
+                <button id="decline-cookies" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded transition-colors">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/cookies.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

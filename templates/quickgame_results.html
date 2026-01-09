@@ -1,467 +1,854 @@
-{% extends "base.html" %}
-
-{% block title %}Results - {{ game_code }}{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="/static/css/tailwind.output.css">
-<link rel="stylesheet" href="/static/css/quickgame.css">
+{% extends "base_tailwind.html" %} {% block title %}Results - {{ game_code }}{%
+endblock %} {% block extra_css %}
+<link rel="stylesheet" href="/static/css/quickgame.css" />
 <style>
-    @page {
-        size: letter portrait;
-        margin: 0.35in;
+  @page {
+    size: letter portrait;
+    margin: 0.35in;
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
     }
 
-    @media print {
-        .no-print {
-            display: none !important;
-        }
-
-        .print-hide {
-            display: none !important;
-        }
-
-        .print-only {
-            display: block !important;
-        }
-
-        .group-picks-grid {
-            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-            gap: 12px !important;
-        }
-
-        .group-picks-card {
-            padding: 12px !important;
-        }
-
-        body {
-            background: white !important;
-        }
-
-        .container {
-            max-width: 100% !important;
-        }
-
-        .print-tight {
-            font-size: 8.5px !important;
-            line-height: 1.1 !important;
-        }
-
-        .print-tight h2 {
-            font-size: 14px !important;
-        }
-
-        .print-tight h3 {
-            font-size: 11px !important;
-        }
-
-        .print-page {
-            page-break-after: always;
-        }
-
-        .print-page:last-child {
-            page-break-after: auto;
-        }
+    .print-hide {
+      display: none !important;
     }
 
     .print-only {
-        display: none;
+      display: block !important;
     }
+
+    .group-picks-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      gap: 12px !important;
+    }
+
+    .group-picks-card {
+      padding: 12px !important;
+    }
+
+    body {
+      background: white !important;
+    }
+
+    .container {
+      max-width: 100% !important;
+    }
+
+    .print-tight {
+      font-size: 8.5px !important;
+      line-height: 1.1 !important;
+    }
+
+    .print-tight h2 {
+      font-size: 14px !important;
+    }
+
+    .print-tight h3 {
+      font-size: 11px !important;
+    }
+
+    .print-page {
+      page-break-after: always;
+    }
+
+    .print-page:last-child {
+      page-break-after: auto;
+    }
+
+    #groupstandings {
+      margin-top: 8px !important;
+    }
+
+    #groupstandings h3 {
+      margin-bottom: 6px !important;
+    }
+
+    #groupstandings .grid {
+      gap: 8px !important;
+      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    }
+
+    #groupstandings table {
+      font-size: 7.5px !important;
+    }
+
+    #groupstandings th,
+    #groupstandings td {
+      padding-top: 2px !important;
+      padding-bottom: 2px !important;
+      padding-left: 4px !important;
+      padding-right: 4px !important;
+    }
+
+    #groupstandings img {
+      width: 12px !important;
+      height: 12px !important;
+    }
+
+    #knockoutbracket h3 {
+      margin-bottom: 6px !important;
+    }
+
+    #knockoutbracket .print\:grid {
+      gap: 8px !important;
+    }
+
+    #knockoutbracket .print\:grid > div {
+      padding: 8px !important;
+    }
+
+    #knockoutbracket .print\:grid p {
+      margin-bottom: 4px !important;
+      font-size: 8px !important;
+    }
+
+    #knockoutbracket .print\:grid .text-sm {
+      font-size: 8px !important;
+    }
+
+    #knockoutbracket .print\:grid img {
+      width: 12px !important;
+      height: 12px !important;
+    }
+
+    #knockoutbracket .print-hide {
+      display: block !important;
+    }
+
+    #knockoutbracket .print\:grid {
+      display: none !important;
+    }
+
+    #knockoutbracket .print-hide + .grid {
+      gap: 6px !important;
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    }
+
+    #knockoutbracket .print-hide + .grid > div {
+      padding: 6px !important;
+    }
+
+    #knockoutbracket .print-hide + .grid p {
+      margin-bottom: 4px !important;
+      font-size: 8px !important;
+    }
+
+    #knockoutbracket .print-hide + .grid .text-xs {
+      font-size: 8px !important;
+    }
+
+    #knockoutbracket .print-hide + .grid .text-\[10px\] {
+      font-size: 8px !important;
+    }
+
+    #knockoutbracket .print-hide + .grid img {
+      width: 12px !important;
+      height: 12px !important;
+    }
+
+    #knockoutbracket .print-hide {
+      display: none !important;
+    }
+
+    #knockoutbracket .print\:grid {
+      display: grid !important;
+    }
+  }
+
+  .print-only {
+    display: none;
+  }
 </style>
-{% endblock %}
-
-{% block content %}
+{% endblock %} {% block content %}
 <div class="min-h-screen bg-white">
-    <div class="no-print bg-gradient-to-r from-green-500 to-blue-500 text-white py-4">
-        <div class="max-w-6xl mx-auto px-4 flex items-center justify-between">
-            <div>
-                <h1 class="text-xl font-bold">Quick Game Results</h1>
-                <p class="text-xs text-white/90">Game Code: <span class="font-mono font-semibold text-white">{{ game_code }}</span></p>
-            </div>
-            <div class="flex gap-3">
-                <button
-                    onclick="window.print()"
-                    class="bg-white text-green-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                    🖨️ Print
-                </button>
-                <a
-                    href="/quickgame"
-                    class="bg-white text-blue-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
-                >
-                    New Game
-                </a>
-            </div>
-        </div>
+  <div
+    class="no-print bg-gradient-to-r from-green-500 to-blue-500 text-white py-4"
+  >
+    <div class="max-w-6xl mx-auto px-4 flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold">Quick Game Results</h1>
+        <p class="text-xs text-white/90">
+          Game Code:
+          <span class="font-mono font-semibold text-white"
+            >{{ game_code }}</span
+          >
+        </p>
+      </div>
+      <div class="flex gap-3">
+        <button
+          onclick="window.print()"
+          class="bg-white text-green-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          🖨️ Print
+        </button>
+        <a
+          href="/quickgame"
+          class="bg-white text-blue-700 font-semibold py-2 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+        >
+          New Game
+        </a>
+      </div>
     </div>
-    <div class="max-w-6xl mx-auto px-4 pb-8">
-        {% set totals = namespace(all=0, group=0, knockout=0) %}
-        {% for round_name, matches in rounds.items() %}
-            {% set totals.all = totals.all + matches|length %}
-            {% if round_name.startswith('Group Stage') %}
-                {% set totals.group = totals.group + matches|length %}
+  </div>
+  <div class="max-w-6xl mx-auto px-4 pb-8">
+    <!-- Champion Card (Web Only) -->
+    <div class="mt-6 no-print">
+      {% if champion %}
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div class="col-span-1">&nbsp;</div>
+        <!-- Champion - Takes 2 columns -->
+        <div
+          class="md:col-span-2 bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-yellow-400 rounded-xl p-4 shadow-lg"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <span class="text-3xl">🏆</span>
+                <h2 class="text-2xl font-bold text-gray-900">Champion</h2>
+              </div>
+              <h3 class="text-xl font-bold text-amber-800 mb-1">
+                {{ champion.name }}
+              </h3>
+              <p class="text-sm text-gray-600">
+                <span class="font-mono font-semibold">{{ champion.code }}</span>
+                · Game Code: <span class="font-mono">{{ game_code }}</span>
+              </p>
+            </div>
+            <div class="flex items-center justify-center">
+              {% if champion_flag %}
+              <div class="relative">
+                <div
+                  class="absolute inset-0 bg-yellow-400 blur-lg opacity-40"
+                ></div>
+                <img
+                  src="{{ champion_flag }}"
+                  alt="{{ champion.code }}"
+                  class="relative w-auto h-12 border-2 border-yellow-400 shadow-lg object-cover"
+                />
+              </div>
+              {% else %}
+              <div
+                class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center border-2 border-yellow-400 shadow-lg"
+              >
+                <span class="text-lg font-bold text-white"
+                  >{{ champion.code }}</span
+                >
+              </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+
+        <!-- Third Place - Takes 1 column -->
+        {% set third_place_matches = rounds.get('Third Place', []) %} {% if
+        third_place_matches and third_place_matches|length > 0 %} {% set
+        third_match = third_place_matches[0] %} {% set third_winner =
+        third_match.advancing_team %} {% if third_winner %} {% set third_flag =
+        flag_url(third_winner.code, 160) %}
+        <div
+          class="bg-gradient-to-br from-orange-50 to-amber-50 border-2 border-orange-300 rounded-xl p-4 shadow-md"
+        >
+          <div
+            class="flex flex-col items-center justify-center text-center h-full"
+          >
+            <span class="text-2xl mb-1">🥉</span>
+            <h3 class="text-sm font-semibold text-gray-700 mb-2">
+              Third Place
+            </h3>
+            {% if third_flag %}
+            <img
+              src="{{ third_flag }}"
+              alt="{{ third_winner.code }}"
+              class="w-10 h-10 border-2 border-orange-300 mb-2 object-cover"
+            />
             {% else %}
-                {% set totals.knockout = totals.knockout + matches|length %}
+            <div
+              class="w-10 h-10 bg-gradient-to-br from-orange-400 to-amber-400 flex items-center justify-center border-2 border-orange-300 mb-2"
+            >
+              <span class="text-sm font-bold text-white"
+                >{{ third_winner.code }}</span
+              >
+            </div>
             {% endif %}
-        {% endfor %}
-
-        {% set knockout_rounds = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"] %}
-
-        <!-- Page 1: Overview -->
-        <div class="print-page print-tight">
-            <div class="bg-gray-100 border border-gray-200 rounded-xl p-4 flex items-center justify-between hidden print:flex">
-                <div>
-                    <h2 class="text-xl font-bold text-gray-800">Quick Game Results</h2>
-                    <p class="text-xs text-gray-600 mt-1">
-                        Game Code: <span class="font-mono font-bold text-gray-800">{{ game_code }}</span> ·
-                        Created: {{ quick_game.created_at.strftime('%b %d, %Y') }} ·
-                        Completed: {{ quick_game.completed_at.strftime('%b %d, %Y') if quick_game.completed_at else 'In Progress' }}
-                    </p>
-                </div>
-                <div class="flex items-center gap-3">
-                    {% if champion_flag %}
-                    <img src="{{ champion_flag }}" alt="{{ champion.code }}" class="w-7 h-7 rounded-full">
-                    {% endif %}
-                    <div class="text-right">
-                        <p class="text-xs text-gray-500">Champion</p>
-                        <p class="text-sm font-bold text-gray-900">{{ champion.code if champion else 'TBD' }}</p>
-                    </div>
-                </div>
-            </div>
-
-                    <div id="groupmatchpicks" class="print-page print-tight">
-            <div class="mt-6">
-                <h2 class="text-lg font-bold text-gray-800 text-center mb-4">Match Details</h2>
-            </div>
-
-            <div id="somethingcool">
-                <h3 class="text-sm font-bold text-gray-800 mb-2">Group Match Picks</h3>
-                <div class="group-picks-grid grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {% for group in ['A','B','C','D','E','F','G','H'] %}
-                        {% set group_round = 'Group Stage - Group ' ~ group %}
-                        <div class="group-picks-card border border-gray-200 rounded-lg overflow-hidden">
-                            <p class="text-[10px] font-bold text-gray-700 mb-0 bg-gray-100 px-2 py-1">Group {{ group }}</p>
-                            {% if rounds.get(group_round) %}
-                                {% for match_result in rounds[group_round] %}
-                                <div class="flex items-center justify-between text-[10px] text-gray-700 py-1 px-2 {% if loop.index is odd %}bg-white{% else %}bg-gray-50{% endif %}">
-                                    <span class="inline-flex items-center gap-1">
-                                        <span class="text-gray-400">#{{ match_result.match.match_number }}</span>
-                                        {% if match_result.team1 %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                        <span class="text-gray-400">vs</span>
-                                        {% if match_result.team2 %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </span>
-                                    <span class="font-semibold">
-                                        {% if match_result.result == 'team1' and match_result.team1 %}
-                                            <span class="inline-flex items-center gap-1">
-                                                {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                                {% if team1_flag %}
-                                                <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                                {% endif %}
-                                                <span>{{ match_result.team1.code }}</span>
-                                            </span>
-                                        {% elif match_result.result == 'team2' and match_result.team2 %}
-                                            <span class="inline-flex items-center gap-1">
-                                                {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                                {% if team2_flag %}
-                                                <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                                {% endif %}
-                                                <span>{{ match_result.team2.code }}</span>
-                                            </span>
-                                        {% else %}
-                                            Draw
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                {% endfor %}
-                            {% else %}
-                                <p class="text-xs text-gray-500 px-2 py-1">No picks yet.</p>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
-                </div>
-            </div>
-
+            <p class="text-sm font-bold text-orange-800">
+              {{ third_winner.name }}
+            </p>
+            <p class="text-xs text-gray-600 font-mono">
+              {{ third_winner.code }}
+            </p>
+          </div>
         </div>
-
-            <div id="groupstandings" class="mt-5">
-                <h3 class="text-sm font-bold text-gray-800 mb-3">Group Standings</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                    {% for group, teams in standings.items() | sort %}
-                    <div class="border border-gray-200 rounded-lg overflow-hidden">
-                        <div class="bg-green-600 text-white text-xs font-bold py-2 px-3">Group {{ group }}</div>
-                        <table class="w-full text-xs">
-                            <thead class="bg-gray-50">
-                                <tr class="text-gray-500">
-                                    <th class="text-left py-0.5 px-1">Team</th>
-                                    <th class="text-center py-0.5 px-1">P</th>
-                                    <th class="text-center py-0.5 px-1">W</th>
-                                    <th class="text-center py-0.5 px-1">D</th>
-                                    <th class="text-center py-0.5 px-1">L</th>
-                                    <th class="text-center py-0.5 px-1 font-bold">Pts</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for team in teams %}
-                                <tr class="{% if loop.index <= 2 %}bg-green-50 font-semibold{% endif %} border-t border-gray-100">
-                                    <td class="py-0.5 px-1">
-                                        <span class="inline-flex items-center gap-1">
-                                            {% set team_flag = flag_url(team.team_code, 20) %}
-                                            {% if team_flag %}
-                                            <img src="{{ team_flag }}" alt="{{ team.team_code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ team.team_code }}</span>
-                                        </span>
-                                    </td>
-                                    <td class="text-center py-0.5 px-1">{{ team.played }}</td>
-                                    <td class="text-center py-0.5 px-1">{{ team.won }}</td>
-                                    <td class="text-center py-0.5 px-1">{{ team.drawn }}</td>
-                                    <td class="text-center py-0.5 px-1">{{ team.lost }}</td>
-                                    <td class="text-center py-0.5 px-1 font-bold">{{ team.points }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            
-
-            <div id="knockoutbracket" class="mt-5">
-                <h3 class="text-sm font-bold text-gray-800 mb-3 print-hide">Knockout Bracket</h3>
-                {% set round_of_16 = rounds.get('Round of 16', []) %}
-                {% set quarter_finals = rounds.get('Quarter Finals', []) %}
-                {% set semi_finals = rounds.get('Semi Finals', []) %}
-                {% set final_match = rounds.get('Final', []) %}
-                {% set third_place = rounds.get('Third Place', []) %}
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 print-hide">
-                    <div class="border border-gray-200 rounded-lg p-3">
-                        <p class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Round of 16</p>
-                        <div class="flex flex-col gap-2">
-                            {% for match_result in round_of_16 %}
-                            <div class="border border-gray-200 rounded-md p-2">
-                                <p class="text-[10px] text-gray-400 mb-1">#{{ match_result.match.match_number }}</p>
-                                <div class="flex flex-col gap-1 text-xs">
-                                    {% set team1_wins = match_result.result == 'team1' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team1 and match_result.advancing_team.id == match_result.team1.id) %}
-                                    {% set team2_wins = match_result.result == 'team2' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team2 and match_result.advancing_team.id == match_result.team2.id) %}
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-green-50 font-semibold{% endif %}">
-                                        {% if match_result.team1 %}
-                                            {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                            {% if team1_flag %}
-                                            <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-green-50 font-semibold{% endif %}">
-                                        {% if match_result.team2 %}
-                                            {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                            {% if team2_flag %}
-                                            <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="border border-gray-200 rounded-lg p-3">
-                        <p class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Quarter Finals</p>
-                        <div class="flex flex-col gap-2">
-                            {% for match_result in quarter_finals %}
-                            <div class="border border-gray-200 rounded-md p-2">
-                                <p class="text-[10px] text-gray-400 mb-1">#{{ match_result.match.match_number }}</p>
-                                <div class="flex flex-col gap-1 text-xs">
-                                    {% set team1_wins = match_result.result == 'team1' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team1 and match_result.advancing_team.id == match_result.team1.id) %}
-                                    {% set team2_wins = match_result.result == 'team2' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team2 and match_result.advancing_team.id == match_result.team2.id) %}
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-green-50 font-semibold{% endif %}">
-                                        {% if match_result.team1 %}
-                                            {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                            {% if team1_flag %}
-                                            <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-green-50 font-semibold{% endif %}">
-                                        {% if match_result.team2 %}
-                                            {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                            {% if team2_flag %}
-                                            <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="border border-gray-200 rounded-lg p-3">
-                        <p class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Semi Finals</p>
-                        <div class="flex flex-col gap-2">
-                            {% for match_result in semi_finals %}
-                            <div class="border border-gray-200 rounded-md p-2">
-                                <p class="text-[10px] text-gray-400 mb-1">#{{ match_result.match.match_number }}</p>
-                                <div class="flex flex-col gap-1 text-xs">
-                                    {% set team1_wins = match_result.result == 'team1' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team1 and match_result.advancing_team.id == match_result.team1.id) %}
-                                    {% set team2_wins = match_result.result == 'team2' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team2 and match_result.advancing_team.id == match_result.team2.id) %}
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-green-50 font-semibold{% endif %}">
-                                        {% if match_result.team1 %}
-                                            {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                            {% if team1_flag %}
-                                            <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-green-50 font-semibold{% endif %}">
-                                        {% if match_result.team2 %}
-                                            {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                            {% if team2_flag %}
-                                            <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    <div class="border border-gray-200 rounded-lg p-3">
-                        <p class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1">Final & Third</p>
-                        <div class="flex flex-col gap-2">
-                            {% for match_result in final_match %}
-                            <div class="border border-amber-200 rounded-md p-2 bg-amber-50">
-                                <p class="text-[10px] text-amber-700 mb-1">Final #{{ match_result.match.match_number }}</p>
-                                <div class="flex flex-col gap-1 text-xs">
-                                    {% set team1_wins = match_result.result == 'team1' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team1 and match_result.advancing_team.id == match_result.team1.id) %}
-                                    {% set team2_wins = match_result.result == 'team2' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team2 and match_result.advancing_team.id == match_result.team2.id) %}
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-white font-semibold{% endif %}">
-                                        {% if match_result.team1 %}
-                                            {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                            {% if team1_flag %}
-                                            <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-white font-semibold{% endif %}">
-                                        {% if match_result.team2 %}
-                                            {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                            {% if team2_flag %}
-                                            <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                            {% for match_result in third_place %}
-                            <div class="border border-orange-200 rounded-md p-2 bg-orange-50">
-                                <p class="text-[10px] text-orange-700 mb-1">Third #{{ match_result.match.match_number }}</p>
-                                <div class="flex flex-col gap-1 text-xs">
-                                    {% set team1_wins = match_result.result == 'team1' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team1 and match_result.advancing_team.id == match_result.team1.id) %}
-                                    {% set team2_wins = match_result.result == 'team2' or (match_result.result == 'draw' and match_result.advancing_team and match_result.team2 and match_result.advancing_team.id == match_result.team2.id) %}
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-white font-semibold{% endif %}">
-                                        {% if match_result.team1 %}
-                                            {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                            {% if team1_flag %}
-                                            <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-white font-semibold{% endif %}">
-                                        {% if match_result.team2 %}
-                                            {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                            {% if team2_flag %}
-                                            <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                </div>
-                <h3 class="text-sm font-bold text-gray-800 mb-3 hidden print:block">Knockout Ladder</h3>
-                <div class="hidden print:grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {% for ko_round in knockout_rounds %}
-                        {% if rounds.get(ko_round) %}
-                        <div class="border border-gray-200 rounded-lg p-3">
-                            <p class="text-xs text-gray-500 mb-1">{{ ko_round }}</p>
-                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-gray-800">
-                                {% for match_result in rounds[ko_round] %}
-                                    <span class="inline-flex items-center gap-1">
-                                        {% if match_result.team1 %}
-                                            {% set team1_flag = flag_url(match_result.team1.code, 20) %}
-                                            {% if team1_flag %}
-                                            <img src="{{ team1_flag }}" alt="{{ match_result.team1.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team1.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                        <span class="text-gray-400 font-semibold">vs</span>
-                                        {% if match_result.team2 %}
-                                            {% set team2_flag = flag_url(match_result.team2.code, 20) %}
-                                            {% if team2_flag %}
-                                            <img src="{{ team2_flag }}" alt="{{ match_result.team2.code }}" class="w-4 h-4 rounded-full">
-                                            {% endif %}
-                                            <span>{{ match_result.team2.code }}</span>
-                                        {% else %}
-                                            <span>TBD</span>
-                                        {% endif %}
-                                    </span>
-                                    {% if not loop.last %}
-                                    <span class="text-gray-400 font-semibold">|</span>
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
+        {% endif %} {% endif %}
+      </div>
+      {% else %}
+      <div
+        class="bg-gradient-to-br from-gray-50 to-gray-100 border-2 border-gray-300 rounded-xl p-4 shadow-md"
+      >
+        <div class="text-center">
+          <span class="text-3xl mb-2 block">🏆</span>
+          <h2 class="text-lg font-bold text-gray-700 mb-1">Champion</h2>
+          <p class="text-sm text-gray-500">To Be Determined</p>
+          <p class="text-xs text-gray-400 mt-1">
+            Complete the tournament to see the winner
+          </p>
         </div>
-
-        <!-- Page 2: Details -->
-
+      </div>
+      {% endif %}
     </div>
+
+    {% set totals = namespace(all=0, group=0, knockout=0) %} {% for round_name,
+    matches in rounds.items() %} {% set totals.all = totals.all + matches|length
+    %} {% if round_name.startswith('Group Stage') %} {% set totals.group =
+    totals.group + matches|length %} {% else %} {% set totals.knockout =
+    totals.knockout + matches|length %} {% endif %} {% endfor %} {% set
+    knockout_rounds = ["Round of 16", "Quarter Finals", "Semi Finals", "Third
+    Place", "Final"] %}
+
+    <!-- Page 1: Overview -->
+    <div class="print-page print-tight">
+      <div
+        class="bg-gray-100 border border-gray-200 rounded-xl p-4 flex items-center justify-between hidden print:flex"
+      >
+        <div>
+          <h2 class="text-xl font-bold text-gray-800">Quick Game Results</h2>
+          <p class="text-xs text-gray-600 mt-1">
+            Game Code:
+            <span class="font-mono font-bold text-gray-800"
+              >{{ game_code }}</span
+            >
+            · Created: {{ quick_game.created_at.strftime('%b %d, %Y') }} ·
+            Completed: {{ quick_game.completed_at.strftime('%b %d, %Y') if
+            quick_game.completed_at else 'In Progress' }}
+          </p>
+        </div>
+        <div class="flex items-center gap-3">
+          {% if champion_flag %}
+          <img
+            src="{{ champion_flag }}"
+            alt="{{ champion.code }}"
+            class="w-7 h-7 rounded-full"
+          />
+          {% endif %}
+          <div class="text-right">
+            <p class="text-xs text-gray-500">Champion</p>
+            <p class="text-sm font-bold text-gray-900">
+              {{ champion.code if champion else 'TBD' }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="groupmatchpicks" class="print-page print-tight">
+        <div class="mt-6">
+          <h2 class="text-lg font-bold text-gray-800 text-center mb-4">
+            Match Details
+          </h2>
+        </div>
+
+        <div id="somethingcool">
+          <h3 class="text-sm font-bold text-gray-800 mb-2">
+            Group Match Picks
+          </h3>
+          <div class="group-picks-grid grid grid-cols-2 md:grid-cols-4 gap-2">
+            {% for group in ['A','B','C','D','E','F','G','H'] %} {% set
+            group_round = 'Group Stage - Group ' ~ group %}
+            <div
+              class="group-picks-card border border-gray-200 rounded-lg overflow-hidden"
+            >
+              <p
+                class="text-[10px] font-bold text-gray-700 mb-0 bg-gray-100 px-2 py-1"
+              >
+                Group {{ group }}
+              </p>
+              {% if rounds.get(group_round) %} {% for match_result in
+              rounds[group_round] %}
+              <div
+                class="grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-[10px] leading-none text-gray-700 py-1 px-2 {% if loop.index is odd %}bg-white{% else %}bg-gray-50{% endif %}"
+              >
+                <span
+                  class="inline-flex items-center gap-1 whitespace-nowrap leading-none self-center"
+                >
+                  <span class="text-gray-400"
+                    >#{{ match_result.match.match_number }}</span
+                  >
+                  {% if match_result.team1 %}
+                  <span>{{ match_result.team1.code }}</span>
+                  {% else %}
+                  <span>TBD</span>
+                  {% endif %}
+                  <span class="text-gray-400">vs</span>
+                  {% if match_result.team2 %}
+                  <span>{{ match_result.team2.code }}</span>
+                  {% else %}
+                  <span>TBD</span>
+                  {% endif %}
+                </span>
+                <span
+                  class="text-[9px] text-gray-500 text-center whitespace-nowrap leading-none self-center"
+                >
+                  {% if match_result.match.actual_team1_score is not none and
+                  match_result.match.actual_team2_score is not none %} {{
+                  match_result.match.actual_team1_score }}-{{
+                  match_result.match.actual_team2_score }} {% if
+                  match_result.match.actual_team1_penalty_score is not none and
+                  match_result.match.actual_team2_penalty_score is not none %}
+                  ({{ match_result.match.actual_team1_penalty_score }}-{{
+                  match_result.match.actual_team2_penalty_score }}) {% endif %}
+                  {% else %} - {% endif %}
+                </span>
+                <span
+                  class="font-semibold text-right justify-self-end whitespace-nowrap leading-none self-center"
+                >
+                  {% if match_result.result == 'team1' and match_result.team1 %}
+                  <span class="inline-flex items-center gap-1">
+                    {% set team1_flag = flag_url(match_result.team1.code, 20) %}
+                    {% if team1_flag %}
+                    <img
+                      src="{{ team1_flag }}"
+                      alt="{{ match_result.team1.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team1.code }}</span>
+                  </span>
+                  {% elif match_result.result == 'team2' and match_result.team2
+                  %}
+                  <span class="inline-flex items-center gap-1">
+                    {% set team2_flag = flag_url(match_result.team2.code, 20) %}
+                    {% if team2_flag %}
+                    <img
+                      src="{{ team2_flag }}"
+                      alt="{{ match_result.team2.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team2.code }}</span>
+                  </span>
+                  {% else %} Draw {% endif %}
+                </span>
+              </div>
+              {% endfor %} {% else %}
+              <p class="text-xs text-gray-500 px-2 py-1">No picks yet.</p>
+              {% endif %}
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <div id="groupstandings" class="mt-5">
+        <h3 class="text-sm font-bold text-gray-800 mb-3">Group Standings</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {% for group, teams in standings.items() | sort %}
+          <div class="border border-gray-200 rounded-lg overflow-hidden">
+            <div class="bg-green-600 text-white text-xs font-bold py-2 px-3">
+              Group {{ group }}
+            </div>
+            <table class="w-full text-xs">
+              <thead class="bg-gray-50">
+                <tr class="text-gray-500">
+                  <th class="text-left py-0.5 px-1">Team</th>
+                  <th class="text-center py-0.5 px-1">P</th>
+                  <th class="text-center py-0.5 px-1">W</th>
+                  <th class="text-center py-0.5 px-1">D</th>
+                  <th class="text-center py-0.5 px-1">L</th>
+                  <th class="text-center py-0.5 px-1 font-bold">Pts</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for team in teams %}
+                <tr
+                  class="{% if loop.index <= 2 %}bg-green-50 font-semibold{% endif %} border-t border-gray-100"
+                >
+                  <td class="py-0.5 px-1">
+                    <span class="inline-flex items-center gap-1">
+                      {% set team_flag = flag_url(team.team_code, 20) %} {% if
+                      team_flag %}
+                      <img
+                        src="{{ team_flag }}"
+                        alt="{{ team.team_code }}"
+                        class="w-4 h-4 rounded-full"
+                      />
+                      {% endif %}
+                      <span>{{ team.team_code }}</span>
+                    </span>
+                  </td>
+                  <td class="text-center py-0.5 px-1">{{ team.played }}</td>
+                  <td class="text-center py-0.5 px-1">{{ team.won }}</td>
+                  <td class="text-center py-0.5 px-1">{{ team.drawn }}</td>
+                  <td class="text-center py-0.5 px-1">{{ team.lost }}</td>
+                  <td class="text-center py-0.5 px-1 font-bold">
+                    {{ team.points }}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div id="knockoutbracket" class="mt-5">
+        <h3 class="text-sm font-bold text-gray-800 mb-3 print-hide">
+          Knockout Bracket
+        </h3>
+        {% set round_of_16 = rounds.get('Round of 16', []) %} {% set
+        quarter_finals = rounds.get('Quarter Finals', []) %} {% set semi_finals
+        = rounds.get('Semi Finals', []) %} {% set final_match =
+        rounds.get('Final', []) %} {% set third_place = rounds.get('Third
+        Place', []) %}
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 print-hide">
+          <div class="border border-gray-200 rounded-lg p-3">
+            <p
+              class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1"
+            >
+              Round of 16
+            </p>
+            <div class="flex flex-col gap-2">
+              {% for match_result in round_of_16 %}
+              <div class="border border-gray-200 rounded-md p-2">
+                <p class="text-[10px] text-gray-400 mb-1">
+                  #{{ match_result.match.match_number }}
+                </p>
+                <div class="flex flex-col gap-1 text-xs">
+                  {% set team1_wins = match_result.result == 'team1' or
+                  (match_result.result == 'draw' and match_result.advancing_team
+                  and match_result.team1 and match_result.advancing_team.id ==
+                  match_result.team1.id) %} {% set team2_wins =
+                  match_result.result == 'team2' or (match_result.result ==
+                  'draw' and match_result.advancing_team and match_result.team2
+                  and match_result.advancing_team.id == match_result.team2.id)
+                  %}
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-green-50 font-semibold{% endif %}"
+                  >
+                    {% if match_result.team1 %} {% set team1_flag =
+                    flag_url(match_result.team1.code, 20) %} {% if team1_flag %}
+                    <img
+                      src="{{ team1_flag }}"
+                      alt="{{ match_result.team1.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team1.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-green-50 font-semibold{% endif %}"
+                  >
+                    {% if match_result.team2 %} {% set team2_flag =
+                    flag_url(match_result.team2.code, 20) %} {% if team2_flag %}
+                    <img
+                      src="{{ team2_flag }}"
+                      alt="{{ match_result.team2.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team2.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="border border-gray-200 rounded-lg p-3">
+            <p
+              class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1"
+            >
+              Quarter Finals
+            </p>
+            <div class="flex flex-col gap-2">
+              {% for match_result in quarter_finals %}
+              <div class="border border-gray-200 rounded-md p-2">
+                <p class="text-[10px] text-gray-400 mb-1">
+                  #{{ match_result.match.match_number }}
+                </p>
+                <div class="flex flex-col gap-1 text-xs">
+                  {% set team1_wins = match_result.result == 'team1' or
+                  (match_result.result == 'draw' and match_result.advancing_team
+                  and match_result.team1 and match_result.advancing_team.id ==
+                  match_result.team1.id) %} {% set team2_wins =
+                  match_result.result == 'team2' or (match_result.result ==
+                  'draw' and match_result.advancing_team and match_result.team2
+                  and match_result.advancing_team.id == match_result.team2.id)
+                  %}
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-green-50 font-semibold{% endif %}"
+                  >
+                    {% if match_result.team1 %} {% set team1_flag =
+                    flag_url(match_result.team1.code, 20) %} {% if team1_flag %}
+                    <img
+                      src="{{ team1_flag }}"
+                      alt="{{ match_result.team1.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team1.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-green-50 font-semibold{% endif %}"
+                  >
+                    {% if match_result.team2 %} {% set team2_flag =
+                    flag_url(match_result.team2.code, 20) %} {% if team2_flag %}
+                    <img
+                      src="{{ team2_flag }}"
+                      alt="{{ match_result.team2.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team2.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="border border-gray-200 rounded-lg p-3">
+            <p
+              class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1"
+            >
+              Semi Finals
+            </p>
+            <div class="flex flex-col gap-2">
+              {% for match_result in semi_finals %}
+              <div class="border border-gray-200 rounded-md p-2">
+                <p class="text-[10px] text-gray-400 mb-1">
+                  #{{ match_result.match.match_number }}
+                </p>
+                <div class="flex flex-col gap-1 text-xs">
+                  {% set team1_wins = match_result.result == 'team1' or
+                  (match_result.result == 'draw' and match_result.advancing_team
+                  and match_result.team1 and match_result.advancing_team.id ==
+                  match_result.team1.id) %} {% set team2_wins =
+                  match_result.result == 'team2' or (match_result.result ==
+                  'draw' and match_result.advancing_team and match_result.team2
+                  and match_result.advancing_team.id == match_result.team2.id)
+                  %}
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-green-50 font-semibold{% endif %}"
+                  >
+                    {% if match_result.team1 %} {% set team1_flag =
+                    flag_url(match_result.team1.code, 20) %} {% if team1_flag %}
+                    <img
+                      src="{{ team1_flag }}"
+                      alt="{{ match_result.team1.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team1.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-green-50 font-semibold{% endif %}"
+                  >
+                    {% if match_result.team2 %} {% set team2_flag =
+                    flag_url(match_result.team2.code, 20) %} {% if team2_flag %}
+                    <img
+                      src="{{ team2_flag }}"
+                      alt="{{ match_result.team2.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team2.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+          <div class="border border-gray-200 rounded-lg p-3">
+            <p
+              class="text-xs font-bold text-gray-700 mb-2 border-b border-gray-200 pb-1"
+            >
+              Final & Third
+            </p>
+            <div class="flex flex-col gap-2">
+              {% for match_result in final_match %}
+              <div class="border border-amber-200 rounded-md p-2 bg-amber-50">
+                <p class="text-[10px] text-amber-700 mb-1">
+                  Final #{{ match_result.match.match_number }}
+                </p>
+                <div class="flex flex-col gap-1 text-xs">
+                  {% set team1_wins = match_result.result == 'team1' or
+                  (match_result.result == 'draw' and match_result.advancing_team
+                  and match_result.team1 and match_result.advancing_team.id ==
+                  match_result.team1.id) %} {% set team2_wins =
+                  match_result.result == 'team2' or (match_result.result ==
+                  'draw' and match_result.advancing_team and match_result.team2
+                  and match_result.advancing_team.id == match_result.team2.id)
+                  %}
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-white font-semibold{% endif %}"
+                  >
+                    {% if match_result.team1 %} {% set team1_flag =
+                    flag_url(match_result.team1.code, 20) %} {% if team1_flag %}
+                    <img
+                      src="{{ team1_flag }}"
+                      alt="{{ match_result.team1.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team1.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-white font-semibold{% endif %}"
+                  >
+                    {% if match_result.team2 %} {% set team2_flag =
+                    flag_url(match_result.team2.code, 20) %} {% if team2_flag %}
+                    <img
+                      src="{{ team2_flag }}"
+                      alt="{{ match_result.team2.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team2.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %} {% for match_result in third_place %}
+              <div class="border border-orange-200 rounded-md p-2 bg-orange-50">
+                <p class="text-[10px] text-orange-700 mb-1">
+                  Third #{{ match_result.match.match_number }}
+                </p>
+                <div class="flex flex-col gap-1 text-xs">
+                  {% set team1_wins = match_result.result == 'team1' or
+                  (match_result.result == 'draw' and match_result.advancing_team
+                  and match_result.team1 and match_result.advancing_team.id ==
+                  match_result.team1.id) %} {% set team2_wins =
+                  match_result.result == 'team2' or (match_result.result ==
+                  'draw' and match_result.advancing_team and match_result.team2
+                  and match_result.advancing_team.id == match_result.team2.id)
+                  %}
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team1_wins %}bg-white font-semibold{% endif %}"
+                  >
+                    {% if match_result.team1 %} {% set team1_flag =
+                    flag_url(match_result.team1.code, 20) %} {% if team1_flag %}
+                    <img
+                      src="{{ team1_flag }}"
+                      alt="{{ match_result.team1.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team1.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                  <div
+                    class="flex items-center gap-1 rounded px-1 py-0.5 {% if team2_wins %}bg-white font-semibold{% endif %}"
+                  >
+                    {% if match_result.team2 %} {% set team2_flag =
+                    flag_url(match_result.team2.code, 20) %} {% if team2_flag %}
+                    <img
+                      src="{{ team2_flag }}"
+                      alt="{{ match_result.team2.code }}"
+                      class="w-4 h-4 rounded-full"
+                    />
+                    {% endif %}
+                    <span>{{ match_result.team2.code }}</span>
+                    {% else %}
+                    <span>TBD</span>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        <h3 class="text-sm font-bold text-gray-800 mb-3 hidden print:block">
+          Knockout Ladder
+        </h3>
+        <div class="hidden print:grid grid-cols-1 md:grid-cols-2 gap-3">
+          {% for ko_round in knockout_rounds %} {% if rounds.get(ko_round) %}
+          <div class="border border-gray-200 rounded-lg p-3">
+            <p class="text-xs text-gray-500 mb-1">{{ ko_round }}</p>
+            <div
+              class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm font-semibold text-gray-800"
+            >
+              {% for match_result in rounds[ko_round] %}
+              <span class="inline-flex items-center gap-1 px-1">
+                {% if match_result.team1 %} {% set team1_flag =
+                flag_url(match_result.team1.code, 20) %} {% if team1_flag %}
+                <img
+                  src="{{ team1_flag }}"
+                  alt="{{ match_result.team1.code }}"
+                  class="w-4 h-4 rounded-full"
+                />
+                {% endif %}
+                <span>{{ match_result.team1.code }}</span>
+                {% else %}
+                <span>TBD</span>
+                {% endif %}
+                <span class="text-gray-400 font-semibold">vs</span>
+                {% if match_result.team2 %} {% set team2_flag =
+                flag_url(match_result.team2.code, 20) %} {% if team2_flag %}
+                <img
+                  src="{{ team2_flag }}"
+                  alt="{{ match_result.team2.code }}"
+                  class="w-4 h-4 rounded-full"
+                />
+                {% endif %}
+                <span>{{ match_result.team2.code }}</span>
+                {% else %}
+                <span>TBD</span>
+                {% endif %}
+                <span class="text-[9px] text-gray-500 py-0.5">
+                  {% if match_result.match.actual_team1_score is not none and
+                  match_result.match.actual_team2_score is not none %} {{
+                  match_result.match.actual_team1_score }}-{{
+                  match_result.match.actual_team2_score }} {% if
+                  match_result.match.actual_team1_penalty_score is not none and
+                  match_result.match.actual_team2_penalty_score is not none %}
+                  ({{ match_result.match.actual_team1_penalty_score }}-{{
+                  match_result.match.actual_team2_penalty_score }}) {% endif %}
+                  {% else %} - {% endif %}
+                </span>
+                <span class="text-[9px] text-gray-600 font-semibold">
+                  {% if match_result.result == 'team1' and match_result.team1 %}
+                  {{ match_result.team1.code }} {% elif match_result.result ==
+                  'team2' and match_result.team2 %} {{ match_result.team2.code
+                  }} {% else %} Draw {% endif %}
+                </span>
+              </span>
+              {% if not loop.last %}
+              <span class="text-gray-400 font-semibold">|</span>
+              {% endif %} {% endfor %}
+            </div>
+          </div>
+          {% endif %} {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Page 2: Details -->
+  </div>
 </div>
 {% endblock %}

@@ -1,144 +1,158 @@
-{% extends "base.html" %}
-
-{% block title %}Quick Game - FIFA World Cup{% endblock %}
-
-{% block extra_css %}
-<link rel="stylesheet" href="/static/css/tailwind.output.css">
-<link rel="stylesheet" href="/static/css/quickgame.css">
-{% endblock %}
-
-{% block content %}
+{% extends "base_tailwind.html" %} {% block title %}Quick Game - FIFA World Cup{%
+endblock %} {% block extra_css %}
+<link rel="stylesheet" href="/static/css/quickgame.css" />
+{% endblock %} {% block content %}
 <div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
-    <div class="max-w-4xl mx-auto px-4">
-        <!-- Header -->
-        <div class="text-center mb-12">
-            <h1 class="text-5xl font-bold text-gray-800 mb-4">⚡ Quick Game</h1>
-            <p class="text-xl text-gray-600">Pick winners, no scores needed. Fast and fun!</p>
-        </div>
-
-        <!-- Start New Game Card -->
-        <div class="bg-white rounded-2xl shadow-xl p-8 mb-8 hover:shadow-2xl transition-shadow">
-            <div class="text-center">
-                <div class="text-6xl mb-4">🏆</div>
-                <h2 class="text-3xl font-bold text-gray-800 mb-4">Start a New Game</h2>
-                <p class="text-gray-600 mb-6">Create your World Cup bracket in minutes. Pick match winners through the group stage and knockouts.</p>
-                <button
-                    id="start-new-game-btn"
-                    class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
-                >
-                    Start New Quick Game →
-                </button>
-            </div>
-        </div>
-
-        <!-- Recent Games -->
-        {% if recent_games %}
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Recent Games</h2>
-            <div class="space-y-4">
-                {% for item in recent_games %}
-                <div class="border-2 border-gray-200 rounded-xl p-4 hover:border-green-400 transition-colors">
-                    <div class="flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center gap-3">
-                                <span class="text-2xl">
-                                    {% if item.game.is_completed %}
-                                        ✅
-                                    {% else %}
-                                        ⏳
-                                    {% endif %}
-                                </span>
-                                <div>
-                                    <p class="font-mono font-semibold text-lg text-gray-800">{{ item.game.game_code }}</p>
-                                    <p class="text-sm text-gray-500">{{ item.game.created_at.strftime('%B %d, %Y at %I:%M %p') }}</p>
-                                </div>
-                            </div>
-                            {% if item.champion_name %}
-                            <p class="mt-2 text-green-600 font-semibold ml-11">
-                                🏆 Champion: {{ item.champion_name }}
-                            </p>
-                            {% endif %}
-                        </div>
-                        <div class="flex gap-2">
-                            {% if item.game.is_completed %}
-                            <a
-                                href="/quickgame/{{ item.game.game_code }}/results"
-                                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                            >
-                                View Results
-                            </a>
-                            {% else %}
-                            <a
-                                href="/quickgame/{{ item.game.game_code }}/groups"
-                                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
-                            >
-                                Continue
-                            </a>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-
-        <!-- How It Works -->
-        <div class="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-8">
-            <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">How It Works</h3>
-            <div class="grid md:grid-cols-3 gap-6">
-                <div class="text-center">
-                    <div class="text-4xl mb-2">1️⃣</div>
-                    <h4 class="font-bold text-gray-800 mb-2">Pick Group Winners</h4>
-                    <p class="text-gray-600 text-sm">Choose win/draw/loss for all group stage matches</p>
-                </div>
-                <div class="text-center">
-                    <div class="text-4xl mb-2">2️⃣</div>
-                    <h4 class="font-bold text-gray-800 mb-2">Select Knockout Victors</h4>
-                    <p class="text-gray-600 text-sm">Pick winners based on group standings</p>
-                </div>
-                <div class="text-center">
-                    <div class="text-4xl mb-2">3️⃣</div>
-                    <h4 class="font-bold text-gray-800 mb-2">Share & Print</h4>
-                    <p class="text-gray-600 text-sm">Get a printable bracket to share with friends</p>
-                </div>
-            </div>
-        </div>
+  <div class="max-w-4xl mx-auto px-4">
+    <!-- Header -->
+    <div class="text-center mb-12">
+      <h1 class="text-5xl font-bold text-gray-800 mb-4">⚡ Quick Game</h1>
+      <p class="text-xl text-gray-600">
+        Pick winners, no scores needed. Fast and fun!
+      </p>
     </div>
+
+    <!-- Start New Game Card -->
+    <div
+      class="bg-white rounded-2xl shadow-xl p-8 mb-8 hover:shadow-2xl transition-shadow"
+    >
+      <div class="text-center">
+        <div class="text-6xl mb-4">🏆</div>
+        <h2 class="text-3xl font-bold text-gray-800 mb-4">Start a New Game</h2>
+        <p class="text-gray-600 mb-6">
+          Create your World Cup bracket in minutes. Pick match winners through
+          the group stage and knockouts.
+        </p>
+        <button
+          id="start-new-game-btn"
+          class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
+        >
+          Start New Quick Game →
+        </button>
+      </div>
+    </div>
+
+    <!-- Recent Games -->
+    {% if recent_games %}
+    <div class="bg-white rounded-2xl shadow-xl p-8">
+      <h2 class="text-2xl font-bold text-gray-800 mb-6">Your Recent Games</h2>
+      <div class="space-y-4">
+        {% for item in recent_games %}
+        <div
+          class="border-2 border-gray-200 rounded-xl p-4 hover:border-green-400 transition-colors"
+        >
+          <div class="flex items-center justify-between">
+            <div class="flex-1">
+              <div class="flex items-center gap-3">
+                <span class="text-2xl">
+                  {% if item.game.is_completed %} ✅ {% else %} ⏳ {% endif %}
+                </span>
+                <div>
+                  <p class="font-mono font-semibold text-lg text-gray-800">
+                    {{ item.game.game_code }}
+                  </p>
+                  <p class="text-sm text-gray-500">
+                    {{ item.game.created_at.strftime('%B %d, %Y at %I:%M %p') }}
+                  </p>
+                </div>
+              </div>
+              {% if item.champion_name %}
+              <p class="mt-2 text-green-600 font-semibold ml-11">
+                🏆 Champion: {{ item.champion_name }}
+              </p>
+              {% endif %}
+            </div>
+            <div class="flex gap-2">
+              {% if item.game.is_completed %}
+              <a
+                href="/quickgame/{{ item.game.game_code }}/results"
+                class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                View Results
+              </a>
+              {% else %}
+              <a
+                href="/quickgame/{{ item.game.game_code }}/groups"
+                class="bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+              >
+                Continue
+              </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- How It Works -->
+    <div class="mt-8 bg-gradient-to-r from-blue-50 to-green-50 rounded-2xl p-8">
+      <h3 class="text-2xl font-bold text-gray-800 mb-4 text-center">
+        How It Works
+      </h3>
+      <div class="grid md:grid-cols-3 gap-6">
+        <div class="text-center">
+          <div class="text-4xl mb-2">1️⃣</div>
+          <h4 class="font-bold text-gray-800 mb-2">Pick Group Winners</h4>
+          <p class="text-gray-600 text-sm">
+            Choose win/draw/loss for all group stage matches
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl mb-2">2️⃣</div>
+          <h4 class="font-bold text-gray-800 mb-2">Select Knockout Victors</h4>
+          <p class="text-gray-600 text-sm">
+            Pick winners based on group standings
+          </p>
+        </div>
+        <div class="text-center">
+          <div class="text-4xl mb-2">3️⃣</div>
+          <h4 class="font-bold text-gray-800 mb-2">Share & Print</h4>
+          <p class="text-gray-600 text-sm">
+            Get a printable bracket to share with friends
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
-<div id="notification" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity">
-    <span id="notification-text"></span>
+<div
+  id="notification"
+  class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg hidden transition-opacity"
+>
+  <span id="notification-text"></span>
 </div>
-{% endblock %}
-
-{% block extra_js %}
+{% endblock %} {% block extra_js %}
 <script>
-document.getElementById('start-new-game-btn').addEventListener('click', async function() {
-    this.disabled = true;
-    this.textContent = 'Creating game...';
+  document
+    .getElementById("start-new-game-btn")
+    .addEventListener("click", async function () {
+      this.disabled = true;
+      this.textContent = "Creating game...";
 
-    try {
-        const response = await fetch('/quickgame/new', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            }
+      try {
+        const response = await fetch("/quickgame/new", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
         });
 
         if (response.ok) {
-            const data = await response.json();
-            // Redirect to group stage
-            window.location.href = `/quickgame/${data.game_code}/groups`;
+          const data = await response.json();
+          // Redirect to group stage
+          window.location.href = `/quickgame/${data.game_code}/groups`;
         } else {
-            throw new Error('Failed to create game');
+          throw new Error("Failed to create game");
         }
-    } catch (error) {
-        console.error('Error:', error);
+      } catch (error) {
+        console.error("Error:", error);
         this.disabled = false;
-        this.textContent = 'Start New Quick Game →';
-        alert('Error creating game. Please try again.');
-    }
-});
+        this.textContent = "Start New Quick Game →";
+        alert("Error creating game. Please try again.");
+      }
+    });
 </script>
 {% endblock %}
