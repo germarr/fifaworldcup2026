@@ -112,7 +112,9 @@ module.exports = {
 
 2. **You must run the build command** after cloning the repository and before starting the application.
 
-3. **File size**: The compiled CSS is approximately 5.9KB (minified), much smaller than the CDN version (~300KB).
+3. **File size**: The compiled CSS is approximately 26KB (minified), much smaller than the CDN version (~300KB).
+
+4. **Tailwind v4 syntax**: This project uses Tailwind CSS v4, which requires `@import "tailwindcss";` instead of the v3 `@tailwind` directives.
 
 4. **Template changes**: If you modify the Tailwind classes in any quickgame template, run the build command again to regenerate the CSS with the new utilities.
 
