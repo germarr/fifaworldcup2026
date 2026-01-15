@@ -1,8 +1,13 @@
 {#
   Team flag component using flagcdn.com
-  Usage: {% include "components/team_flag.html" with context %}
+  Usage: {% from "components/team_flag.html" import flag %}
+         {{ flag(country_code, size) }}
   Required: country_code (2 or 3 letter code)
-  Optional: size (default: 20), class (additional CSS classes)
+  Optional: size (default: 20), extra_class (additional CSS classes)
+
+  Valid flagcdn formats:
+  - WxH format: https://flagcdn.com/16x12/us.png (width x height)
+  - w format: https://flagcdn.com/w20/us.png (only w20, w40, w80, w160, w320, w640, w1280, w2560)
 #}
 {% macro flag(country_code, size=20, extra_class="") %}
 {% set code_map = {
@@ -20,17 +25,19 @@
     'CRC': 'cr', 'PAN': 'pa', 'JAM': 'jm'
 } %}
 {% set iso_code = code_map.get(country_code, country_code|lower if country_code else none) %}
+{% set height = (size * 3 // 4)|int %}
 {% if iso_code %}
 <img
-    src="https://flagcdn.com/w{{ size * 2 }}/{{ iso_code }}.png"
-    srcset="https://flagcdn.com/w{{ size * 2 }}/{{ iso_code }}.png 2x"
+    src="https://flagcdn.com/{{ size }}x{{ height }}/{{ iso_code }}.png"
+    srcset="https://flagcdn.com/{{ size * 2 }}x{{ height * 2 }}/{{ iso_code }}.png 2x"
     width="{{ size }}"
+    height="{{ height }}"
     alt="{{ country_code }}"
     class="inline-block rounded-sm {{ extra_class }}"
-    style="height: auto; vertical-align: middle;"
+    style="vertical-align: middle;"
     loading="lazy"
 >
 {% else %}
-<span class="inline-block w-{{ size // 4 }} h-{{ size // 5 }} bg-gray-300 rounded-sm {{ extra_class }}" title="TBD"></span>
+<span class="inline-block bg-gray-300 rounded-sm {{ extra_class }}" style="width: {{ size }}px; height: {{ height }}px; vertical-align: middle;" title="TBD"></span>
 {% endif %}
 {% endmacro %}

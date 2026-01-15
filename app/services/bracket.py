@@ -104,7 +104,7 @@ def build_round_of_32(
         ("1A", "2B"), ("1C", "2D"), ("1E", "2F"), ("1G", "2H"),
         ("1I", "2J"), ("1K", "2L"), ("1B", "2A"), ("1D", "2C"),
         ("1F", "2E"), ("1H", "2G"), ("1J", "2I"), ("1L", "2K"),
-        # Third place matchups would go here
+        ("3-1", "3-5"), ("3-2", "3-6"), ("3-3", "3-7"), ("3-4", "3-8"),
     ]
 
     for i, (home_slot, away_slot) in enumerate(matchups):
@@ -171,9 +171,14 @@ def resolve_slot(
         group = slot[1]
         return runners_up.get(group)
     elif slot.startswith("3"):
-        # Third place - would need more complex logic
-        idx = int(slot[3:]) - 1 if len(slot) > 3 else 0
-        return thirds[idx] if idx < len(thirds) else None
+        # Third place slot format: "3-1", "3-2", etc.
+        if "-" in slot:
+            try:
+                idx = int(slot.split("-")[1]) - 1
+                return thirds[idx] if idx < len(thirds) else None
+            except (IndexError, ValueError):
+                return None
+        return None
 
     return None
 
