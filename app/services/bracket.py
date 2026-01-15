@@ -57,6 +57,11 @@ def get_user_bracket(db: Session, user_id: int) -> Dict[str, Any]:
 
     # Build knockout bracket
     bracket["round_of_32"] = build_round_of_32(db, user_id, bracket)
+    bracket["round_of_16"] = build_round_of_16(db, user_id, bracket)
+    bracket["quarter_finals"] = build_quarter_finals(db, user_id, bracket)
+    bracket["semi_finals"] = build_semi_finals(db, user_id, bracket)
+    bracket["third_place_match"] = build_third_place_match(db, user_id, bracket)
+    bracket["final"] = build_final(db, user_id, bracket)
 
     return bracket
 
@@ -171,3 +176,186 @@ def resolve_slot(
         return thirds[idx] if idx < len(thirds) else None
 
     return None
+
+
+def build_round_of_16(
+    db: Session,
+    user_id: int,
+    bracket: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    """Build Round of 16 matchups from R32 winners."""
+    r16_matches = []
+    r32_winners = []
+    
+    for r32_match in bracket["round_of_32"]:
+        if r32_match["prediction"] and r32_match["prediction"]["predicted_winner_team_id"]:
+            winner_id = r32_match["prediction"]["predicted_winner_team_id"]
+            winner_team = r32_match["home_team"] if r32_match["home_team"]["team_id"] == winner_id else r32_match["away_team"]
+            r32_winners.append(winner_team)
+    
+    match_number = 85
+    for i in range(0, len(r32_winners), 2):
+        home_team = r32_winners[i] if i < len(r32_winners) else None
+        away_team = r32_winners[i + 1] if i + 1 < len(r32_winners) else None
+        
+        match_obj = db.exec(select(Match).where(Match.match_number == match_number)).first()
+        match_id = match_obj.id if match_obj else None
+        
+        prediction = None
+        if match_id:
+            pred = db.exec(select(Prediction).where(Prediction.user_id == user_id, Prediction.match_id == match_id)).first()
+            if pred:
+                prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
+        
+        r16_matches.append({"match_id": match_id, "match_number": match_number, "home_team": home_team, "away_team": away_team, "prediction": prediction, "locked": False})
+        match_number += 1
+    
+    return r16_matches
+
+
+def build_quarter_finals(
+    db: Session,
+    user_id: int,
+    bracket: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    """Build Quarter Finals from R16 winners."""
+    qf_matches = []
+    r16_winners = []
+    
+    for r16_match in bracket["round_of_16"]:
+        if r16_match["prediction"] and r16_match["prediction"]["predicted_winner_team_id"]:
+            winner_id = r16_match["prediction"]["predicted_winner_team_id"]
+            if r16_match["home_team"] and r16_match["home_team"]["team_id"] == winner_id:
+                winner_team = r16_match["home_team"]
+            elif r16_match["away_team"] and r16_match["away_team"]["team_id"] == winner_id:
+                winner_team = r16_match["away_team"]
+            else:
+                continue
+            r16_winners.append(winner_team)
+    
+    match_number = 89
+    for i in range(0, len(r16_winners), 2):
+        home_team = r16_winners[i] if i < len(r16_winners) else None
+        away_team = r16_winners[i + 1] if i + 1 < len(r16_winners) else None
+        
+        match_obj = db.exec(select(Match).where(Match.match_number == match_number)).first()
+        match_id = match_obj.id if match_obj else None
+        
+        prediction = None
+        if match_id:
+            pred = db.exec(select(Prediction).where(Prediction.user_id == user_id, Prediction.match_id == match_id)).first()
+            if pred:
+                prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
+        
+        qf_matches.append({"match_id": match_id, "match_number": match_number, "home_team": home_team, "away_team": away_team, "prediction": prediction, "locked": False})
+        match_number += 1
+    
+    return qf_matches
+
+
+def build_semi_finals(
+    db: Session,
+    user_id: int,
+    bracket: Dict[str, Any]
+) -> List[Dict[str, Any]]:
+    """Build Semi Finals from QF winners."""
+    sf_matches = []
+    qf_winners = []
+    
+    for qf_match in bracket["quarter_finals"]:
+        if qf_match["prediction"] and qf_match["prediction"]["predicted_winner_team_id"]:
+            winner_id = qf_match["prediction"]["predicted_winner_team_id"]
+            if qf_match["home_team"] and qf_match["home_team"]["team_id"] == winner_id:
+                winner_team = qf_match["home_team"]
+            elif qf_match["away_team"] and qf_match["away_team"]["team_id"] == winner_id:
+                winner_team = qf_match["away_team"]
+            else:
+                continue
+            qf_winners.append(winner_team)
+    
+    match_number = 93
+    for i in range(0, len(qf_winners), 2):
+        home_team = qf_winners[i] if i < len(qf_winners) else None
+        away_team = qf_winners[i + 1] if i + 1 < len(qf_winners) else None
+        
+        match_obj = db.exec(select(Match).where(Match.match_number == match_number)).first()
+        match_id = match_obj.id if match_obj else None
+        
+        prediction = None
+        if match_id:
+            pred = db.exec(select(Prediction).where(Prediction.user_id == user_id, Prediction.match_id == match_id)).first()
+            if pred:
+                prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
+        
+        sf_matches.append({"match_id": match_id, "match_number": match_number, "home_team": home_team, "away_team": away_team, "prediction": prediction, "locked": False})
+        match_number += 1
+    
+    return sf_matches
+
+
+def build_third_place_match(
+    db: Session,
+    user_id: int,
+    bracket: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
+    """Build Third Place match from SF losers."""
+    sf_matches = bracket.get("semi_finals", [])
+    if len(sf_matches) < 2:
+        return None
+    
+    sf_losers = []
+    for sf_match in sf_matches:
+        if sf_match["prediction"] and sf_match["prediction"]["predicted_winner_team_id"]:
+            winner_id = sf_match["prediction"]["predicted_winner_team_id"]
+            if sf_match["home_team"] and sf_match["home_team"]["team_id"] != winner_id:
+                sf_losers.append(sf_match["home_team"])
+            elif sf_match["away_team"] and sf_match["away_team"]["team_id"] != winner_id:
+                sf_losers.append(sf_match["away_team"])
+    
+    if len(sf_losers) < 2:
+        return None
+    
+    match_obj = db.exec(select(Match).where(Match.match_number == 95)).first()
+    match_id = match_obj.id if match_obj else None
+    
+    prediction = None
+    if match_id:
+        pred = db.exec(select(Prediction).where(Prediction.user_id == user_id, Prediction.match_id == match_id)).first()
+        if pred:
+            prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
+    
+    return {"match_id": match_id, "match_number": 95, "home_team": sf_losers[0], "away_team": sf_losers[1], "prediction": prediction, "locked": False}
+
+
+def build_final(
+    db: Session,
+    user_id: int,
+    bracket: Dict[str, Any]
+) -> Optional[Dict[str, Any]]:
+    """Build Final from SF winners."""
+    sf_matches = bracket.get("semi_finals", [])
+    if len(sf_matches) < 2:
+        return None
+    
+    sf_winners = []
+    for sf_match in sf_matches:
+        if sf_match["prediction"] and sf_match["prediction"]["predicted_winner_team_id"]:
+            winner_id = sf_match["prediction"]["predicted_winner_team_id"]
+            if sf_match["home_team"] and sf_match["home_team"]["team_id"] == winner_id:
+                sf_winners.append(sf_match["home_team"])
+            elif sf_match["away_team"] and sf_match["away_team"]["team_id"] == winner_id:
+                sf_winners.append(sf_match["away_team"])
+    
+    if len(sf_winners) < 2:
+        return None
+    
+    match_obj = db.exec(select(Match).where(Match.match_number == 96)).first()
+    match_id = match_obj.id if match_obj else None
+    
+    prediction = None
+    if match_id:
+        pred = db.exec(select(Prediction).where(Prediction.user_id == user_id, Prediction.match_id == match_id)).first()
+        if pred:
+            prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
+    
+    return {"match_id": match_id, "match_number": 96, "home_team": sf_winners[0], "away_team": sf_winners[1], "prediction": prediction, "locked": False}
