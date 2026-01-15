@@ -69,10 +69,28 @@
             <p class="text-sm text-gray-400">Check back when the tournament draw is complete.</p>
         </div>
     {% else %}
+        <!-- Auto-Select All Button -->
+        <div class="mb-6 text-center">
+            <button 
+                onclick="autoSelectAllGroups()" 
+                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition"
+            >
+                ⚡ Auto-Select All Groups
+            </button>
+        </div>
+
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for group_letter, group_data in groups.items() %}
                 <div class="card">
-                    <h2 class="text-xl font-bold mb-4 text-fifa-blue">Group {{ group_letter }}</h2>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-xl font-bold text-fifa-blue">Group {{ group_letter }}</h2>
+                        <button 
+                            onclick="autoSelectGroup('{{ group_letter }}')" 
+                            class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded font-semibold transition"
+                        >
+                            ⚡ Select
+                        </button>
+                    </div>
 
                     <!-- Standings -->
                     <div class="mb-4">
@@ -234,6 +252,61 @@ function updateScore(matchId, side, value) {
         scores[matchId] = { home: null, away: null };
     }
     scores[matchId][side] = value ? parseInt(value) : null;
+}
+
+// Auto-select all matches with random outcomes (H, D, or A)
+async function autoSelectAllGroups() {
+    const matchElements = document.querySelectorAll('[data-match]');
+    
+    for (const element of matchElements) {
+        const matchId = element.getAttribute('data-match');
+        const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
+        
+        if (buttons.length > 0) {
+            // Randomly select H, D, or A
+            const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
+            const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
+            
+            if (selectedButton && !selectedButton.disabled) {
+                const winnerId = randomOutcome === 'home_win' ? selectedButton.closest('[data-match]').querySelector('h2')?.textContent : null;
+                await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getTotalMatches() : null);
+                
+                // Small delay to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        }
+    }
+}
+
+// Auto-select all matches in a specific group
+async function autoSelectGroup(groupLetter) {
+    const groupCards = document.querySelectorAll('.card');
+    
+    for (const card of groupCards) {
+        const heading = card.querySelector('h2');
+        if (heading && heading.textContent.includes(`Group ${groupLetter}`)) {
+            const matchElements = card.querySelectorAll('[data-match]');
+            
+            for (const element of matchElements) {
+                const matchId = element.getAttribute('data-match');
+                const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
+                
+                if (buttons.length > 0) {
+                    // Randomly select H, D, or A
+                    const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
+                    const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
+                    
+                    if (selectedButton && !selectedButton.disabled) {
+                        await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getTotalMatches() : null);
+                        
+                        // Small delay to avoid overwhelming the server
+                        await new Promise(resolve => setTimeout(resolve, 200));
+                    }
+                }
+            }
+            break; // Found the group, no need to continue
+        }
+    }
 }
 </script>
 {% endblock %}
