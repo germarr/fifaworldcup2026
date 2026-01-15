@@ -1,0 +1,36 @@
+{#
+  Team flag component using flagcdn.com
+  Usage: {% include "components/team_flag.html" with context %}
+  Required: country_code (2 or 3 letter code)
+  Optional: size (default: 20), class (additional CSS classes)
+#}
+{% macro flag(country_code, size=20, extra_class="") %}
+{% set code_map = {
+    'USA': 'us', 'MEX': 'mx', 'CAN': 'ca',
+    'BRA': 'br', 'ARG': 'ar', 'COL': 'co',
+    'GER': 'de', 'FRA': 'fr', 'ESP': 'es',
+    'ENG': 'gb-eng', 'NED': 'nl', 'BEL': 'be',
+    'POR': 'pt', 'ITA': 'it', 'CRO': 'hr',
+    'JPN': 'jp', 'KOR': 'kr', 'AUS': 'au',
+    'MAR': 'ma', 'SEN': 'sn', 'NGA': 'ng',
+    'URU': 'uy', 'ECU': 'ec', 'CHI': 'cl',
+    'SUI': 'ch', 'DEN': 'dk', 'POL': 'pl',
+    'SRB': 'rs', 'UKR': 'ua', 'AUT': 'at',
+    'KSA': 'sa', 'IRN': 'ir', 'QAT': 'qa',
+    'CRC': 'cr', 'PAN': 'pa', 'JAM': 'jm'
+} %}
+{% set iso_code = code_map.get(country_code, country_code|lower if country_code else none) %}
+{% if iso_code %}
+<img
+    src="https://flagcdn.com/w{{ size * 2 }}/{{ iso_code }}.png"
+    srcset="https://flagcdn.com/w{{ size * 2 }}/{{ iso_code }}.png 2x"
+    width="{{ size }}"
+    alt="{{ country_code }}"
+    class="inline-block rounded-sm {{ extra_class }}"
+    style="height: auto; vertical-align: middle;"
+    loading="lazy"
+>
+{% else %}
+<span class="inline-block w-{{ size // 4 }} h-{{ size // 5 }} bg-gray-300 rounded-sm {{ extra_class }}" title="TBD"></span>
+{% endif %}
+{% endmacro %}

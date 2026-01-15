@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/team_flag.html" import flag %}
 
 {% block title %}Manage Teams - Admin{% endblock %}
 
@@ -20,10 +21,6 @@
             <div>
                 <label class="block text-sm font-medium mb-1">Country Code</label>
                 <input type="text" name="country_code" class="input-field" placeholder="BRA" maxlength="3">
-            </div>
-            <div>
-                <label class="block text-sm font-medium mb-1">Flag Emoji</label>
-                <input type="text" name="flag_emoji" class="input-field" placeholder="&#127463;&#127479;">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Group</label>
@@ -59,13 +56,13 @@
                     <tbody>
                         {% for team in teams %}
                             <tr class="border-b hover:bg-gray-50">
-                                <td class="py-2 text-2xl">{{ team.flag_emoji or '🏳️' }}</td>
+                                <td class="py-2">{{ flag(team.country_code, 24) }}</td>
                                 <td class="py-2">{{ team.name }}</td>
                                 <td class="py-2">{{ team.country_code or '-' }}</td>
                                 <td class="py-2">{{ team.group_letter or 'Not Assigned' }}</td>
                                 <td class="py-2">
                                     <button
-                                        onclick="editTeam({{ team.id }}, '{{ team.name }}', '{{ team.country_code or '' }}', '{{ team.flag_emoji or '' }}', '{{ team.group_letter or '' }}')"
+                                        onclick="editTeam({{ team.id }}, '{{ team.name }}', '{{ team.country_code or '' }}', '{{ team.group_letter or '' }}')"
                                         class="text-fifa-blue hover:underline mr-2"
                                     >
                                         Edit
@@ -98,10 +95,6 @@
                     <input type="text" name="country_code" id="edit-code" class="input-field" maxlength="3">
                 </div>
                 <div class="mb-4">
-                    <label class="block text-sm font-medium mb-1">Flag Emoji</label>
-                    <input type="text" name="flag_emoji" id="edit-flag" class="input-field">
-                </div>
-                <div class="mb-4">
                     <label class="block text-sm font-medium mb-1">Group</label>
                     <select name="group_letter" id="edit-group" class="input-field">
                         <option value="">Not Assigned</option>
@@ -120,11 +113,10 @@
 </div>
 
 <script>
-function editTeam(id, name, code, flag, group) {
+function editTeam(id, name, code, group) {
     document.getElementById('edit-form').action = `/admin/teams/${id}/update`;
     document.getElementById('edit-name').value = name;
     document.getElementById('edit-code').value = code;
-    document.getElementById('edit-flag').value = flag;
     document.getElementById('edit-group').value = group;
     document.getElementById('edit-modal').classList.remove('hidden');
     document.getElementById('edit-modal').classList.add('flex');

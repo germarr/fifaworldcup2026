@@ -105,13 +105,42 @@ def build_round_of_32(
     for i, (home_slot, away_slot) in enumerate(matchups):
         home_team = resolve_slot(home_slot, group_winners, group_runners_up, qualified_thirds)
         away_team = resolve_slot(away_slot, group_winners, group_runners_up, qualified_thirds)
+        
+        # Find the actual match ID from database
+        match_number = 73 + i
+        match_obj = db.exec(
+            select(Match).where(Match.match_number == match_number)
+        ).first()
+        
+        match_id = match_obj.id if match_obj else None
+        
+        # Get prediction if it exists
+        prediction = None
+        if match_id:
+            pred = db.exec(
+                select(Prediction).where(
+                    Prediction.user_id == user_id,
+                    Prediction.match_id == match_id
+                )
+            ).first()
+            if pred:
+                prediction = {
+                    "id": pred.id,
+                    "predicted_outcome": pred.predicted_outcome,
+                    "predicted_winner_team_id": pred.predicted_winner_team_id,
+                    "predicted_home_score": pred.predicted_home_score,
+                    "predicted_away_score": pred.predicted_away_score
+                }
 
         r32_matches.append({
-            "match_number": 73 + i,
+            "match_id": match_id,
+            "match_number": match_number,
             "home_slot": home_slot,
             "away_slot": away_slot,
             "home_team": home_team,
-            "away_team": away_team
+            "away_team": away_team,
+            "prediction": prediction,
+            "locked": False  # Would check match.scheduled_datetime
         })
 
     return r32_matches

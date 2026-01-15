@@ -287,27 +287,47 @@ async function autoSelectAllGroups() {
     
     const matchElements = document.querySelectorAll('[data-match]');
     let selectCount = 0;
+    let alreadySelectedCount = 0;
     
+    // First pass: count already selected matches
+    for (const element of matchElements) {
+        const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
+        if (buttons.length > 0) {
+            const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
+            if (alreadySelected) {
+                alreadySelectedCount++;
+            }
+        }
+    }
+    
+    // If all are already selected, ask for confirmation
+    if (alreadySelectedCount > 0 && selectCount === 0) {
+        const confirmOverwrite = confirm(`All matches are already selected! Do you want to re-run and overwrite all ${alreadySelectedCount} selections with new random outcomes?`);
+        if (!confirmOverwrite) {
+            // User cancelled, hide spinner and re-enable button
+            spinner.classList.add('hidden');
+            btn.disabled = false;
+            window.bulkOperation = false;
+            return;
+        }
+    }
+    
+    // Second pass: select all matches (including already selected ones)
     for (const element of matchElements) {
         const matchId = element.getAttribute('data-match');
         const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
         
         if (buttons.length > 0) {
-            // Check if already selected
-            const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
+            // Randomly select H, D, or A (ignore if already selected - will overwrite)
+            const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
+            const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
             
-            if (!alreadySelected) {
-                // Randomly select H, D, or A
-                const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
-                const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
+            if (selectedButton && !selectedButton.disabled) {
+                await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
+                selectCount++;
                 
-                if (selectedButton && !selectedButton.disabled) {
-                    await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
-                    selectCount++;
-                    
-                    // Small delay to avoid overwhelming the server
-                    await new Promise(resolve => setTimeout(resolve, 100));
-                }
+                // Small delay to avoid overwhelming the server
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
         }
     }
@@ -324,7 +344,7 @@ async function autoSelectAllGroups() {
         showToast(`Selected ${selectCount} matches! Reloading...`, 'success');
         setTimeout(() => location.reload(), 800);
     } else {
-        showToast('All matches are already selected or locked!', 'info');
+        showToast('No unlocked matches available to select!', 'info');
     }
 }
 
@@ -332,32 +352,48 @@ async function autoSelectAllGroups() {
 async function autoSelectGroup(groupLetter) {
     const groupCards = document.querySelectorAll('.card');
     let selectCount = 0;
+    let alreadySelectedCount = 0;
     
     for (const card of groupCards) {
         const heading = card.querySelector('h2');
         if (heading && heading.textContent.includes(`Group ${groupLetter}`)) {
             const matchElements = card.querySelectorAll('[data-match]');
             
+            // First pass: count already selected matches
+            for (const element of matchElements) {
+                const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
+                if (buttons.length > 0) {
+                    const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
+                    if (alreadySelected) {
+                        alreadySelectedCount++;
+                    }
+                }
+            }
+            
+            // If all are already selected, ask for confirmation
+            if (alreadySelectedCount > 0 && selectCount === 0) {
+                const confirmOverwrite = confirm(`All matches in Group ${groupLetter} are already selected! Do you want to re-run and overwrite all ${alreadySelectedCount} selections with new random outcomes?`);
+                if (!confirmOverwrite) {
+                    return;
+                }
+            }
+            
+            // Second pass: select all matches in this group
             for (const element of matchElements) {
                 const matchId = element.getAttribute('data-match');
                 const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
                 
                 if (buttons.length > 0) {
-                    // Check if already selected
-                    const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
+                    // Randomly select H, D, or A (ignore if already selected - will overwrite)
+                    const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
+                    const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
                     
-                    if (!alreadySelected) {
-                        // Randomly select H, D, or A
-                        const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
-                        const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
+                    if (selectedButton && !selectedButton.disabled) {
+                        await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
+                        selectCount++;
                         
-                        if (selectedButton && !selectedButton.disabled) {
-                            await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
-                            selectCount++;
-                            
-                            // Small delay to avoid overwhelming the server
-                            await new Promise(resolve => setTimeout(resolve, 100));
-                        }
+                        // Small delay to avoid overwhelming the server
+                        await new Promise(resolve => setTimeout(resolve, 100));
                     }
                 }
             }
@@ -367,9 +403,10 @@ async function autoSelectGroup(groupLetter) {
     
     // Reload once at the end to update standings
     if (selectCount > 0) {
+        showToast(`Selected ${selectCount} matches in Group ${groupLetter}! Reloading...`, 'success');
         setTimeout(() => location.reload(), 800);
     } else {
-        alert('All matches in this group are already selected or locked!');
+        showToast('No unlocked matches available in this group!', 'info');
     }
 }
 
