@@ -1,7 +1,7 @@
 match_number,round,group_letter,home_team,away_team,home_slot,away_slot,stadium,scheduled_datetime,home_score,away_score,status
 1,group_stage,A,USA,Mexico,,,Estadio Azteca,2026-06-11 18:00:00,,,scheduled
 2,group_stage,A,Canada,Panama,,,BMO Field,2026-06-11 21:00:00,,,scheduled
-3,group_stage,B,Brazil,Argentina,,,MetLife Stadium,2026-06-12 18:00:00,,,scheduled
-4,group_stage,B,Colombia,Chile,,,Hard Rock Stadium,2026-06-12 21:00:00,,,scheduled
-5,group_stage,C,Germany,France,,,Mercedes-Benz Stadium,2026-06-13 18:00:00,,,scheduled
-6,group_stage,C,Spain,Italy,,,SoFi Stadium,2026-06-13 21:00:00,,,scheduled
+7,group_stage,B,Brazil,Argentina,,,MetLife Stadium,2026-06-12 18:00:00,,,scheduled
+8,group_stage,B,Colombia,Chile,,,Hard Rock Stadium,2026-06-12 21:00:00,,,scheduled
+13,group_stage,C,Germany,France,,,Mercedes-Benz Stadium,2026-06-13 18:00:00,,,scheduled
+14,group_stage,C,Spain,Italy,,,SoFi Stadium,2026-06-13 21:00:00,,,scheduled
