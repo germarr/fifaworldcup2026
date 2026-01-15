@@ -72,10 +72,17 @@
         <!-- Auto-Select All Button & Reset Button -->
         <div class="mb-6 flex gap-3 justify-center">
             <button 
+                id="autoSelectAllBtn"
                 onclick="autoSelectAllGroups()" 
-                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition"
+                class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2"
             >
-                ⚡ Auto-Select All Groups
+                <span>⚡ Auto-Select All Groups</span>
+                <span id="autoSelectSpinner" class="hidden">
+                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                </span>
             </button>
             <button 
                 onclick="resetAllPredictions()" 
@@ -236,7 +243,7 @@ async function savePrediction(matchId, outcome, winnerId) {
         predicted_away_score: scores[matchId]?.away
     };
 
-    const success = await submitPrediction(matchId, outcome, data.predicted_home_score, data.predicted_away_score);
+    const success = await submitPrediction(matchId, outcome, data.predicted_home_score, data.predicted_away_score, window.bulkOperation);
 
     if (success) {
         // Update UI
@@ -262,6 +269,15 @@ function updateScore(matchId, side, value) {
 
 // Auto-select all matches with random outcomes (H, D, or A)
 async function autoSelectAllGroups() {
+    // Show spinner
+    const spinner = document.getElementById('autoSelectSpinner');
+    const btn = document.getElementById('autoSelectAllBtn');
+    spinner.classList.remove('hidden');
+    btn.disabled = true;
+    
+    // Suppress individual toasts during bulk operation
+    window.bulkOperation = true;
+    
     const matchElements = document.querySelectorAll('[data-match]');
     let selectCount = 0;
     
@@ -289,11 +305,19 @@ async function autoSelectAllGroups() {
         }
     }
     
-    // Reload once at the end to update standings
+    // Stop bulk operation
+    window.bulkOperation = false;
+    
+    // Hide spinner and re-enable button
+    spinner.classList.add('hidden');
+    btn.disabled = false;
+    
+    // Show result toast only at the end
     if (selectCount > 0) {
+        showToast(`Selected ${selectCount} matches! Reloading...`, 'success');
         setTimeout(() => location.reload(), 800);
     } else {
-        alert('All matches are already selected or locked!');
+        showToast('All matches are already selected or locked!', 'info');
     }
 }
 

@@ -69,10 +69,10 @@ function validatePredictionForm(form) {
 // Toast notifications
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 transition-opacity duration-300 ${
-        type === 'success' ? 'bg-green-500 text-white' :
-        type === 'error' ? 'bg-red-500 text-white' :
-        'bg-fifa-blue text-white'
+    toast.className = `fixed top-4 right-4 p-4 rounded-lg shadow-md z-50 transition-opacity duration-300 border ${
+        type === 'success' ? 'bg-green-50 text-green-800 border-green-200' :
+        type === 'error' ? 'bg-red-50 text-red-800 border-red-200' :
+        'bg-blue-50 text-blue-800 border-blue-200'
     }`;
     toast.textContent = message;
     document.body.appendChild(toast);
@@ -84,7 +84,7 @@ function showToast(message, type = 'info') {
 }
 
 // AJAX prediction submission
-async function submitPrediction(matchId, outcome, homeScore = null, awayScore = null) {
+async function submitPrediction(matchId, outcome, homeScore = null, awayScore = null, isBulkOperation = false) {
     try {
         const response = await fetch(`/api/predictions/match/${matchId}`, {
             method: 'POST',
@@ -99,7 +99,10 @@ async function submitPrediction(matchId, outcome, homeScore = null, awayScore = 
         });
 
         if (response.ok) {
-            showToast('Prediction saved!', 'success');
+            // Only show toast if not in bulk operation
+            if (!isBulkOperation) {
+                showToast('Prediction saved!', 'success');
+            }
             return true;
         } else {
             const error = await response.json();
