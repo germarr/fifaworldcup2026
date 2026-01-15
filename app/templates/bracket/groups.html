@@ -69,13 +69,19 @@
             <p class="text-sm text-gray-400">Check back when the tournament draw is complete.</p>
         </div>
     {% else %}
-        <!-- Auto-Select All Button -->
-        <div class="mb-6 text-center">
+        <!-- Auto-Select All Button & Reset Button -->
+        <div class="mb-6 flex gap-3 justify-center">
             <button 
                 onclick="autoSelectAllGroups()" 
                 class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition"
             >
                 ⚡ Auto-Select All Groups
+            </button>
+            <button 
+                onclick="resetAllPredictions()" 
+                class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition"
+            >
+                🔄 Reset All
             </button>
         </div>
 
@@ -242,9 +248,9 @@ async function savePrediction(matchId, outcome, winnerId) {
             }
         });
 
-        // Reload to update standings
-        setTimeout(() => location.reload(), 500);
+        // Note: reload removed here to allow bulk operations
     }
+    return success;
 }
 
 function updateScore(matchId, side, value) {
@@ -257,30 +263,42 @@ function updateScore(matchId, side, value) {
 // Auto-select all matches with random outcomes (H, D, or A)
 async function autoSelectAllGroups() {
     const matchElements = document.querySelectorAll('[data-match]');
+    let selectCount = 0;
     
     for (const element of matchElements) {
         const matchId = element.getAttribute('data-match');
         const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
         
         if (buttons.length > 0) {
-            // Randomly select H, D, or A
-            const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
-            const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
+            // Check if already selected
+            const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
             
-            if (selectedButton && !selectedButton.disabled) {
-                const winnerId = randomOutcome === 'home_win' ? selectedButton.closest('[data-match]').querySelector('h2')?.textContent : null;
-                await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getTotalMatches() : null);
+            if (!alreadySelected) {
+                // Randomly select H, D, or A
+                const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
+                const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
                 
-                // Small delay to avoid overwhelming the server
-                await new Promise(resolve => setTimeout(resolve, 200));
+                if (selectedButton && !selectedButton.disabled) {
+                    await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
+                    selectCount++;
+                    
+                    // Small delay to avoid overwhelming the server
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                }
             }
         }
+    }
+    
+    // Reload once at the end to update standings
+    if (selectCount > 0) {
+        setTimeout(() => location.reload(), 500);
     }
 }
 
 // Auto-select all matches in a specific group
 async function autoSelectGroup(groupLetter) {
     const groupCards = document.querySelectorAll('.card');
+    let selectCount = 0;
     
     for (const card of groupCards) {
         const heading = card.querySelector('h2');
@@ -292,20 +310,87 @@ async function autoSelectGroup(groupLetter) {
                 const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
                 
                 if (buttons.length > 0) {
-                    // Randomly select H, D, or A
-                    const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
-                    const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
+                    // Check if already selected
+                    const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
                     
-                    if (selectedButton && !selectedButton.disabled) {
-                        await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getTotalMatches() : null);
+                    if (!alreadySelected) {
+                        // Randomly select H, D, or A
+                        const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
+                        const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
                         
-                        // Small delay to avoid overwhelming the server
-                        await new Promise(resolve => setTimeout(resolve, 200));
+                        if (selectedButton && !selectedButton.disabled) {
+                            await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
+                            selectCount++;
+                            
+                            // Small delay to avoid overwhelming the server
+                            await new Promise(resolve => setTimeout(resolve, 100));
+                        }
                     }
                 }
             }
             break; // Found the group, no need to continue
         }
+    }
+    
+    // Reload once at the end to update standings
+    if (selectCount > 0) {
+        setTimeout(() => location.reload(), 500);
+    }
+}
+
+// Helper function to get winner ID
+function getWinnerId(element) {
+    const homeTeamButton = element.querySelector('[data-outcome="home_win"]');
+    return homeTeamButton?.getAttribute('onclick')?.match(/savePrediction\([^,]+,\s*'[^']+',\s*(\d+)/)?.[1] || null;
+}
+
+// Reset all predictions
+async function resetAllPredictions() {
+    if (!confirm('Are you sure you want to reset ALL predictions? This cannot be undone.')) {
+        return;
+    }
+    
+    const matchElements = document.querySelectorAll('[data-match]');
+    let resetCount = 0;
+    
+    for (const element of matchElements) {
+        const matchId = element.getAttribute('data-match');
+        const buttons = element.querySelectorAll('.prediction-btn');
+        
+        // Check if any button is selected
+        const hasSelection = Array.from(buttons).some(btn => btn.classList.contains('selected'));
+        
+        if (hasSelection && !buttons[0].disabled) {
+            // Delete the prediction by sending null/empty
+            const data = {
+                predicted_outcome: null,
+                predicted_winner_team_id: null,
+                predicted_home_score: null,
+                predicted_away_score: null
+            };
+            
+            // Make API call to delete/reset
+            try {
+                const response = await fetch(`/predictions/match/${matchId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    // Remove selected class from all buttons
+                    buttons.forEach(btn => btn.classList.remove('selected'));
+                    resetCount++;
+                }
+            } catch (error) {
+                console.error('Error resetting prediction:', error);
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 50));
+        }
+    }
+    
+    if (resetCount > 0) {
+        setTimeout(() => location.reload(), 500);
     }
 }
 </script>
