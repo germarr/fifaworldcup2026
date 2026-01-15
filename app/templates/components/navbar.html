@@ -8,8 +8,22 @@
 
             <div class="hidden md:flex items-center space-x-6">
                 {% if current_user %}
-                    <a href="/bracket/groups" class="hover:text-fifa-gold transition-colors">Groups</a>
-                    <a href="/bracket" class="hover:text-fifa-gold transition-colors">My Bracket</a>
+                    <!-- My Bracket Dropdown -->
+                    <div class="relative group">
+                        <button class="hover:text-fifa-gold transition-colors flex items-center gap-1">
+                            My Bracket
+                            <span class="text-sm">▼</span>
+                        </button>
+                        <div class="absolute left-0 mt-0 w-48 bg-fifa-dark border border-gray-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                            <a href="/bracket/groups" class="block px-4 py-3 hover:bg-gray-700 hover:text-fifa-gold transition-colors border-b border-gray-600 first:rounded-t-lg">
+                                📊 Group Stage
+                            </a>
+                            <a href="/bracket" class="block px-4 py-3 hover:bg-gray-700 hover:text-fifa-gold transition-colors last:rounded-b-lg">
+                                🏆 Knockout Stage
+                            </a>
+                        </div>
+                    </div>
+
                     <a href="/leaderboard" class="hover:text-fifa-gold transition-colors">Leaderboard</a>
                     <a href="/teams" class="hover:text-fifa-gold transition-colors">Teams</a>
                     {% if current_user.is_admin %}
@@ -32,8 +46,22 @@
 
         <div id="mobile-menu" class="hidden md:hidden pb-4">
             {% if current_user %}
-                <a href="/bracket/groups" class="block py-2 hover:text-fifa-gold">Groups</a>
-                <a href="/bracket" class="block py-2 hover:text-fifa-gold">My Bracket</a>
+                <!-- Mobile My Bracket Menu -->
+                <div class="border-b border-gray-600 mb-2">
+                    <button id="mobile-bracket-btn" class="w-full text-left py-2 hover:text-fifa-gold flex justify-between items-center">
+                        My Bracket
+                        <span id="mobile-bracket-arrow" class="text-sm">▶</span>
+                    </button>
+                    <div id="mobile-bracket-menu" class="hidden bg-gray-800 rounded-lg mt-2 overflow-hidden">
+                        <a href="/bracket/groups" class="block py-2 px-4 hover:text-fifa-gold hover:bg-gray-700">
+                            📊 Group Stage
+                        </a>
+                        <a href="/bracket" class="block py-2 px-4 hover:text-fifa-gold hover:bg-gray-700">
+                            🏆 Knockout Stage
+                        </a>
+                    </div>
+                </div>
+                
                 <a href="/leaderboard" class="block py-2 hover:text-fifa-gold">Leaderboard</a>
                 <a href="/teams" class="block py-2 hover:text-fifa-gold">Teams</a>
                 {% if current_user.is_admin %}
@@ -50,3 +78,23 @@
         </div>
     </div>
 </nav>
+
+<script>
+// Mobile menu toggle
+document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+    document.getElementById('mobile-menu').classList.toggle('hidden');
+});
+
+// Mobile bracket submenu toggle
+const bracketBtn = document.getElementById('mobile-bracket-btn');
+const bracketMenu = document.getElementById('mobile-bracket-menu');
+const bracketArrow = document.getElementById('mobile-bracket-arrow');
+
+if (bracketBtn) {
+    bracketBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        bracketMenu.classList.toggle('hidden');
+        bracketArrow.textContent = bracketMenu.classList.contains('hidden') ? '▶' : '▼';
+    });
+}
+</script>
