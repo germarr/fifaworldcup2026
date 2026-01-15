@@ -15,32 +15,32 @@
                 <div>
                     <h1 class="text-xl font-bold text-blue-600">FIFA World Cup Bracket Predictor</h1>
                 </div>
-                <div class="flex items-center gap-5">
+                <div class="flex items-center gap-6">
                     {% if user %}
                         <span class="text-gray-600">Welcome, {{ user.username }}!</span>
-                        <a href="/" class="text-gray-700 hover:text-blue-600">Home</a>
-                        <a href="/bracket" class="text-gray-700 hover:text-blue-600">Predictions</a>
-                        <a href="/quickgame" class="text-green-600 font-semibold">⚡ Quick Game</a>
+                        <a href="/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Home</a>
+                        <a href="/bracket" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Predictions</a>
+                        <a href="/quickgame" class="text-green-600 font-semibold whitespace-nowrap">⚡ Quick Game</a>
                         <div class="relative group">
-                            <span class="text-gray-700 hover:text-blue-600 cursor-pointer">Results</span>
-                            <div class="absolute hidden group-hover:block bg-white shadow-lg rounded mt-2 py-2 min-w-[160px]">
+                            <span class="text-gray-700 hover:text-blue-600 cursor-pointer whitespace-nowrap">Results</span>
+                            <div class="absolute hidden group-hover:block bg-white shadow-lg rounded mt-2 py-2 min-w-[160px] right-0">
                                 <a href="/bracket/knockout" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">My Results</a>
                                 <a href="/bracket/view" class="block px-4 py-2 text-gray-700 hover:bg-gray-100">Global Results</a>
                             </div>
                         </div>
-                        <a href="/leaderboard" class="text-gray-700 hover:text-blue-600">Leaderboard</a>
+                        <a href="/leaderboard" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Leaderboard</a>
                         {% if user.username == "admin" %}
-                            <a href="/crm" class="text-gray-700 hover:text-blue-600">CRM</a>
+                            <a href="/crm" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">CRM</a>
                         {% endif %}
-                        <a href="/settings" class="text-gray-700 hover:text-blue-600">Settings</a>
+                        <a href="/settings" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Settings</a>
                         <form method="POST" action="/logout" style="display: inline;">
-                            <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors">Logout</button>
+                            <button type="submit" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded">Logout</button>
                         </form>
                     {% else %}
-                        <a href="/" class="text-gray-700 hover:text-blue-600">Home</a>
-                        <a href="/quickgame" class="text-green-600 font-semibold">⚡ Quick Game</a>
-                        <a href="/login" class="text-gray-700 hover:text-blue-600">Login</a>
-                        <a href="/register" class="text-gray-700 hover:text-blue-600">Register</a>
+                        <a href="/" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Home</a>
+                        <a href="/quickgame" class="text-green-600 font-semibold whitespace-nowrap">⚡ Quick Game</a>
+                        <a href="/login" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Login</a>
+                        <a href="/register" class="text-gray-700 hover:text-blue-600 whitespace-nowrap">Register</a>
                     {% endif %}
                 </div>
             </div>
