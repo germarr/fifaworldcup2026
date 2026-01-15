@@ -107,13 +107,16 @@
 
         <!-- Page 2: Knockout Bracket -->
         <div class="print-bracket">
+            {% set round_of_32 = [] %}
             {% set round_of_16 = [] %}
             {% set quarter_finals = [] %}
             {% set semi_finals = [] %}
             {% set knockout = namespace(third_place=None, final=None) %}
 
             {% for item in matches %}
-                {% if item.match.round == "Round of 16" %}
+                {% if item.match.round == "Round of 32" %}
+                    {% set _ = round_of_32.append(item) %}
+                {% elif item.match.round == "Round of 16" %}
                     {% set _ = round_of_16.append(item) %}
                 {% elif item.match.round == "Quarter Finals" %}
                     {% set _ = quarter_finals.append(item) %}
@@ -125,6 +128,53 @@
                     {% set knockout.final = item %}
                 {% endif %}
             {% endfor %}
+
+            {% if round_of_32 %}
+            <!-- Round of 32 -->
+            <div class="bracket-column r32">
+                <h4>Round of 32</h4>
+                {% for item in round_of_32 %}
+                <div class="print-match">
+                    <div class="print-team {% if item.winner_position == 1 %}winner{% endif %}">
+                        {% if item.team1_flag_url %}
+                        <img src="{{ item.team1_flag_url }}" alt="{{ item.team1.code if item.team1 else 'TBD' }}" referrerpolicy="no-referrer">
+                        {% endif %}
+                        <span class="team-code">{{ item.team1.code if item.team1 else 'TBD' }}</span>
+                        <span class="score">
+                            {% if item.match.is_finished %}
+                                {{ item.match.actual_team1_score }}
+                                {% if item.match.actual_team1_penalty_score is not none %}
+                                <small>({{ item.match.actual_team1_penalty_score }})</small>
+                                {% endif %}
+                            {% elif item.prediction %}
+                                {{ item.prediction.predicted_team1_score }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="print-team {% if item.winner_position == 2 %}winner{% endif %}">
+                        {% if item.team2_flag_url %}
+                        <img src="{{ item.team2_flag_url }}" alt="{{ item.team2.code if item.team2 else 'TBD' }}" referrerpolicy="no-referrer">
+                        {% endif %}
+                        <span class="team-code">{{ item.team2.code if item.team2 else 'TBD' }}</span>
+                        <span class="score">
+                            {% if item.match.is_finished %}
+                                {{ item.match.actual_team2_score }}
+                                {% if item.match.actual_team2_penalty_score is not none %}
+                                <small>({{ item.match.actual_team2_penalty_score }})</small>
+                                {% endif %}
+                            {% elif item.prediction %}
+                                {{ item.prediction.predicted_team2_score }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
 
             <!-- Round of 16 -->
             <div class="bracket-column r16">

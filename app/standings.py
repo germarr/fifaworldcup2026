@@ -6,6 +6,7 @@ from typing import Dict, List, Optional
 from sqlmodel import Session, select
 from app.models import Match, Prediction, Team
 from app.flags import flag_url
+from app.tournament_config import get_all_groups
 
 
 class TeamStanding:
@@ -77,9 +78,10 @@ def calculate_group_standings(user_id: int, db: Session) -> Dict[str, List[TeamS
     teams = db.exec(teams_statement).all()
     teams_map = {t.id: t for t in teams}
 
-    # Initialize standings for each group
+    # Initialize standings for each group - DYNAMIC
+    all_groups = get_all_groups(db)
     groups: Dict[str, Dict[int, TeamStanding]] = {}
-    for group_letter in "ABCDEFGH":
+    for group_letter in all_groups:
         groups[group_letter] = {}
 
     # Populate groups with teams

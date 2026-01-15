@@ -22,8 +22,9 @@ Usage:
 import sys
 import os
 import csv
+import re
 from datetime import datetime, timedelta
-from typing import Dict, List, Set, Tuple
+from typing import Dict, List, Set, Tuple, Optional
 
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -54,6 +55,54 @@ class TournamentPropagator:
             'matches_removed': 0,
             'standings_added': 0,
             'standings_removed': 0,
+            'flags_added': 0,
+        }
+
+        # Comprehensive country code mapping (ISO 3166-1 alpha-3 to alpha-2)
+        self.iso_alpha3_to_alpha2 = {
+            # Current teams
+            'ARG': 'ar', 'AUS': 'au', 'AUT': 'at', 'BEL': 'be', 'BOL': 'bo',
+            'BRA': 'br', 'CAN': 'ca', 'CHE': 'ch', 'CIV': 'ci', 'COL': 'co',
+            'CPV': 'cv', 'CUW': 'cw', 'DEN': 'dk', 'DEU': 'de', 'DZA': 'dz',
+            'ECU': 'ec', 'EGY': 'eg', 'ENG': 'gb-eng', 'ESP': 'es', 'FRA': 'fr',
+            'GHA': 'gh', 'HRV': 'hr', 'HTI': 'ht', 'IRN': 'ir', 'ITA': 'it',
+            'JOR': 'jo', 'JPN': 'jp', 'KOR': 'kr', 'MAR': 'ma', 'MEX': 'mx',
+            'NCL': 'nc', 'NLD': 'nl', 'NOR': 'no', 'NZL': 'nz', 'PAN': 'pa',
+            'PRT': 'pt', 'PRY': 'py', 'QAT': 'qa', 'SAU': 'sa', 'SCO': 'gb-sct',
+            'SEN': 'sn', 'TUN': 'tn', 'TUR': 'tr', 'UKR': 'ua', 'URY': 'uy',
+            'USA': 'us', 'UZB': 'uz', 'ZAF': 'za',
+
+            # Additional FIFA/common codes
+            'CRC': 'cr', 'CRO': 'hr', 'GER': 'de', 'KSA': 'sa', 'NED': 'nl',
+            'POL': 'pl', 'POR': 'pt', 'SRB': 'rs', 'SUI': 'ch', 'URU': 'uy',
+            'WAL': 'gb-wls', 'CMR': 'cm',
+
+            # Extended list for future teams
+            'AFG': 'af', 'ALB': 'al', 'AND': 'ad', 'AGO': 'ao', 'ARM': 'am',
+            'AZE': 'az', 'BHR': 'bh', 'BGD': 'bd', 'BLR': 'by', 'BEN': 'bj',
+            'BTN': 'bt', 'BIH': 'ba', 'BWA': 'bw', 'BRN': 'bn', 'BGR': 'bg',
+            'BFA': 'bf', 'BDI': 'bi', 'KHM': 'kh', 'CMR': 'cm', 'CHN': 'cn',
+            'COG': 'cg', 'COD': 'cd', 'CRI': 'cr', 'CYP': 'cy', 'CZE': 'cz',
+            'DNK': 'dk', 'DOM': 'do', 'SLV': 'sv', 'ERI': 'er', 'EST': 'ee',
+            'ETH': 'et', 'FIN': 'fi', 'GAB': 'ga', 'GMB': 'gm', 'GEO': 'ge',
+            'GRC': 'gr', 'GTM': 'gt', 'GIN': 'gn', 'GNB': 'gw', 'GUY': 'gy',
+            'HND': 'hn', 'HUN': 'hu', 'ISL': 'is', 'IND': 'in', 'IDN': 'id',
+            'IRQ': 'iq', 'IRL': 'ie', 'ISR': 'il', 'JAM': 'jm', 'KAZ': 'kz',
+            'KEN': 'ke', 'PRK': 'kp', 'KWT': 'kw', 'KGZ': 'kg', 'LAO': 'la',
+            'LVA': 'lv', 'LBN': 'lb', 'LBR': 'lr', 'LBY': 'ly', 'LIE': 'li',
+            'LTU': 'lt', 'LUX': 'lu', 'MKD': 'mk', 'MDG': 'mg', 'MWI': 'mw',
+            'MYS': 'my', 'MLI': 'ml', 'MLT': 'mt', 'MRT': 'mr', 'MUS': 'mu',
+            'MDA': 'md', 'MNG': 'mn', 'MNE': 'me', 'MOZ': 'mz', 'MMR': 'mm',
+            'NAM': 'na', 'NPL': 'np', 'NIC': 'ni', 'NER': 'ne', 'NGA': 'ng',
+            'NIR': 'gb-nir', 'OMN': 'om', 'PAK': 'pk', 'PSE': 'ps', 'PNG': 'pg',
+            'PER': 'pe', 'PHL': 'ph', 'QAT': 'qa', 'ROU': 'ro', 'RUS': 'ru',
+            'RWA': 'rw', 'SMR': 'sm', 'STP': 'st', 'SEN': 'sn', 'SRB': 'rs',
+            'SLE': 'sl', 'SGP': 'sg', 'SVK': 'sk', 'SVN': 'si', 'SOM': 'so',
+            'KOR': 'kr', 'SSD': 'ss', 'LKA': 'lk', 'SDN': 'sd', 'SUR': 'sr',
+            'SWE': 'se', 'SYR': 'sy', 'TJK': 'tj', 'TZA': 'tz', 'THA': 'th',
+            'TLS': 'tl', 'TGO': 'tg', 'TTO': 'tt', 'TKM': 'tm', 'UGA': 'ug',
+            'ARE': 'ae', 'GBR': 'gb', 'VEN': 've', 'VNM': 'vn', 'YEM': 'ye',
+            'ZMB': 'zm', 'ZWE': 'zw',
         }
 
     def extract_teams_from_csv(self) -> Dict[str, Dict]:
@@ -214,9 +263,9 @@ class TournamentPropagator:
         print(f"\nTeams: +{self.stats['teams_added']} ~{self.stats['teams_updated']} -{self.stats['teams_removed']}")
 
     def sync_matches(self, session: Session):
-        """Synchronize matches between CSV and database."""
+        """Synchronize ALL matches (Group + Knockout) between CSV and database."""
         print("\n" + "="*60)
-        print("SYNCHRONIZING GROUP STAGE MATCHES")
+        print("SYNCHRONIZING ALL MATCHES")
         print("="*60)
 
         # Get teams map (for ID resolution)
@@ -228,10 +277,8 @@ class TournamentPropagator:
         csv_matches = self.extract_matches_from_csv()
         csv_match_numbers = {m['match_number'] for m in csv_matches}
 
-        # Get group stage matches from database
-        db_matches = session.exec(
-            select(Match).where(Match.round.like('Group Stage%'))
-        ).all()
+        # Get all matches from database
+        db_matches = session.exec(select(Match)).all()
         db_matches_map = {match.match_number: match for match in db_matches}
         db_match_numbers = set(db_matches_map.keys())
 
@@ -253,7 +300,7 @@ class TournamentPropagator:
                     teams_by_code, teams_by_name
                 )
 
-                print(f"➕ ADD: Match #{csv_match['match_number']} - {csv_match['team1_code']} vs {csv_match['team2_code']}")
+                print(f"➕ ADD: Match #{csv_match['match_number']} ({csv_match['round']}) - {csv_match['team1_code']} vs {csv_match['team2_code']}")
 
                 if not self.dry_run:
                     new_match = Match(
@@ -288,6 +335,8 @@ class TournamentPropagator:
                 )
 
                 changes = []
+                if db_match.round != csv_match['round']:
+                    changes.append(f"round: {db_match.round} -> {csv_match['round']}")
                 if db_match.team1_id != team1_id or db_match.team1_placeholder != team1_placeholder:
                     changes.append(f"team1: changed")
                 if db_match.team2_id != team2_id or db_match.team2_placeholder != team2_placeholder:
@@ -296,10 +345,13 @@ class TournamentPropagator:
                     changes.append(f"stadium: {db_match.stadium} → {csv_match['stadium']}")
                 if db_match.time != csv_match['time']:
                     changes.append(f"time: {db_match.time} → {csv_match['time']}")
+                if db_match.match_date != csv_match['match_date']:
+                    changes.append(f"date: {db_match.match_date} → {csv_match['match_date']}")
 
                 if changes:
                     print(f"🔄 UPDATE: Match #{csv_match['match_number']} - {' | '.join(changes)}")
                     if not self.dry_run:
+                        db_match.round = csv_match['round']
                         db_match.team1_id = team1_id
                         db_match.team2_id = team2_id
                         db_match.team1_placeholder = team1_placeholder
@@ -322,150 +374,17 @@ class TournamentPropagator:
         if not self.dry_run:
             session.commit()
 
-        print(f"\nGroup Stage Matches: +{self.stats['matches_added']} ~{self.stats['matches_updated']} -{self.stats['matches_removed']}")
+        print(f"\nAll Matches: +{self.stats['matches_added']} ~{self.stats['matches_updated']} -{self.stats['matches_removed']}")
 
     def regenerate_knockout_bracket(self, session: Session):
-        """Regenerate knockout bracket based on number of groups."""
+        """
+        DEPRECATED: Knockout bracket is now managed via CSV.
+        This method is kept empty to satisfy existing calls or can be removed.
+        """
         print("\n" + "="*60)
-        print("REGENERATING KNOCKOUT BRACKET")
+        print("KNOCKOUT BRACKET")
         print("="*60)
-
-        # Get current groups
-        groups = get_all_groups(session)
-        num_groups = len(groups)
-        qualifying_teams = get_qualifying_teams_count(session)
-
-        print(f"\nDetected {num_groups} groups ({qualifying_teams} qualifying teams)")
-        print(f"Groups: {', '.join(groups)}")
-
-        # Remove existing knockout matches
-        knockout_matches = session.exec(
-            select(Match).where(~Match.round.like('Group Stage%'))
-        ).all()
-
-        if knockout_matches:
-            print(f"\n➖ Removing {len(knockout_matches)} existing knockout matches...")
-            if not self.dry_run:
-                for match in knockout_matches:
-                    session.delete(match)
-                session.commit()
-
-        # Generate new knockout structure
-        knockout_structure = generate_knockout_bracket_structure(qualifying_teams)
-
-        # Get the last group stage match number
-        last_group_match = session.exec(
-            select(Match).where(Match.round.like('Group Stage%')).order_by(Match.match_number.desc())
-        ).first()
-
-        if not last_group_match:
-            print("❌ Error: No group stage matches found. Please sync matches first.")
-            return
-
-        match_number = last_group_match.match_number + 1
-
-        # Get the last group stage match date for knockout date calculation
-        last_group_match_date = session.exec(
-            select(Match).where(Match.round.like('Group Stage%')).order_by(Match.match_date.desc())
-        ).first()
-        base_knockout_date = last_group_match_date.match_date if last_group_match_date else datetime(2026, 6, 29)
-
-        total_knockout_matches = 0
-
-        # First knockout round uses group placeholders
-        first_round_name = knockout_structure[0][0]
-        first_round_matches = knockout_structure[0][1]
-        placeholders = get_knockout_placeholders(num_groups)
-
-        print(f"\n{first_round_name}:")
-        for i, (team1_ph, team2_ph) in enumerate(placeholders[:first_round_matches]):
-            print(f"  ➕ Match {match_number}: {team1_ph} vs {team2_ph}")
-            if not self.dry_run:
-                match = Match(
-                    round=first_round_name,
-                    match_number=match_number,
-                    team1_id=None,
-                    team2_id=None,
-                    team1_placeholder=team1_ph,
-                    team2_placeholder=team2_ph,
-                    match_date=base_knockout_date + timedelta(days=2),
-                    is_finished=False
-                )
-                session.add(match)
-            match_number += 1
-            total_knockout_matches += 1
-
-        # Subsequent rounds use winner placeholders
-        days_offset = 2
-        for round_idx in range(1, len(knockout_structure)):
-            round_name, num_matches, _, _ = knockout_structure[round_idx]
-            days_offset += 3
-
-            print(f"\n{round_name}:")
-
-            if round_name == "Third Place":
-                prev_round_start = match_number - 2
-                print(f"  ➕ Match {match_number}: L{prev_round_start - 1} vs L{prev_round_start}")
-                if not self.dry_run:
-                    match = Match(
-                        round=round_name,
-                        match_number=match_number,
-                        team1_id=None,
-                        team2_id=None,
-                        team1_placeholder=f"L{prev_round_start - 1}",
-                        team2_placeholder=f"L{prev_round_start}",
-                        match_date=base_knockout_date + timedelta(days=days_offset),
-                        is_finished=False
-                    )
-                    session.add(match)
-                match_number += 1
-                total_knockout_matches += 1
-
-            elif round_name == "Final":
-                prev_round_start = match_number - 3
-                print(f"  ➕ Match {match_number}: W{prev_round_start - 1} vs W{prev_round_start}")
-                if not self.dry_run:
-                    match = Match(
-                        round=round_name,
-                        match_number=match_number,
-                        team1_id=None,
-                        team2_id=None,
-                        team1_placeholder=f"W{prev_round_start - 1}",
-                        team2_placeholder=f"W{prev_round_start}",
-                        match_date=base_knockout_date + timedelta(days=days_offset + 1),
-                        is_finished=False
-                    )
-                    session.add(match)
-                match_number += 1
-                total_knockout_matches += 1
-
-            else:
-                prev_round_matches = knockout_structure[round_idx - 1][1]
-                prev_round_start = match_number - prev_round_matches
-
-                for i in range(num_matches):
-                    w1 = prev_round_start + (i * 2)
-                    w2 = prev_round_start + (i * 2) + 1
-                    print(f"  ➕ Match {match_number}: W{w1} vs W{w2}")
-                    if not self.dry_run:
-                        match = Match(
-                            round=round_name,
-                            match_number=match_number,
-                            team1_id=None,
-                            team2_id=None,
-                            team1_placeholder=f"W{w1}",
-                            team2_placeholder=f"W{w2}",
-                            match_date=base_knockout_date + timedelta(days=days_offset),
-                            is_finished=False
-                        )
-                        session.add(match)
-                    match_number += 1
-                    total_knockout_matches += 1
-
-        if not self.dry_run:
-            session.commit()
-
-        print(f"\n✅ Generated {total_knockout_matches} knockout matches")
+        print("Skipping dynamic regeneration. Knockout matches are now synced from CSV.")
 
     def sync_group_standings(self, session: Session):
         """Synchronize group standings with teams."""
@@ -529,7 +448,114 @@ class TournamentPropagator:
         if name in teams_by_name:
             return teams_by_name[name].id, None
 
-        return None, name
+        # Fallback: Use the code as the placeholder (e.g., "1A", "W73")
+        return None, code
+
+    def get_country_code_for_team(self, team_code: str) -> Optional[str]:
+        """Convert team code to ISO alpha-2 country code for flagcdn.com."""
+        return self.iso_alpha3_to_alpha2.get(team_code.upper())
+
+    def update_flags_file(self, session: Session):
+        """Update app/flags.py with mappings for all teams in database."""
+        print("\n" + "="*60)
+        print("UPDATING FLAGS MAPPING")
+        print("="*60)
+
+        # Get all teams from database
+        teams = session.exec(select(Team).order_by(Team.code)).all()
+
+        # Read current flags.py file
+        flags_file = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+            'app', 'flags.py'
+        )
+
+        if not os.path.exists(flags_file):
+            print(f"❌ Error: flags.py not found at {flags_file}")
+            return
+
+        with open(flags_file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        # Extract existing mappings from the file
+        existing_mappings = {}
+        pattern = r'"([A-Z]{3})"\s*:\s*"([a-z\-]+)"'
+        for match in re.finditer(pattern, content):
+            existing_mappings[match.group(1)] = match.group(2)
+
+        # Determine which teams need flags added
+        teams_needing_flags = []
+        for team in teams:
+            if team.code not in existing_mappings:
+                country_code = self.get_country_code_for_team(team.code)
+                if country_code:
+                    teams_needing_flags.append((team.code, country_code, team.name))
+                    print(f"➕ ADD: {team.code} → {country_code} ({team.name})")
+                else:
+                    print(f"⚠️  WARNING: No flag mapping found for {team.code} ({team.name})")
+
+        if not teams_needing_flags and not self.dry_run:
+            print("\n✅ All teams already have flag mappings!")
+            return
+
+        if teams_needing_flags:
+            self.stats['flags_added'] = len(teams_needing_flags)
+
+            if not self.dry_run:
+                # Build new mappings section
+                new_entries = []
+                for code, country_code, name in teams_needing_flags:
+                    # Add to existing mappings
+                    existing_mappings[code] = country_code
+
+                # Rebuild the FIFA_TO_FLAGCDN dictionary
+                # Sort entries for better organization
+                sorted_entries = sorted(existing_mappings.items())
+
+                # Build the new dictionary content
+                dict_lines = ["FIFA_TO_FLAGCDN = {"]
+
+                for i, (code, country_code) in enumerate(sorted_entries):
+                    # Try to find team name for comment
+                    team = next((t for t in teams if t.code == code), None)
+                    comment = f"  # {team.name}" if team else ""
+
+                    comma = "," if i < len(sorted_entries) - 1 else ""
+                    dict_lines.append(f'    "{code}": "{country_code}"{comma}{comment}')
+
+                dict_lines.append("}")
+
+                new_dict_content = "\n".join(dict_lines)
+
+                # Replace the dictionary in the file
+                # Find the start and end of the dictionary
+                dict_start = content.find("FIFA_TO_FLAGCDN = {")
+                if dict_start == -1:
+                    print("❌ Error: Could not find FIFA_TO_FLAGCDN dictionary in flags.py")
+                    return
+
+                # Find the closing brace
+                brace_count = 0
+                dict_end = dict_start
+                for i in range(dict_start, len(content)):
+                    if content[i] == '{':
+                        brace_count += 1
+                    elif content[i] == '}':
+                        brace_count -= 1
+                        if brace_count == 0:
+                            dict_end = i + 1
+                            break
+
+                # Build new content
+                new_content = content[:dict_start] + new_dict_content + content[dict_end:]
+
+                # Write back to file
+                with open(flags_file, 'w', encoding='utf-8') as f:
+                    f.write(new_content)
+
+                print(f"\n✅ Updated {flags_file} with {len(teams_needing_flags)} new flag mappings")
+
+        print(f"\nFlags: +{self.stats['flags_added']}")
 
     def run(self):
         """Run the full propagation process."""
@@ -551,11 +577,11 @@ class TournamentPropagator:
             # Step 1: Sync teams
             self.sync_teams(session)
 
-            # Step 2: Sync matches
-            self.sync_matches(session)
+            # Step 2: Update flags mapping
+            self.update_flags_file(session)
 
-            # Step 3: Regenerate knockout bracket
-            self.regenerate_knockout_bracket(session)
+            # Step 3: Sync matches (Group + Knockout)
+            self.sync_matches(session)
 
             # Step 4: Sync group standings
             self.sync_group_standings(session)
@@ -565,6 +591,7 @@ class TournamentPropagator:
         print("PROPAGATION SUMMARY")
         print("="*60)
         print(f"Teams:     +{self.stats['teams_added']:2} ~{self.stats['teams_updated']:2} -{self.stats['teams_removed']:2}")
+        print(f"Flags:     +{self.stats['flags_added']:2}")
         print(f"Matches:   +{self.stats['matches_added']:2} ~{self.stats['matches_updated']:2} -{self.stats['matches_removed']:2}")
         print(f"Standings: +{self.stats['standings_added']:2} -{self.stats['standings_removed']:2}")
 

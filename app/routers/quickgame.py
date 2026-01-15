@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
 from datetime import datetime
 import secrets
 import string
-from typing import Dict, List, Any, Optional
-from app.models import User, Match, Team, QuickGame, QuickGameMatch, QuickGameGroupTiebreaker
+from typing import Dict, List, Any, Optional, Tuple
+from app.models import User, Match, Team, QuickGame, QuickGameMatch, QuickGameGroupTiebreaker, QuickGameThirdPlaceRanking
 from app.database import get_session
 from app.dependencies import get_current_user_optional
 from app.flags import flag_url
@@ -143,6 +143,7 @@ async def quickgame_groups(
 
     # Sort groups by letter
     sorted_groups = dict(sorted(groups.items()))
+    has_third_place = len(sorted_groups) == 12
 
     tiebreakers_statement = select(QuickGameGroupTiebreaker).where(
         QuickGameGroupTiebreaker.quick_game_id == quick_game.id
@@ -164,7 +165,8 @@ async def quickgame_groups(
             "game_code": game_code,
             "groups": sorted_groups,
             "tiebreakers": tiebreakers_map,
-            "quick_game": quick_game
+            "quick_game": quick_game,
+            "has_third_place": has_third_place
         }
     )
 
@@ -325,6 +327,106 @@ def calculate_quick_game_standings(quick_game: QuickGame, db: Session) -> Dict:
     return sorted_standings
 
 
+def get_quickgame_third_place_candidates(standings: Dict[str, List[Dict[str, Any]]], db: Session) -> List[Dict[str, Any]]:
+    candidates = []
+    for group, teams in standings.items():
+        if len(teams) < 3:
+            continue
+        team_id = teams[2].get("team_id")
+        if not team_id:
+            continue
+        team = db.get(Team, team_id)
+        if not team:
+            continue
+        candidates.append({
+            "team": team,
+            "team_id": team_id,
+            "group": group,
+            "points": teams[2].get("points", 0)
+        })
+    return candidates
+
+
+def auto_rank_third_place(candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    return sorted(candidates, key=lambda item: (-item["points"], item["group"]))
+
+
+def get_quickgame_third_place_ranking(
+    quick_game: QuickGame,
+    candidates: List[Dict[str, Any]],
+    db: Session
+) -> List[Dict[str, Any]]:
+    candidate_map = {item["team_id"]: item for item in candidates}
+    saved = db.exec(
+        select(QuickGameThirdPlaceRanking)
+        .where(QuickGameThirdPlaceRanking.quick_game_id == quick_game.id)
+        .order_by(QuickGameThirdPlaceRanking.rank)
+    ).all()
+    ordered = []
+    for entry in saved:
+        item = candidate_map.get(entry.team_id)
+        if item:
+            ordered.append(item)
+
+    remaining = [item for item in auto_rank_third_place(candidates) if item["team_id"] not in {o["team_id"] for o in ordered}]
+    return ordered + remaining
+
+
+def _solve_third_place_assignment(
+    placeholders: List[Tuple[str, set]],
+    qualified_teams: List[Dict[str, Any]]
+) -> Dict[str, Dict[str, Any]]:
+    """
+    Solve the constraint satisfaction problem of assigning third-place teams
+    to multi-group placeholders using backtracking.
+
+    Args:
+        placeholders: List of (placeholder, allowed_groups) tuples
+        qualified_teams: List of qualified third-place team dictionaries
+
+    Returns:
+        Dictionary mapping placeholder to team item
+    """
+    # Sort placeholders by constraint tightness (fewest options first)
+    # This improves backtracking efficiency
+    def count_available(placeholder_allowed_groups):
+        return sum(1 for team in qualified_teams if team["group"] in placeholder_allowed_groups)
+
+    placeholders_sorted = sorted(placeholders, key=lambda p: count_available(p[1]))
+
+    def backtrack(index: int, assignment: Dict[str, Dict], used_ids: set) -> Optional[Dict]:
+        """Recursive backtracking to find valid assignment."""
+        if index == len(placeholders_sorted):
+            return assignment  # All placeholders assigned successfully
+
+        placeholder, allowed_groups = placeholders_sorted[index]
+
+        # Try each qualified team that matches the allowed groups
+        for team_item in qualified_teams:
+            if team_item["team_id"] in used_ids:
+                continue
+            if team_item["group"] not in allowed_groups:
+                continue
+
+            # Try this assignment
+            assignment[placeholder] = team_item
+            used_ids.add(team_item["team_id"])
+
+            # Recurse to next placeholder
+            result = backtrack(index + 1, assignment, used_ids)
+            if result is not None:
+                return result
+
+            # Backtrack
+            del assignment[placeholder]
+            used_ids.remove(team_item["team_id"])
+
+        return None  # No valid assignment found
+
+    result = backtrack(0, {}, set())
+    return result if result is not None else {}
+
+
 def build_quickgame_placeholder_resolution(quick_game: QuickGame, standings: Dict[str, List[Dict[str, Any]]], db: Session) -> Dict[str, Optional[Team]]:
     placeholder_resolution: Dict[str, Optional[Team]] = {}
 
@@ -338,6 +440,16 @@ def build_quickgame_placeholder_resolution(quick_game: QuickGame, standings: Dic
             second_team = db.get(Team, teams[1]["team_id"])
             if second_team:
                 placeholder_resolution[f"2{group}"] = second_team
+
+    third_place_candidates = get_quickgame_third_place_candidates(standings, db)
+    third_place_ranking = get_quickgame_third_place_ranking(quick_game, third_place_candidates, db)
+    qualified_third_place = third_place_ranking[:8]
+    qualified_third_place_by_group = {
+        item["group"]: item["team"] for item in qualified_third_place
+    }
+
+    for group, team in qualified_third_place_by_group.items():
+        placeholder_resolution[f"3{group}"] = team
 
     existing_selections = {
         qgm.match_id: {
@@ -353,6 +465,27 @@ def build_quickgame_placeholder_resolution(quick_game: QuickGame, standings: Dic
         .order_by(Match.match_number)
     )
     knockout_matches = db.exec(knockout_matches_statement).all()
+
+    if qualified_third_place:
+        # Collect all multi-group placeholders that need assignment
+        multi_group_placeholders = []
+        for match in knockout_matches:
+            for placeholder in [match.team1_placeholder, match.team2_placeholder]:
+                if placeholder and placeholder.startswith("3") and len(placeholder) > 2:
+                    if placeholder not in placeholder_resolution:
+                        allowed_groups = set(placeholder[1:])
+                        multi_group_placeholders.append((placeholder, allowed_groups))
+
+        # Use constraint satisfaction to assign teams to multi-group placeholders
+        # This ensures we don't run out of teams by greedy early assignments
+        assignment = _solve_third_place_assignment(
+            multi_group_placeholders,
+            qualified_third_place
+        )
+
+        # Apply the assignment
+        for placeholder, team_item in assignment.items():
+            placeholder_resolution[placeholder] = team_item["team"]
 
     for match in knockout_matches:
         team1 = placeholder_resolution.get(match.team1_placeholder) if match.team1_placeholder else None
@@ -463,6 +596,95 @@ async def save_group_tiebreaker(
     db.commit()
 
     return {"status": "success", "group": group}
+
+
+@router.get("/quickgame/{game_code}/third-place", response_class=HTMLResponse)
+async def quickgame_third_place(
+    request: Request,
+    game_code: str,
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_session)
+):
+    """Third-place ranking step for 48-team quick games."""
+    statement = select(QuickGame).where(QuickGame.game_code == game_code)
+    quick_game = db.exec(statement).first()
+
+    if not quick_game:
+        raise HTTPException(status_code=404, detail="Quick game not found")
+
+    if quick_game.user_id is not None and current_user and quick_game.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this game")
+
+    standings = calculate_quick_game_standings(quick_game, db)
+    if len(standings) != 12:
+        return RedirectResponse(url=f"/quickgame/{game_code}/knockout", status_code=303)
+
+    candidates = get_quickgame_third_place_candidates(standings, db)
+    ranking = get_quickgame_third_place_ranking(quick_game, candidates, db)
+    auto_ranking = auto_rank_third_place(candidates)
+
+    return templates.TemplateResponse(
+        "quickgame_third_place.html",
+        {
+            "request": request,
+            "user": current_user,
+            "game_code": game_code,
+            "third_place_ranking": ranking,
+            "auto_ranking": auto_ranking
+        }
+    )
+
+
+@router.post("/quickgame/{game_code}/third-place")
+async def save_third_place_ranking(
+    game_code: str,
+    payload: Dict[str, Any],
+    current_user: Optional[User] = Depends(get_current_user_optional),
+    db: Session = Depends(get_session)
+):
+    """Save third-place ranking for 48-team quick games."""
+    statement = select(QuickGame).where(QuickGame.game_code == game_code)
+    quick_game = db.exec(statement).first()
+
+    if not quick_game:
+        raise HTTPException(status_code=404, detail="Quick game not found")
+
+    if quick_game.user_id is not None and (not current_user or quick_game.user_id != current_user.id):
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    ordered_team_ids = payload.get("ordered_team_ids", [])
+    if not isinstance(ordered_team_ids, list):
+        raise HTTPException(status_code=400, detail="Invalid ranking payload")
+
+    standings = calculate_quick_game_standings(quick_game, db)
+    candidates = get_quickgame_third_place_candidates(standings, db)
+    candidate_ids = {item["team_id"] for item in candidates}
+
+    existing = db.exec(
+        select(QuickGameThirdPlaceRanking)
+        .where(QuickGameThirdPlaceRanking.quick_game_id == quick_game.id)
+    ).all()
+    for entry in existing:
+        db.delete(entry)
+
+    rank = 1
+    for team_id in ordered_team_ids:
+        try:
+            team_id_int = int(team_id)
+        except (TypeError, ValueError):
+            continue
+        if team_id_int not in candidate_ids:
+            continue
+        db.add(QuickGameThirdPlaceRanking(
+            quick_game_id=quick_game.id,
+            team_id=team_id_int,
+            rank=rank
+        ))
+        rank += 1
+
+    db.commit()
+
+    return {"status": "success"}
 
 
 @router.get("/quickgame/{game_code}/knockout", response_class=HTMLResponse)
@@ -689,6 +911,9 @@ async def quickgame_results(
             "advancing_team": advancing_team
         })
 
+    # Get all groups dynamically from standings
+    all_groups = sorted(standings.keys()) if standings else []
+
     return templates.TemplateResponse(
         "quickgame_results.html",
         {
@@ -700,6 +925,7 @@ async def quickgame_results(
             "champion_flag": flag_url(champion.code, 160) if champion else None,
             "standings": standings,
             "rounds": rounds,
-            "flag_url": flag_url
+            "flag_url": flag_url,
+            "all_groups": all_groups  # Dynamic groups list
         }
     )

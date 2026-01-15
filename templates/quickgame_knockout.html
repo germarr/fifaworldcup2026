@@ -28,7 +28,7 @@
         </div>
 
         <!-- Knockout Matches by Round -->
-        {% set rounds_order = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"] %}
+        {% set rounds_order = ["Round of 32", "Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"] %}
         {% for round_name in rounds_order %}
             {% set round_matches = knockout_matches | selectattr("match.round", "equalto", round_name) | list %}
             {% if round_matches %}
@@ -315,7 +315,7 @@ window.addEventListener('DOMContentLoaded', function() {
         localStorage.removeItem('knockout_last_saved_round');
 
         // Map of rounds to their next round
-        const roundOrder = ["Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"];
+        const roundOrder = ["Round of 32", "Round of 16", "Quarter Finals", "Semi Finals", "Third Place", "Final"];
         const currentIndex = roundOrder.indexOf(lastSavedRound);
 
         if (currentIndex !== -1 && currentIndex < roundOrder.length - 1) {

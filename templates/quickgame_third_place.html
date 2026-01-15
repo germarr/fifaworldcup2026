@@ -1,0 +1,138 @@
+{% extends "base_tailwind.html" %}
+
+{% block title %}Third-Place Ranking - Quick Game{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="/static/css/quickgame.css">
+{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 py-8">
+    <div class="max-w-5xl mx-auto px-4">
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800">Third-Place Ranking</h1>
+                    <p class="text-gray-600 mt-1">Game Code: <span class="font-mono font-bold text-green-600">{{ game_code }}</span></p>
+                </div>
+                <div class="flex gap-3">
+                    <button
+                        id="auto-rank-btn"
+                        class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        Auto-rank by points
+                    </button>
+                    <button
+                        id="save-ranking-btn"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    >
+                        Save & Continue →
+                    </button>
+                </div>
+            </div>
+            <p class="text-sm text-gray-500 mt-4">
+                Top 8 third-place teams qualify for the Round of 32. Points only are used in Quick Game; you can reorder if needed.
+            </p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-lg p-6">
+            <div class="grid grid-cols-12 text-xs font-semibold text-gray-500 border-b border-gray-200 pb-2 mb-3">
+                <div class="col-span-1">Rank</div>
+                <div class="col-span-2">Group</div>
+                <div class="col-span-5">Team</div>
+                <div class="col-span-2 text-center">Points</div>
+                <div class="col-span-2 text-right">Order</div>
+            </div>
+            <div id="ranking-list" class="space-y-2">
+                {% for entry in third_place_ranking %}
+                <div class="ranking-row grid grid-cols-12 items-center bg-gray-50 rounded-lg p-3" data-team-id="{{ entry.team_id }}">
+                    <div class="col-span-1 text-sm font-semibold text-gray-700 rank-number">{{ loop.index }}</div>
+                    <div class="col-span-2 text-sm text-gray-700">Group {{ entry.group }}</div>
+                    <div class="col-span-5 text-sm font-semibold text-gray-800">{{ entry.team.code }} - {{ entry.team.name }}</div>
+                    <div class="col-span-2 text-center text-sm text-gray-700">{{ entry.points }}</div>
+                    <div class="col-span-2 flex justify-end gap-2">
+                        <button type="button" class="move-btn bg-white border border-gray-200 text-gray-600 hover:text-gray-900 px-2 py-1 rounded" data-action="up">↑</button>
+                        <button type="button" class="move-btn bg-white border border-gray-200 text-gray-600 hover:text-gray-900 px-2 py-1 rounded" data-action="down">↓</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const gameCode = "{{ game_code }}";
+const rankingList = document.getElementById('ranking-list');
+const autoRankBtn = document.getElementById('auto-rank-btn');
+const saveBtn = document.getElementById('save-ranking-btn');
+const autoOrder = {{ auto_ranking | map(attribute="team_id") | list | tojson }};
+
+const getRows = () => Array.from(rankingList.querySelectorAll('.ranking-row'));
+
+const updateRanks = () => {
+    getRows().forEach((row, index) => {
+        const rankCell = row.querySelector('.rank-number');
+        if (rankCell) {
+            rankCell.textContent = index + 1;
+        }
+    });
+};
+
+const moveRow = (row, direction) => {
+    if (!row) return;
+    if (direction === 'up' && row.previousElementSibling) {
+        rankingList.insertBefore(row, row.previousElementSibling);
+    } else if (direction === 'down' && row.nextElementSibling) {
+        rankingList.insertBefore(row.nextElementSibling, row);
+    }
+    updateRanks();
+};
+
+rankingList.addEventListener('click', (event) => {
+    const button = event.target.closest('.move-btn');
+    if (!button) return;
+    const row = button.closest('.ranking-row');
+    moveRow(row, button.dataset.action);
+});
+
+autoRankBtn.addEventListener('click', () => {
+    const rowsById = {};
+    getRows().forEach((row) => {
+        rowsById[row.dataset.teamId] = row;
+    });
+    autoOrder.forEach((teamId) => {
+        const row = rowsById[String(teamId)];
+        if (row) {
+            rankingList.appendChild(row);
+        }
+    });
+    updateRanks();
+});
+
+saveBtn.addEventListener('click', async () => {
+    const orderedTeamIds = getRows().map(row => row.dataset.teamId);
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+    try {
+        const response = await fetch(`/quickgame/${gameCode}/third-place`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ ordered_team_ids: orderedTeamIds })
+        });
+        if (!response.ok) {
+            throw new Error('Failed to save');
+        }
+        window.location.href = `/quickgame/${gameCode}/knockout`;
+    } catch (error) {
+        console.error(error);
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Save & Continue →';
+    }
+});
+</script>
+{% endblock %}

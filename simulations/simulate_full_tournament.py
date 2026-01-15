@@ -9,6 +9,7 @@ from sqlmodel import Session, select
 from app.database import engine
 from app.models import Match, Team, GroupStanding, User, Prediction
 from app.scoring import calculate_match_points
+from app.tournament_config import get_all_groups
 
 def update_user_scores(session):
     """Recalculate and update total_points for all users based on current match results."""
@@ -93,7 +94,9 @@ def get_actual_standings(session):
     
     # Init stats
     # Structure: {'A': {team_id: {'points': 0, 'gd': 0, 'gf': 0, 'team': obj}}}
-    groups = {k: {} for k in "ABCDEFGH"}
+    # Dynamic - get groups from database
+    all_groups = get_all_groups(session)
+    groups = {k: {} for k in all_groups}
     
     # Load all teams to ensure everyone is present
     teams = session.exec(select(Team)).all()

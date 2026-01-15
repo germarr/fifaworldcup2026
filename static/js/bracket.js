@@ -1,13 +1,18 @@
 // FIFA World Cup Bracket Prediction - Game Mode & Individual Mode
 
 const FLAG_MAPPING = {
-    "ARG": "ar", "AUS": "au", "BEL": "be", "BRA": "br", "CAN": "ca",
-    "CMR": "cm", "CRC": "cr", "CRO": "hr", "DEN": "dk", "ECU": "ec",
+    "ARG": "ar", "AUS": "au", "AUT": "at", "BEL": "be", "BOL": "bo",
+    "BRA": "br", "CAN": "ca", "CHE": "ch", "CIV": "ci", "CMR": "cm",
+    "COL": "co", "CPV": "cv", "CRC": "cr", "CRO": "hr", "CUW": "cw",
+    "DEN": "dk", "DEU": "de", "DZA": "dz", "ECU": "ec", "EGY": "eg",
     "ENG": "gb-eng", "ESP": "es", "FRA": "fr", "GER": "de", "GHA": "gh",
-    "IRN": "ir", "JPN": "jp", "KOR": "kr", "KSA": "sa", "MAR": "ma",
-    "MEX": "mx", "NED": "nl", "POL": "pl", "POR": "pt", "QAT": "qa",
-    "SEN": "sn", "SRB": "rs", "SUI": "ch", "TUN": "tn", "URU": "uy",
-    "USA": "us", "WAL": "gb-wls"
+    "HRV": "hr", "HTI": "ht", "IRN": "ir", "ITA": "it", "JOR": "jo",
+    "JPN": "jp", "KOR": "kr", "KSA": "sa", "MAR": "ma", "MEX": "mx",
+    "NCL": "nc", "NED": "nl", "NLD": "nl", "NOR": "no", "NZL": "nz",
+    "PAN": "pa", "POL": "pl", "POR": "pt", "PRT": "pt", "PRY": "py",
+    "QAT": "qa", "SAU": "sa", "SCO": "gb-sct", "SEN": "sn", "SRB": "rs",
+    "SUI": "ch", "TUN": "tn", "TUR": "tr", "UKR": "ua", "URU": "uy",
+    "URY": "uy", "USA": "us", "UZB": "uz", "WAL": "gb-wls", "ZAF": "za"
 };
 
 class BracketGame {

@@ -21,6 +21,7 @@ def create_db_and_tables():
     from app.models import User, Team, Match, Prediction, GroupStanding
     from app.models import Session as SessionModel
     from app.models import PlayerTeam, UserTeamMembership  # NEW: Many-to-many team membership
+    from app.models import QuickGame, QuickGameMatch, QuickGameGroupTiebreaker, QuickGameThirdPlaceRanking
     SQLModel.metadata.create_all(engine)
 
 

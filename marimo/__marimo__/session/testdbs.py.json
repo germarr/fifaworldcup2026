@@ -3,5 +3,110 @@
   "metadata": {
     "marimo_version": "0.19.0"
   },
-  "cells": []
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ynpc",
+      "code_hash": "b8314d74f137692ead55282a8d3ae192",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "KTMD",
+      "code_hash": "0b9d9aa2cf64a0b5fc7b43e1dded1259",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='KTMD-0' random-id='09186212-4b80-469c-cc67-7b3c57e7fa0e'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;id&#92;&quot;:1,&#92;&quot;name&#92;&quot;:&#92;&quot;Qatar&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;QAT&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:2,&#92;&quot;name&#92;&quot;:&#92;&quot;Ecuador&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;ECU&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:3,&#92;&quot;name&#92;&quot;:&#92;&quot;Senegal&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;SEN&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:4,&#92;&quot;name&#92;&quot;:&#92;&quot;Netherlands&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;NED&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:5,&#92;&quot;name&#92;&quot;:&#92;&quot;England&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;ENG&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:6,&#92;&quot;name&#92;&quot;:&#92;&quot;Iran&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;IRN&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:7,&#92;&quot;name&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:8,&#92;&quot;name&#92;&quot;:&#92;&quot;Wales&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;WAL&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:9,&#92;&quot;name&#92;&quot;:&#92;&quot;Argentina&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;ARG&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;C&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null},{&#92;&quot;id&#92;&quot;:10,&#92;&quot;name&#92;&quot;:&#92;&quot;Saudi Arabia&#92;&quot;,&#92;&quot;code&#92;&quot;:&#92;&quot;KSA&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;C&#92;&quot;,&#92;&quot;flag_url&#92;&quot;:null}]&quot;' data-total-rows='32' data-total-columns='5' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='true' data-page-size='10' data-field-types='[[&quot;id&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;name&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;code&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;group&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;flag_url&quot;,[&quot;string&quot;,&quot;object&quot;]]]' data-show-filters='true' data-show-download='true' data-show-column-summaries='true' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "WtnR",
+      "code_hash": "c1b7b1d18b5ff786fb8c4d2ef4e0138a",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "KhRs",
+      "code_hash": "38581094104d8821fbeb006bd38e59a8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lcJn",
+      "code_hash": "1d592e94a926b234099144f71ffe0641",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "zafS",
+      "code_hash": "b59a83b5e342ae60101dc7a28cc79662",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "QvDx",
+      "code_hash": "297bd5ce8c8e1ef4381f6457ade333a7",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='QvDx-0' random-id='5f95df79-9095-2c6a-5bec-d1a8c5c4a2ee'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;match_number&#92;&quot;:1,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group A&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-06&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;QAT&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Qatar&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;ECU&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Ecuador&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:3,&#92;&quot;actual_team2_score&#92;&quot;:0,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:2,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group A&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-06&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;SEN&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Senegal&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;NED&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Netherlands&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:3,&#92;&quot;actual_team2_score&#92;&quot;:3,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:3,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group A&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-06&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;QAT&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Qatar&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;SEN&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Senegal&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:3,&#92;&quot;actual_team2_score&#92;&quot;:0,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:4,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group A&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-06&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;NED&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Netherlands&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;ECU&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Ecuador&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:2,&#92;&quot;actual_team2_score&#92;&quot;:2,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:5,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group A&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-07&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;NED&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Netherlands&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;QAT&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Qatar&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:3,&#92;&quot;actual_team2_score&#92;&quot;:2,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:6,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group A&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-07&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;ECU&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Ecuador&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;SEN&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Senegal&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:0,&#92;&quot;actual_team2_score&#92;&quot;:0,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:7,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group B&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-07&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;ENG&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;England&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;IRN&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Iran&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:2,&#92;&quot;actual_team2_score&#92;&quot;:3,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:8,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group B&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-07&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;WAL&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Wales&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:1,&#92;&quot;actual_team2_score&#92;&quot;:0,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:9,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group B&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-08&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;WAL&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;Wales&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;IRN&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;Iran&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:1,&#92;&quot;actual_team2_score&#92;&quot;:3,&#92;&quot;is_finished&#92;&quot;:true},{&#92;&quot;match_number&#92;&quot;:10,&#92;&quot;round&#92;&quot;:&#92;&quot;Group Stage - Group B&#92;&quot;,&#92;&quot;group&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;match_date&#92;&quot;:&#92;&quot;2026-01-08&#92;&quot;,&#92;&quot;team1_code&#92;&quot;:&#92;&quot;ENG&#92;&quot;,&#92;&quot;team1_name&#92;&quot;:&#92;&quot;England&#92;&quot;,&#92;&quot;team2_code&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;team2_name&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;actual_team1_score&#92;&quot;:1,&#92;&quot;actual_team2_score&#92;&quot;:3,&#92;&quot;is_finished&#92;&quot;:true}]&quot;' data-total-rows='48' data-total-columns='11' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='true' data-page-size='10' data-field-types='[[&quot;match_number&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;round&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;group&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;match_date&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;team1_code&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;team1_name&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;team2_code&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;team2_name&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;actual_team1_score&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;actual_team2_score&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;is_finished&quot;,[&quot;boolean&quot;,&quot;bool&quot;]]]' data-show-filters='true' data-show-download='true' data-show-column-summaries='true' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
 }

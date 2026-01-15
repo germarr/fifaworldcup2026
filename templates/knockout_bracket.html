@@ -73,13 +73,16 @@
 {% endif %}
 
 <div class="bracket-container">
+    {% set round_of_32 = [] %}
     {% set round_of_16 = [] %}
     {% set quarter_finals = [] %}
     {% set semi_finals = [] %}
     {% set knockout = namespace(third_place=None, final=None) %}
 
     {% for item in matches %}
-        {% if item.match.round == "Round of 16" %}
+        {% if item.match.round == "Round of 32" %}
+            {% set _ = round_of_32.append(item) %}
+        {% elif item.match.round == "Round of 16" %}
             {% set _ = round_of_16.append(item) %}
         {% elif item.match.round == "Quarter Finals" %}
             {% set _ = quarter_finals.append(item) %}
@@ -91,6 +94,68 @@
             {% set knockout.final = item %}
         {% endif %}
     {% endfor %}
+
+    {% if round_of_32 %}
+    <!-- Round of 32 -->
+    <div class="bracket-round round-of-32">
+        <h3 class="round-title">Round of 32</h3>
+        <div class="matches-column">
+            {% for item in round_of_32 %}
+            <div class="bracket-match" data-match-id="{{ item.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">Match #{{ item.match.match_number }}</span>
+                </div>
+                <div class="bracket-teams">
+                    <div class="bracket-team {% if item.winner_position == 1 %}winner{% endif %}">
+                        <span class="team-name">
+                            {% if item.team1_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team1_flag_url }}" alt="{{ item.team1.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team1 %}{{ item.team1.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team1.name if item.team1 else item.match.team1_placeholder or 'TBD' }}</span>
+                        </span>
+                        <span class="team-score">
+                            {% if item.prediction %}
+                                {{ item.prediction.predicted_team1_score }}
+                            {% elif item.match.is_finished %}
+                                {{ item.match.actual_team1_score }}
+                                {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.actual_team1_penalty_score is not none and item.match.actual_team2_penalty_score is not none %}
+                                <span class="penalty-score">({{ item.match.actual_team1_penalty_score }})</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="bracket-team {% if item.winner_position == 2 %}winner{% endif %}">
+                        <span class="team-name">
+                            {% if item.team2_flag_url %}
+                            <img class="bracket-team-flag" src="{{ item.team2_flag_url }}" alt="{{ item.team2.name }} flag">
+                            {% else %}
+                            <span class="bracket-team-flag fallback">{% if item.team2 %}{{ item.team2.code }}{% else %}TBD{% endif %}</span>
+                            {% endif %}
+                            <span class="team-label">{{ item.team2.name if item.team2 else item.match.team2_placeholder or 'TBD' }}</span>
+                        </span>
+                        <span class="team-score">
+                            {% if item.prediction %}
+                                {{ item.prediction.predicted_team2_score }}
+                            {% elif item.match.is_finished %}
+                                {{ item.match.actual_team2_score }}
+                                {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.actual_team1_penalty_score is not none and item.match.actual_team2_penalty_score is not none %}
+                                <span class="penalty-score">({{ item.match.actual_team2_penalty_score }})</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <!-- Round of 16 -->
     <div class="bracket-round round-of-16">

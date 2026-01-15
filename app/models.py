@@ -138,6 +138,9 @@ class Match(SQLModel, table=True):
     team1_placeholder: Optional[str] = Field(default=None, max_length=10)  # e.g., "1A", "W49"
     team2_placeholder: Optional[str] = Field(default=None, max_length=10)  # e.g., "2B", "W50"
     match_date: datetime
+    stadium: Optional[str] = Field(default=None, max_length=100)  # Stadium name
+    time: Optional[str] = Field(default=None, max_length=10)  # Match time (e.g., "15:00")
+    datetime_str: Optional[str] = Field(default=None, max_length=50)  # Full datetime string from CSV
     actual_team1_score: Optional[int] = Field(default=None)
     actual_team2_score: Optional[int] = Field(default=None)
     actual_team1_penalty_score: Optional[int] = Field(default=None)
@@ -243,3 +246,14 @@ class QuickGameMatch(SQLModel, table=True):
     # Relationships
     quick_game: Optional["QuickGame"] = Relationship(back_populates="matches")
     match: Optional["Match"] = Relationship()
+
+
+class QuickGameThirdPlaceRanking(SQLModel, table=True):
+    """Ranked list of third-place teams for 48-team quick games."""
+    __tablename__ = "quick_game_third_place_rankings"
+
+    id: Optional[int] = Field(default=None, primary_key=True)
+    quick_game_id: int = Field(foreign_key="quick_games.id", index=True)
+    team_id: int = Field(foreign_key="teams.id")
+    rank: int = Field(index=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)

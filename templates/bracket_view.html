@@ -200,13 +200,16 @@
 
 {% if knockout_matches %}
 <div class="bracket-container">
+    {% set round_of_32 = [] %}
     {% set round_of_16 = [] %}
     {% set quarter_finals = [] %}
     {% set semi_finals = [] %}
     {% set knockout = namespace(third_place=None, final=None) %}
 
     {% for item in knockout_matches %}
-        {% if item.match.round == "Round of 16" %}
+        {% if item.match.round == "Round of 32" %}
+            {% set _ = round_of_32.append(item) %}
+        {% elif item.match.round == "Round of 16" %}
             {% set _ = round_of_16.append(item) %}
         {% elif item.match.round == "Quarter Finals" %}
             {% set _ = quarter_finals.append(item) %}
@@ -218,6 +221,133 @@
             {% set knockout.final = item %}
         {% endif %}
     {% endfor %}
+
+    {% if round_of_32 %}
+    <div class="bracket-round round-of-32">
+        <h3 class="round-title">Round of 32</h3>
+        <div class="matches-column">
+            {% for item in round_of_32 %}
+            <div class="bracket-match" data-match-id="{{ item.match.id }}">
+                <div class="bracket-match-header">
+                    <span class="match-num">Match #{{ item.match.match_number }}</span>
+                </div>
+                <div class="knockout-card-body">
+                    <div class="knockout-split">
+                        <div class="knockout-col">
+                            <span class="knockout-col-title">My Prediction</span>
+                            <div class="bracket-teams">
+                                <div class="bracket-team {% if item.prediction %}{% if item.prediction.predicted_team1_score > item.prediction.predicted_team2_score %}winner{% elif item.prediction.predicted_team1_score == item.prediction.predicted_team2_score and item.prediction.penalty_shootout_winner_id and item.predicted_team1 and item.prediction.penalty_shootout_winner_id == item.predicted_team1.id %}winner{% endif %}{% endif %}">
+                                    <span class="team-name">
+                                        {% if item.predicted_team1_flag_url %}
+                                        <img class="team-flag-circle team-flag-small" src="{{ item.predicted_team1_flag_url }}" alt="{{ item.predicted_team1.name }} flag">
+                                        {% endif %}
+                                        {{ item.predicted_team1.code if item.predicted_team1 else item.match.team1_placeholder or 'TBD' }}
+                                    </span>
+                                    <span class="team-score">
+                                        {% if item.prediction %}
+                                            {{ item.prediction.predicted_team1_score }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="bracket-team {% if item.prediction %}{% if item.prediction.predicted_team2_score > item.prediction.predicted_team1_score %}winner{% elif item.prediction.predicted_team1_score == item.prediction.predicted_team2_score and item.prediction.penalty_shootout_winner_id and item.predicted_team2 and item.prediction.penalty_shootout_winner_id == item.predicted_team2.id %}winner{% endif %}{% endif %}">
+                                    <span class="team-name">
+                                        {% if item.predicted_team2_flag_url %}
+                                        <img class="team-flag-circle team-flag-small" src="{{ item.predicted_team2_flag_url }}" alt="{{ item.predicted_team2.name }} flag">
+                                        {% endif %}
+                                        {{ item.predicted_team2.code if item.predicted_team2 else item.match.team2_placeholder or 'TBD' }}
+                                    </span>
+                                    <span class="team-score">
+                                        {% if item.prediction %}
+                                            {{ item.prediction.predicted_team2_score }}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% if item.prediction and item.prediction.predicted_team1_score == item.prediction.predicted_team2_score %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if item.prediction.penalty_shootout_winner_id %}
+                                    {% if item.predicted_team1 and item.prediction.penalty_shootout_winner_id == item.predicted_team1.id %}
+                                        ({{ item.predicted_team1.code }} wins)
+                                    {% elif item.predicted_team2 and item.prediction.penalty_shootout_winner_id == item.predicted_team2.id %}
+                                        ({{ item.predicted_team2.code }} wins)
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="knockout-col">
+                            <span class="knockout-col-title">Actual Result</span>
+                            <div class="bracket-teams">
+                                <div class="bracket-team {% if item.match.actual_team1_score is not none and ((item.match.actual_team1_score > item.match.actual_team2_score) or (item.match.actual_team1_score == item.match.actual_team2_score and item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id)) %}winner{% endif %}">
+                                    <span class="team-name">
+                                        {% if item.actual_team1_flag_url %}
+                                        <img class="team-flag-circle team-flag-small" src="{{ item.actual_team1_flag_url }}" alt="{{ item.actual_team1.name }} flag">
+                                        {% endif %}
+                                        {{ item.actual_team1.code if item.actual_team1 else item.match.team1_placeholder or 'TBD' }}
+                                    </span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team1_score is not none %}
+                                            {{ item.match.actual_team1_score }}
+                                            {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.actual_team1_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team1_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="bracket-team {% if item.match.actual_team2_score is not none and ((item.match.actual_team2_score > item.match.actual_team1_score) or (item.match.actual_team2_score == item.match.actual_team1_score and item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id)) %}winner{% endif %}">
+                                    <span class="team-name">
+                                        {% if item.actual_team2_flag_url %}
+                                        <img class="team-flag-circle team-flag-small" src="{{ item.actual_team2_flag_url }}" alt="{{ item.actual_team2.name }} flag">
+                                        {% endif %}
+                                        {{ item.actual_team2.code if item.actual_team2 else item.match.team2_placeholder or 'TBD' }}
+                                    </span>
+                                    <span class="team-score">
+                                        {% if item.match.actual_team2_score is not none %}
+                                            {{ item.match.actual_team2_score }}
+                                            {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.actual_team2_penalty_score is not none %}
+                                            <span class="penalty-score">({{ item.match.actual_team2_penalty_score }})</span>
+                                            {% endif %}
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            </div>
+                            {% if item.match.actual_team1_score == item.match.actual_team2_score and item.match.penalty_winner_id %}
+                            <div class="penalty-indicator">⚽ Penalties
+                                {% if item.actual_team1 and item.match.penalty_winner_id == item.actual_team1.id %}
+                                    ({{ item.actual_team1.code }} wins)
+                                {% elif item.actual_team2 and item.match.penalty_winner_id == item.actual_team2.id %}
+                                    ({{ item.actual_team2.code }} wins)
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="prediction-footer-points">
+                    {% if item.scoring.status == 'pending' %}
+                    <div class="points-pending">Points pending...</div>
+                    {% else %}
+                    <div class="points-result">
+                        <span class="points-total">You: +{{ item.scoring.points }} pts</span>
+                        {% if item.scoring.breakdown %}
+                        <span class="points-details">({{ item.scoring.breakdown|join(', ') }})</span>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
 
     <div class="bracket-round round-of-16">
         <h3 class="round-title">Round of 16</h3>

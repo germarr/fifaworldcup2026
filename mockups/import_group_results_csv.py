@@ -80,24 +80,47 @@ def import_group_results_from_csv(csv_file='mockups/group_stage_matches.csv', dr
                     # Parse is_finished
                     is_finished = row['is_finished'].strip().upper() == 'TRUE'
 
-                    # Check if scores have changed
+                    # Parse new metadata fields
+                    stadium = row.get('stadium', '').strip() or None
+                    time = row.get('time', '').strip() or None
+                    datetime_str = row.get('datetime', '').strip() or None
+
+                    # Check if scores or metadata have changed
                     score_changed = (
                         match.actual_team1_score != team1_score or
                         match.actual_team2_score != team2_score or
                         match.is_finished != is_finished
                     )
 
-                    if score_changed:
+                    metadata_changed = (
+                        match.stadium != stadium or
+                        match.time != time or
+                        match.datetime_str != datetime_str
+                    )
+
+                    if score_changed or metadata_changed:
                         old_score = f"{match.actual_team1_score if match.actual_team1_score is not None else '-'}-{match.actual_team2_score if match.actual_team2_score is not None else '-'}"
                         new_score = f"{team1_score}-{team2_score}"
 
                         status = "✅ UPDATE" if not dry_run else "🔍 WOULD UPDATE"
-                        print(f"{status} Match #{match_number:2} ({row['team1_code']:3} vs {row['team2_code']:3}): {old_score} → {new_score} | Finished: {is_finished}")
+                        changes = []
+                        if score_changed:
+                            changes.append(f"{old_score} → {new_score}")
+                        if metadata_changed:
+                            if match.stadium != stadium:
+                                changes.append(f"stadium: {match.stadium or 'None'} → {stadium or 'None'}")
+                            if match.time != time:
+                                changes.append(f"time: {match.time or 'None'} → {time or 'None'}")
+
+                        print(f"{status} Match #{match_number:2} ({row['team1_code']:3} vs {row['team2_code']:3}): {' | '.join(changes)} | Finished: {is_finished}")
 
                         if not dry_run:
                             match.actual_team1_score = team1_score
                             match.actual_team2_score = team2_score
                             match.is_finished = is_finished
+                            match.stadium = stadium
+                            match.time = time
+                            match.datetime_str = datetime_str
                             db.add(match)
 
                         matches_updated += 1

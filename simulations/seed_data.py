@@ -1,139 +1,41 @@
 """
-Database seeder for FIFA World Cup teams and matches.
-Run this script to populate the database with sample data.
+Database seeder for FIFA World Cup 2026 teams and matches.
+FULLY DYNAMIC - adapts to CSV content automatically.
+Run this script to populate the database with tournament data.
 """
 
 import sys
 import os
+import csv
 
 # Add project root to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from datetime import datetime, timedelta
-import random
 from sqlmodel import Session, select
 from app.database import engine, create_db_and_tables
 from app.models import Team, Match, GroupStanding
-
-GROUP_MATCHES = [
-    # Group A
-    ("QAT", "ECU", "A"),
-    ("SEN", "NED", "A"),
-    ("QAT", "SEN", "A"),
-    ("NED", "ECU", "A"),
-    ("NED", "QAT", "A"),
-    ("ECU", "SEN", "A"),
-
-    # Group B
-    ("ENG", "IRN", "B"),
-    ("USA", "WAL", "B"),
-    ("WAL", "IRN", "B"),
-    ("ENG", "USA", "B"),
-    ("WAL", "ENG", "B"),
-    ("IRN", "USA", "B"),
-
-    # Group C
-    ("ARG", "KSA", "C"),
-    ("MEX", "POL", "C"),
-    ("POL", "KSA", "C"),
-    ("ARG", "MEX", "C"),
-    ("POL", "ARG", "C"),
-    ("KSA", "MEX", "C"),
-
-    # Group D
-    ("FRA", "AUS", "D"),
-    ("DEN", "TUN", "D"),
-    ("TUN", "AUS", "D"),
-    ("FRA", "DEN", "D"),
-    ("TUN", "FRA", "D"),
-    ("AUS", "DEN", "D"),
-
-    # Group E
-    ("ESP", "CRC", "E"),
-    ("GER", "JPN", "E"),
-    ("JPN", "CRC", "E"),
-    ("ESP", "GER", "E"),
-    ("JPN", "ESP", "E"),
-    ("CRC", "GER", "E"),
-
-    # Group F
-    ("BEL", "CAN", "F"),
-    ("MAR", "CRO", "F"),
-    ("CRO", "CAN", "F"),
-    ("BEL", "MAR", "F"),
-    ("CRO", "BEL", "F"),
-    ("CAN", "MAR", "F"),
-
-    # Group G
-    ("BRA", "SRB", "G"),
-    ("SUI", "CMR", "G"),
-    ("CMR", "SRB", "G"),
-    ("BRA", "SUI", "G"),
-    ("CMR", "BRA", "G"),
-    ("SRB", "SUI", "G"),
-
-    # Group H
-    ("POR", "GHA", "H"),
-    ("URU", "KOR", "H"),
-    ("KOR", "GHA", "H"),
-    ("POR", "URU", "H"),
-    ("KOR", "POR", "H"),
-    ("GHA", "URU", "H"),
-]
+from app.tournament_config import (
+    get_all_groups,
+    generate_knockout_bracket_structure,
+    get_knockout_placeholders
+)
 
 
-def seed_teams():
-    """Seed teams for the World Cup."""
-    teams_data = [
-        # Group A
-        {"name": "Qatar", "code": "QAT", "group": "A"},
-        {"name": "Ecuador", "code": "ECU", "group": "A"},
-        {"name": "Senegal", "code": "SEN", "group": "A"},
-        {"name": "Netherlands", "code": "NED", "group": "A"},
+def extract_groups_from_csv(csv_file='mockups/group_stage_matches.csv') -> set:
+    """Extract unique group letters from CSV file."""
+    groups = set()
+    with open(csv_file, 'r', encoding='utf-8') as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            group = row['group'].strip()
+            if group:
+                groups.add(group)
+    return sorted(groups)
 
-        # Group B
-        {"name": "England", "code": "ENG", "group": "B"},
-        {"name": "Iran", "code": "IRN", "group": "B"},
-        {"name": "USA", "code": "USA", "group": "B"},
-        {"name": "Wales", "code": "WAL", "group": "B"},
 
-        # Group C
-        {"name": "Argentina", "code": "ARG", "group": "C"},
-        {"name": "Saudi Arabia", "code": "KSA", "group": "C"},
-        {"name": "Mexico", "code": "MEX", "group": "C"},
-        {"name": "Poland", "code": "POL", "group": "C"},
-
-        # Group D
-        {"name": "France", "code": "FRA", "group": "D"},
-        {"name": "Australia", "code": "AUS", "group": "D"},
-        {"name": "Denmark", "code": "DEN", "group": "D"},
-        {"name": "Tunisia", "code": "TUN", "group": "D"},
-
-        # Group E
-        {"name": "Spain", "code": "ESP", "group": "E"},
-        {"name": "Costa Rica", "code": "CRC", "group": "E"},
-        {"name": "Germany", "code": "GER", "group": "E"},
-        {"name": "Japan", "code": "JPN", "group": "E"},
-
-        # Group F
-        {"name": "Belgium", "code": "BEL", "group": "F"},
-        {"name": "Canada", "code": "CAN", "group": "F"},
-        {"name": "Morocco", "code": "MAR", "group": "F"},
-        {"name": "Croatia", "code": "CRO", "group": "F"},
-
-        # Group G
-        {"name": "Brazil", "code": "BRA", "group": "G"},
-        {"name": "Serbia", "code": "SRB", "group": "G"},
-        {"name": "Switzerland", "code": "SUI", "group": "G"},
-        {"name": "Cameroon", "code": "CMR", "group": "G"},
-
-        # Group H
-        {"name": "Portugal", "code": "POR", "group": "H"},
-        {"name": "Ghana", "code": "GHA", "group": "H"},
-        {"name": "Uruguay", "code": "URU", "group": "H"},
-        {"name": "South Korea", "code": "KOR", "group": "H"},
-    ]
-
+def seed_teams_from_csv(csv_file='mockups/group_stage_matches.csv'):
+    """Seed teams from the CSV file - completely dynamic."""
     with Session(engine) as session:
         # Check if teams already exist
         existing_teams = session.exec(select(Team)).first()
@@ -141,16 +43,53 @@ def seed_teams():
             print("Teams already seeded. Skipping...")
             return
 
-        for team_data in teams_data:
+        teams_map = {}  # Track unique teams by name (to avoid duplicates)
+
+        # Read CSV and extract unique teams
+        with open(csv_file, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                # Process team1
+                team1_code = row['team1_code'].strip()
+                team1_name = row['team1_name'].strip()
+                group = row['group'].strip()
+
+                if team1_code != 'TBD' and team1_name not in teams_map:
+                    teams_map[team1_name] = {
+                        'name': team1_name,
+                        'code': team1_code,
+                        'group': group
+                    }
+
+                # Process team2
+                team2_code = row['team2_code'].strip()
+                team2_name = row['team2_name'].strip()
+
+                if team2_code != 'TBD' and team2_name not in teams_map:
+                    teams_map[team2_name] = {
+                        'name': team2_name,
+                        'code': team2_code,
+                        'group': group
+                    }
+
+        # Sort teams by group and name for consistent ordering
+        teams_list = sorted(teams_map.values(), key=lambda x: (x['group'], x['name']))
+
+        # Add teams to database
+        for team_data in teams_list:
             team = Team(**team_data)
             session.add(team)
 
         session.commit()
-        print(f"Successfully seeded {len(teams_data)} teams!")
+
+        # Get group summary
+        groups = sorted(set(t['group'] for t in teams_list))
+        print(f"Successfully seeded {len(teams_list)} teams across {len(groups)} groups!")
+        print(f"Groups: {', '.join(groups)}")
 
 
-def seed_matches():
-    """Seed matches for the World Cup."""
+def seed_matches_from_csv(csv_file='mockups/group_stage_matches.csv'):
+    """Seed group stage and knockout matches - completely dynamic."""
     with Session(engine) as session:
         # Check if matches already exist
         existing_matches = session.exec(select(Match)).first()
@@ -159,222 +98,265 @@ def seed_matches():
             return
 
         # Get all teams
-        teams = {team.code: team for team in session.exec(select(Team)).all()}
+        teams_list = session.exec(select(Team)).all()
+        teams = {team.code: team for team in teams_list}
+        teams_by_name = {team.name: team for team in teams_list}
 
         if not teams:
             print("Error: No teams found. Please seed teams first.")
             return
 
-        # Base date for matches (starting from today)
-        base_date = datetime.now()
-        match_number = 1
+        # Read CSV and create group stage matches
+        group_matches_added = 0
+        with open(csv_file, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                match_number = int(row['match_number'])
+                team1_code = row['team1_code'].strip()
+                team2_code = row['team2_code'].strip()
+                team1_name = row['team1_name'].strip()
+                team2_name = row['team2_name'].strip()
 
-        # Group Stage Matches
-        for team1_code, team2_code, group in GROUP_MATCHES:
+                # Parse date
+                date_str = row['date'].strip()
+                match_date = datetime.strptime(date_str, '%m/%d/%Y')
+
+                # Get team IDs or placeholders
+                # Try to find team by code first, then by name (for code variations)
+                if team1_code != 'TBD':
+                    team1_id = teams.get(team1_code)
+                    if team1_id:
+                        team1_id = team1_id.id
+                    else:
+                        # Try by name
+                        team1_obj = teams_by_name.get(team1_name)
+                        team1_id = team1_obj.id if team1_obj else None
+                    team1_placeholder = None
+                else:
+                    team1_id = None
+                    team1_placeholder = team1_name
+
+                if team2_code != 'TBD':
+                    team2_id = teams.get(team2_code)
+                    if team2_id:
+                        team2_id = team2_id.id
+                    else:
+                        # Try by name
+                        team2_obj = teams_by_name.get(team2_name)
+                        team2_id = team2_obj.id if team2_obj else None
+                    team2_placeholder = None
+                else:
+                    team2_id = None
+                    team2_placeholder = team2_name
+
+                match = Match(
+                    round=row['round'].strip(),
+                    match_number=match_number,
+                    team1_id=team1_id,
+                    team2_id=team2_id,
+                    team1_placeholder=team1_placeholder,
+                    team2_placeholder=team2_placeholder,
+                    match_date=match_date,
+                    stadium=row.get('stadium', '').strip() or None,
+                    time=row.get('time', '').strip() or None,
+                    datetime_str=row.get('datetime', '').strip() or None,
+                    is_finished=False
+                )
+                session.add(match)
+                group_matches_added += 1
+
+        # DYNAMIC KNOCKOUT BRACKET GENERATION
+        # Get number of groups from database
+        groups = get_all_groups(session)
+        num_groups = len(groups)
+        qualifying_teams = num_groups * 2  # Top 2 from each group
+
+        print(f"\nGenerating knockout bracket for {num_groups} groups ({qualifying_teams} qualifying teams)...")
+
+        # Generate knockout structure
+        knockout_structure = generate_knockout_bracket_structure(qualifying_teams)
+
+        match_number = group_matches_added + 1  # Start after group stage
+        total_knockout_matches = 0
+
+        # Get the last group stage match date to calculate knockout dates
+        last_group_match = session.exec(
+            select(Match).where(Match.round.like('Group Stage%')).order_by(Match.match_date.desc())
+        ).first()
+        base_knockout_date = last_group_match.match_date if last_group_match else datetime(2026, 6, 29)
+
+        # First knockout round uses group placeholders
+        first_round_name = knockout_structure[0][0]
+        first_round_matches = knockout_structure[0][1]
+        placeholders = get_knockout_placeholders(num_groups)
+
+        print(f"\n{first_round_name}:")
+        for i, (team1_ph, team2_ph) in enumerate(placeholders[:first_round_matches]):
             match = Match(
-                round=f"Group Stage - Group {group}",
-                match_number=match_number,
-                team1_id=teams[team1_code].id,
-                team2_id=teams[team2_code].id,
-                match_date=base_date + timedelta(days=(match_number - 1) // 4),
-                is_finished=False
-            )
-            session.add(match)
-            match_number += 1
-
-        # Round of 16 - FIFA World Cup bracket structure
-        # Match numbers 49-56 (Round of 16)
-        # Format: (team1_placeholder, team2_placeholder, match_date_offset)
-        round_of_16_matches = [
-            ("1A", "2B", 15),  # Match 49
-            ("1C", "2D", 15),  # Match 50
-            ("1E", "2F", 16),  # Match 51
-            ("1G", "2H", 16),  # Match 52
-            ("1B", "2A", 17),  # Match 53
-            ("1D", "2C", 17),  # Match 54
-            ("1F", "2E", 18),  # Match 55
-            ("1H", "2G", 18),  # Match 56
-        ]
-
-        for team1_ph, team2_ph, day_offset in round_of_16_matches:
-            match = Match(
-                round="Round of 16",
+                round=first_round_name,
                 match_number=match_number,
                 team1_id=None,
                 team2_id=None,
                 team1_placeholder=team1_ph,
                 team2_placeholder=team2_ph,
-                match_date=base_date + timedelta(days=day_offset),
+                match_date=base_knockout_date + timedelta(days=2),
                 is_finished=False
             )
             session.add(match)
+            print(f"  Match {match_number}: {team1_ph} vs {team2_ph}")
             match_number += 1
+            total_knockout_matches += 1
 
-        # Quarter Finals - Winners of Round of 16 (Match 57-60)
-        quarter_finals_matches = [
-            ("W49", "W50", 20),  # Match 57: Winner of 49 vs Winner of 50
-            ("W51", "W52", 20),  # Match 58: Winner of 51 vs Winner of 52
-            ("W53", "W54", 21),  # Match 59: Winner of 53 vs Winner of 54
-            ("W55", "W56", 21),  # Match 60: Winner of 55 vs Winner of 56
-        ]
+        # Subsequent rounds use winner placeholders
+        days_offset = 2
+        for round_idx in range(1, len(knockout_structure)):
+            round_name, num_matches, _, _ = knockout_structure[round_idx]
+            days_offset += 3  # 3 days between rounds
 
-        for team1_ph, team2_ph, day_offset in quarter_finals_matches:
-            match = Match(
-                round="Quarter Finals",
-                match_number=match_number,
-                team1_id=None,
-                team2_id=None,
-                team1_placeholder=team1_ph,
-                team2_placeholder=team2_ph,
-                match_date=base_date + timedelta(days=day_offset),
-                is_finished=False
-            )
-            session.add(match)
-            match_number += 1
+            print(f"\n{round_name}:")
 
-        # Semi Finals - Winners of Quarter Finals (Match 61-62)
-        semi_finals_matches = [
-            ("W57", "W58", 24),  # Match 61: Winner of 57 vs Winner of 58
-            ("W59", "W60", 24),  # Match 62: Winner of 59 vs Winner of 60
-        ]
+            if round_name == "Third Place":
+                # Third place uses loser placeholders from semis
+                prev_round_start = match_number - 2  # Last 2 matches were semis
+                match = Match(
+                    round=round_name,
+                    match_number=match_number,
+                    team1_id=None,
+                    team2_id=None,
+                    team1_placeholder=f"L{prev_round_start - 1}",
+                    team2_placeholder=f"L{prev_round_start}",
+                    match_date=base_knockout_date + timedelta(days=days_offset),
+                    is_finished=False
+                )
+                session.add(match)
+                print(f"  Match {match_number}: L{prev_round_start - 1} vs L{prev_round_start}")
+                match_number += 1
+                total_knockout_matches += 1
 
-        for team1_ph, team2_ph, day_offset in semi_finals_matches:
-            match = Match(
-                round="Semi Finals",
-                match_number=match_number,
-                team1_id=None,
-                team2_id=None,
-                team1_placeholder=team1_ph,
-                team2_placeholder=team2_ph,
-                match_date=base_date + timedelta(days=day_offset),
-                is_finished=False
-            )
-            session.add(match)
-            match_number += 1
+            elif round_name == "Final":
+                # Final uses winner placeholders from semis
+                prev_round_start = match_number - 3  # -3 because third place was just added
+                match = Match(
+                    round=round_name,
+                    match_number=match_number,
+                    team1_id=None,
+                    team2_id=None,
+                    team1_placeholder=f"W{prev_round_start - 1}",
+                    team2_placeholder=f"W{prev_round_start}",
+                    match_date=base_knockout_date + timedelta(days=days_offset + 1),
+                    is_finished=False
+                )
+                session.add(match)
+                print(f"  Match {match_number}: W{prev_round_start - 1} vs W{prev_round_start}")
+                match_number += 1
+                total_knockout_matches += 1
 
-        # Third Place Match (Match 63)
-        match = Match(
-            round="Third Place",
-            match_number=match_number,
-            team1_id=None,
-            team2_id=None,
-            team1_placeholder="L61",  # Loser of semi 1
-            team2_placeholder="L62",  # Loser of semi 2
-            match_date=base_date + timedelta(days=27),
-            is_finished=False
-        )
-        session.add(match)
-        match_number += 1
+            else:
+                # Regular knockout rounds
+                prev_round_matches = knockout_structure[round_idx - 1][1]
+                prev_round_start = match_number - prev_round_matches
 
-        # Final (Match 64)
-        match = Match(
-            round="Final",
-            match_number=match_number,
-            team1_id=None,
-            team2_id=None,
-            team1_placeholder="W61",  # Winner of semi 1
-            team2_placeholder="W62",  # Winner of semi 2
-            match_date=base_date + timedelta(days=28),
-            is_finished=False
-        )
-        session.add(match)
-        match_number += 1
+                for i in range(num_matches):
+                    w1 = prev_round_start + (i * 2)
+                    w2 = prev_round_start + (i * 2) + 1
+                    match = Match(
+                        round=round_name,
+                        match_number=match_number,
+                        team1_id=None,
+                        team2_id=None,
+                        team1_placeholder=f"W{w1}",
+                        team2_placeholder=f"W{w2}",
+                        match_date=base_knockout_date + timedelta(days=days_offset),
+                        is_finished=False
+                    )
+                    session.add(match)
+                    print(f"  Match {match_number}: W{w1} vs W{w2}")
+                    match_number += 1
+                    total_knockout_matches += 1
 
         session.commit()
-        print(f"Successfully seeded {match_number - 1} matches!")
+        print(f"\nSuccessfully seeded {group_matches_added} group stage matches!")
+        print(f"Successfully seeded {total_knockout_matches} knockout matches!")
+        print(f"Total matches: {match_number - 1}")
 
 
 def seed_group_standings():
-    """Seed random group standings (max 4 goals per team per match)."""
+    """Initialize empty group standings for all teams."""
     with Session(engine) as session:
         existing_standings = session.exec(select(GroupStanding)).first()
         if existing_standings:
             print("Group standings already seeded. Skipping...")
             return
 
-        teams = {team.code: team for team in session.exec(select(Team)).all()}
+        teams = session.exec(select(Team)).all()
 
         if not teams:
             print("Error: No teams found. Please seed teams first.")
             return
 
-        standings = {}
-        for team in teams.values():
+        for team in teams:
             if team.group:
-                standings[team.code] = {
-                    "team": team,
-                    "played": 0,
-                    "won": 0,
-                    "drawn": 0,
-                    "lost": 0,
-                    "goals_for": 0,
-                    "goals_against": 0,
-                    "points": 0,
-                }
-
-        for team1_code, team2_code, _group in GROUP_MATCHES:
-            team1_score = random.randint(0, 4)
-            team2_score = random.randint(0, 4)
-
-            team1 = standings[team1_code]
-            team2 = standings[team2_code]
-
-            team1["played"] += 1
-            team2["played"] += 1
-
-            team1["goals_for"] += team1_score
-            team1["goals_against"] += team2_score
-            team2["goals_for"] += team2_score
-            team2["goals_against"] += team1_score
-
-            if team1_score > team2_score:
-                team1["won"] += 1
-                team1["points"] += 3
-                team2["lost"] += 1
-            elif team2_score > team1_score:
-                team2["won"] += 1
-                team2["points"] += 3
-                team1["lost"] += 1
-            else:
-                team1["drawn"] += 1
-                team2["drawn"] += 1
-                team1["points"] += 1
-                team2["points"] += 1
-
-        for stats in standings.values():
-            team = stats["team"]
-            session.add(GroupStanding(
-                group_letter=team.group,
-                team_id=team.id,
-                played=stats["played"],
-                won=stats["won"],
-                drawn=stats["drawn"],
-                lost=stats["lost"],
-                goals_for=stats["goals_for"],
-                goals_against=stats["goals_against"],
-                goal_difference=stats["goals_for"] - stats["goals_against"],
-                points=stats["points"],
-            ))
+                session.add(GroupStanding(
+                    group_letter=team.group,
+                    team_id=team.id,
+                    played=0,
+                    won=0,
+                    drawn=0,
+                    lost=0,
+                    goals_for=0,
+                    goals_against=0,
+                    goal_difference=0,
+                    points=0,
+                ))
 
         session.commit()
-        print("Successfully seeded group standings!")
+        print(f"Successfully initialized group standings for {len(teams)} teams!")
 
 
 def main():
     """Main function to seed the database."""
-    print("Creating database tables...")
+    print("="*60)
+    print("FIFA WORLD CUP 2026 - DYNAMIC DATABASE SEEDER")
+    print("="*60)
+
+    # Extract groups from CSV first
+    csv_file = 'mockups/group_stage_matches.csv'
+    print(f"\nAnalyzing CSV: {csv_file}")
+    groups_in_csv = extract_groups_from_csv(csv_file)
+    print(f"Detected {len(groups_in_csv)} groups: {', '.join(groups_in_csv)}")
+
+    print("\nCreating database tables...")
     create_db_and_tables()
 
-    print("\nSeeding teams...")
-    seed_teams()
+    print("\nSeeding teams from CSV...")
+    seed_teams_from_csv(csv_file)
 
-    print("\nSeeding matches...")
-    seed_matches()
+    print("\nSeeding matches from CSV (with dynamic knockout generation)...")
+    seed_matches_from_csv(csv_file)
 
-    print("\nSeeding group standings...")
+    print("\nInitializing group standings...")
     seed_group_standings()
 
-    print("\nDatabase seeding complete!")
+    print("\n" + "="*60)
+    print("DATABASE SEEDING COMPLETE!")
+    print("="*60)
+    print("\nFinal Summary:")
+    with Session(engine) as session:
+        from sqlalchemy import func
+        team_count = session.exec(select(func.count(Team.id))).first()
+        match_count = session.exec(select(func.count(Match.id))).first()
+        groups = get_all_groups(session)
+        print(f"  Teams: {team_count}")
+        print(f"  Matches: {match_count}")
+        print(f"  Groups: {len(groups)} ({', '.join(groups)})")
+
+        # Show knockout structure
+        from app.tournament_config import generate_knockout_bracket_structure
+        qualifying_teams = len(groups) * 2
+        knockout_structure = generate_knockout_bracket_structure(qualifying_teams)
+        print(f"\nKnockout Structure:")
+        for round_name, num_matches, _, desc in knockout_structure:
+            print(f"  {round_name}: {num_matches} match{'es' if num_matches > 1 else ''}")
 
 
 if __name__ == "__main__":

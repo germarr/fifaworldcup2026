@@ -1,37 +1,37 @@
 match_number,round,group,date,team1_code,team1_name,team2_code,team2_name,actual_team1_score,actual_team2_score,is_finished,stadium,time,datetime
 1,Group Stage - Group A,A,6/11/2026,MEX,Mexico,ZAF,South Africa,0,0,FALSE,Mexico City Stadium,15:00,6/11/2026 15:00
-2,Group Stage - Group A,A,6/11/2026,KOR,South Korea,DEN,DEN,0,0,FALSE,Guadlajara Stadium,22:00,6/11/2026 22:00
-3,Group Stage - Group B,B,6/12/2026,CAN,Canada,ITA,ITA,0,0,FALSE,Toronto Stadium,15:00,6/12/2026 15:00
+2,Group Stage - Group A,A,6/11/2026,KOR,South Korea,TBD,DEN/MKD/CZE/IRL,0,0,FALSE,Guadlajara Stadium,22:00,6/11/2026 22:00
+3,Group Stage - Group B,B,6/12/2026,CAN,Canada,TBD,ITA/NIR/WAL/BIH,0,0,FALSE,Toronto Stadium,15:00,6/12/2026 15:00
 4,Group Stage - Group D,D,6/12/2026,USA,USA,PRY,Paraguay,0,0,FALSE,Los Angeles Stadium,21:00,6/12/2026 21:00
 5,Group Stage - Group B,B,6/13/2026,QAT,Qatar,CHE,Switzerland,0,0,FALSE,San Francisco Stadium,15:00,6/13/2026 15:00
 6,Group Stage - Group C,C,6/13/2026,BRA,Brazil,MAR,Morocco,0,0,FALSE,New York Stadium,18:00,6/13/2026 18:00
-7,Group Stage - Group C,C,6/13/2026,HTI,Haiti,SCO,Scotland,0,0,FALSE,Boston Stadium,21:00,6/13/2026 21:00
-8,Group Stage - Group D,D,6/14/2026,AUS,Australia,TUR,TUR,0,0,FALSE,BC Place Vancouver,0:00,6/14/2026 0:00
+7,Group Stage - Group C,C,6/13/2026,HTI,Haiti,GBR,Scotland,0,0,FALSE,Boston Stadium,21:00,6/13/2026 21:00
+8,Group Stage - Group D,D,6/14/2026,AUS,Australia,TBD,TUR/ROU/SVK/KOS,0,0,FALSE,BC Place Vancouver,0:00,6/14/2026 0:00
 9,Group Stage - Group E,E,6/14/2026,DEU,Germany,CUW,Curaçao,0,0,FALSE,Houston Stadium,13:00,6/14/2026 13:00
 10,Group Stage - Group F,F,6/14/2026,NLD,Netherlands,JPN,Japan,0,0,FALSE,Dallas Stadium,16:00,6/14/2026 16:00
 11,Group Stage - Group E,E,6/14/2026,CIV,Ivory Coast,ECU,Ecuador,0,0,FALSE,Philadelphia Stadium,19:00,6/14/2026 19:00
-12,Group Stage - Group F,F,6/14/2026,UKR,UKR,TUN,Tunisia,0,0,FALSE,Monterrey Stadium,22:00,6/14/2026 22:00
+12,Group Stage - Group F,F,6/14/2026,TBD,TUR/ROU/SVK/KOS,TUN,Tunisia,0,0,FALSE,Monterrey Stadium,22:00,6/14/2026 22:00
 13,Group Stage - Group H,H,6/15/2026,ESP,Spain,CPV,Cape Verde Islands,0,0,FALSE,Atlanta Stadium,12:00,6/15/2026 12:00
 14,Group Stage - Group G,G,6/15/2026,BEL,Belgium,EGY,Egypt,0,0,FALSE,Seattle Stadium,15:00,6/15/2026 15:00
 15,Group Stage - Group H,H,6/15/2026,SAU,Saudi Arabia,URY,Uruguay,0,0,FALSE,Miami Stadium,18:00,6/15/2026 18:00
 16,Group Stage - Group G,G,6/15/2026,IRN,Iran,NZL,New Zealand,0,0,FALSE,Los Angeles Stadium,21:00,6/15/2026 21:00
 17,Group Stage - Group I,I,6/16/2026,FRA,France,SEN,Senegal,0,0,FALSE,New York Stadium,15:00,6/16/2026 15:00
-18,Group Stage - Group I,I,6/16/2026,BOL,BOL,NOR,Norway,0,0,FALSE,Boston Stadium,18:00,6/16/2026 18:00
+18,Group Stage - Group I,I,6/16/2026,TBD,BOL/SUR/IRQ,NOR,Norway,0,0,FALSE,Boston Stadium,18:00,6/16/2026 18:00
 19,Group Stage - Group J,J,6/16/2026,ARG,Argentina,DZA,Algeria,0,0,FALSE,Kansas City Stadium,21:00,6/16/2026 21:00
 20,Group Stage - Group J,J,6/17/2026,AUT,Austria,JOR,Jordan,0,0,FALSE,San Francisco Stadium,0:00,6/17/2026 0:00
-21,Group Stage - Group K,K,6/17/2026,PRT,Portugal,NCL,NCL,0,0,FALSE,Houston Stadium,13:00,6/17/2026 13:00
-22,Group Stage - Group L,L,6/17/2026,ENG,England,HRV,Croatia,0,0,FALSE,Dallas Stadium,16:00,6/17/2026 16:00
+21,Group Stage - Group K,K,6/17/2026,PRT,Portugal,TBD,NCL/JAM/COD,0,0,FALSE,Houston Stadium,13:00,6/17/2026 13:00
+22,Group Stage - Group L,L,6/17/2026,GBR,England,HRV,Croatia,0,0,FALSE,Dallas Stadium,16:00,6/17/2026 16:00
 23,Group Stage - Group L,L,6/17/2026,GHA,Ghana,PAN,Panama,0,0,FALSE,Toronto Stadium,19:00,6/17/2026 19:00
 24,Group Stage - Group K,K,6/17/2026,UZB,Uzbekistan,COL,Colombia,0,0,FALSE,Mexico City Stadium,22:00,6/17/2026 22:00
-25,Group Stage - Group A,A,6/18/2026,DEN,DEN,ZAF,South Africa,0,0,FALSE,Atlanta Stadium,12:00,6/18/2026 12:00
-26,Group Stage - Group B,B,6/18/2026,CHE,Switzerland,ITA,ITA,0,0,FALSE,Los Angeles Stadium,15:00,6/18/2026 15:00
+25,Group Stage - Group A,A,6/18/2026,TBD,DEN/MKD/CZE/IRL,ZAF,South Africa,0,0,FALSE,Atlanta Stadium,12:00,6/18/2026 12:00
+26,Group Stage - Group B,B,6/18/2026,CHE,Switzerland,TBD,ITA/NIR/WAL/BIH,0,0,FALSE,Los Angeles Stadium,15:00,6/18/2026 15:00
 27,Group Stage - Group B,B,6/18/2026,CAN,Canada,QAT,Qatar,0,0,FALSE,BC Place Vancouver,18:00,6/18/2026 18:00
 28,Group Stage - Group A,A,6/18/2026,MEX,Mexico,KOR,South Korea,0,0,FALSE,Guadlajara Stadium,21:00,6/18/2026 21:00
 29,Group Stage - Group D,D,6/19/2026,USA,USA,AUS,Australia,0,0,FALSE,Seattle Stadium,15:00,6/19/2026 15:00
-30,Group Stage - Group C,C,6/19/2026,SCO,Scotland,MAR,Morocco,0,0,FALSE,Boston Stadium,18:00,6/19/2026 18:00
+30,Group Stage - Group C,C,6/19/2026,GBR,Scotland,MAR,Morocco,0,0,FALSE,Boston Stadium,18:00,6/19/2026 18:00
 31,Group Stage - Group C,C,6/19/2026,BRA,Brazil,HTI,Haiti,0,0,FALSE,Philadelphia Stadium,21:00,6/19/2026 21:00
-32,Group Stage - Group D,D,6/20/2026,TUR,TUR,PRY,Paraguay,0,0,FALSE,San Francisco Stadium,0:00,6/20/2026 0:00
-33,Group Stage - Group F,F,6/20/2026,NLD,Netherlands,UKR,UKR,0,0,FALSE,Houston Stadium,13:00,6/20/2026 13:00
+32,Group Stage - Group D,D,6/20/2026,TBD,TUR/ROU/SVK/KOS,PRY,Paraguay,0,0,FALSE,San Francisco Stadium,0:00,6/20/2026 0:00
+33,Group Stage - Group F,F,6/20/2026,NLD,Netherlands,TBD,UKR/SWE/POL/ALB,0,0,FALSE,Houston Stadium,13:00,6/20/2026 13:00
 34,Group Stage - Group E,E,6/20/2026,DEU,Germany,CIV,Ivory Coast,0,0,FALSE,Toronto Stadium,16:00,6/20/2026 16:00
 35,Group Stage - Group E,E,6/20/2026,ECU,Ecuador,CUW,Curaçao,0,0,FALSE,Kansas City Stadium,20:00,6/20/2026 20:00
 36,Group Stage - Group F,F,6/21/2026,TUN,Tunisia,JPN,Japan,0,0,FALSE,Monterrey Stadium,0:00,6/21/2026 0:00
@@ -40,34 +40,34 @@ match_number,round,group,date,team1_code,team1_name,team2_code,team2_name,actual
 39,Group Stage - Group H,H,6/21/2026,URY,Uruguay,CPV,Cape Verde Islands,0,0,FALSE,Miami Stadium,21:00,6/21/2026 21:00
 40,Group Stage - Group G,G,6/21/2026,NZL,New Zealand,EGY,Egypt,0,0,FALSE,BC Place Vancouver,21:00,6/21/2026 21:00
 41,Group Stage - Group J,J,6/22/2026,ARG,Argentina,AUT,Austria,0,0,FALSE,Dallas Stadium,13:00,6/22/2026 13:00
-42,Group Stage - Group I,I,6/22/2026,FRA,France,BOL,BOL,0,0,FALSE,Philadelphia Stadium,17:00,6/22/2026 17:00
+42,Group Stage - Group I,I,6/22/2026,FRA,France,TBD,BOL/SUR/IRQ,0,0,FALSE,Philadelphia Stadium,17:00,6/22/2026 17:00
 43,Group Stage - Group I,I,6/22/2026,NOR,Norway,SEN,Senegal,0,0,FALSE,New York Stadium,20:00,6/22/2026 20:00
 44,Group Stage - Group J,J,6/22/2026,JOR,Jordan,DZA,Algeria,0,0,FALSE,San Francisco Stadium,23:00,6/22/2026 23:00
 45,Group Stage - Group K,K,6/23/2026,PRT,Portugal,UZB,Uzbekistan,0,0,FALSE,Houston Stadium,13:00,6/23/2026 13:00
-46,Group Stage - Group L,L,6/23/2026,ENG,England,GHA,Ghana,0,0,FALSE,Boston Stadium,16:00,6/23/2026 16:00
+46,Group Stage - Group L,L,6/23/2026,GBR,England,GHA,Ghana,0,0,FALSE,Boston Stadium,16:00,6/23/2026 16:00
 47,Group Stage - Group L,L,6/23/2026,PAN,Panama,HRV,Croatia,0,0,FALSE,Toronto Stadium,19:00,6/23/2026 19:00
-48,Group Stage - Group K,K,6/23/2026,COL,Colombia,NCL,NCL,0,0,FALSE,Guadlajara Stadium,22:00,6/23/2026 22:00
+48,Group Stage - Group K,K,6/23/2026,COL,Colombia,TBD,NCL/JAM/COD,0,0,FALSE,Guadlajara Stadium,22:00,6/23/2026 22:00
 49,Group Stage - Group B,B,6/24/2026,CHE,Switzerland,CAN,Canada,0,0,FALSE,BC Place Vancouver,15:00,6/24/2026 15:00
-50,Group Stage - Group B,B,6/24/2026,ITA,ITA,QAT,Qatar,0,0,FALSE,Seattle Stadium,15:00,6/24/2026 15:00
-51,Group Stage - Group C,C,6/24/2026,SCO,Scotland,BRA,Brazil,0,0,FALSE,Miami Stadium,18:00,6/24/2026 18:00
+50,Group Stage - Group B,B,6/24/2026,TBD,ITA/NIR/BIH,QAT,Qatar,0,0,FALSE,Seattle Stadium,15:00,6/24/2026 15:00
+51,Group Stage - Group C,C,6/24/2026,GBR,Scotland,BRA,Brazil,0,0,FALSE,Miami Stadium,18:00,6/24/2026 18:00
 52,Group Stage - Group C,C,6/24/2026,MAR,Morocco,HTI,Haiti,0,0,FALSE,Atlanta Stadium,18:00,6/24/2026 18:00
-53,Group Stage - Group A,A,6/24/2026,DEN,DEN,MEX,Mexico,0,0,FALSE,Mexico City Stadium,21:00,6/24/2026 21:00
+53,Group Stage - Group A,A,6/24/2026,TBD,DEN/MKD/CZE/IRL,MEX,Mexico,0,0,FALSE,Mexico City Stadium,21:00,6/24/2026 21:00
 54,Group Stage - Group A,A,6/24/2026,ZAF,South Africa,KOR,South Korea,0,0,FALSE,Monterrey Stadium,21:00,6/24/2026 21:00
 55,Group Stage - Group E,E,6/25/2026,CUW,Curaçao,CIV,Ivory Coast,0,0,FALSE,Philadelphia Stadium,16:00,6/25/2026 16:00
 56,Group Stage - Group E,E,6/25/2026,ECU,Ecuador,DEU,Germany,0,0,FALSE,New York Stadium,16:00,6/25/2026 16:00
-57,Group Stage - Group F,F,6/25/2026,JPN,Japan,UKR,UKR,0,0,FALSE,Dallas Stadium,19:00,6/25/2026 19:00
+57,Group Stage - Group F,F,6/25/2026,JAP,Japan,TBD,UKR/SWE/POL/ALB,0,0,FALSE,Dallas Stadium,19:00,6/25/2026 19:00
 58,Group Stage - Group F,F,6/25/2026,TUN,Tunisia,NLD,Netherlands,0,0,FALSE,Kansas City Stadium,19:00,6/25/2026 19:00
-59,Group Stage - Group D,D,6/25/2026,TUR,TUR,USA,USA,0,0,FALSE,Los Angeles Stadium,22:00,6/25/2026 22:00
+59,Group Stage - Group D,D,6/25/2026,TBD,TUR/ROU/SVK/KOS,USA,USA,0,0,FALSE,Los Angeles Stadium,22:00,6/25/2026 22:00
 60,Group Stage - Group D,D,6/25/2026,PRY,Paraguay,AUS,Australia,0,0,FALSE,San Francisco Stadium,22:00,6/25/2026 22:00
 61,Group Stage - Group I,I,6/26/2026,NOR,Norway,FRA,France,0,0,FALSE,Boston Stadium,15:00,6/26/2026 15:00
-62,Group Stage - Group I,I,6/26/2026,SEN,Senegal,BOL,BOL,0,0,FALSE,Toronto Stadium,15:00,6/26/2026 15:00
+62,Group Stage - Group I,I,6/26/2026,SEN,Senegal,TBD,BOL/SUR/IRQ,0,0,FALSE,Toronto Stadium,15:00,6/26/2026 15:00
 63,Group Stage - Group H,H,6/26/2026,CPV,Cape Verde Islands,SAU,Saudi Arabia,0,0,FALSE,Houston Stadium,20:00,6/26/2026 20:00
 64,Group Stage - Group H,H,6/26/2026,URY,Uruguay,ESP,Spain,0,0,FALSE,Guadlajara Stadium,20:00,6/26/2026 20:00
 65,Group Stage - Group G,G,6/26/2026,EGY,Egypt,IRN,Iran,0,0,FALSE,Seattle Stadium,23:00,6/26/2026 23:00
 66,Group Stage - Group G,G,6/26/2026,NZL,New Zealand,BEL,Belgium,0,0,FALSE,BC Place Vancouver,23:00,6/26/2026 23:00
-67,Group Stage - Group L,L,6/27/2026,PAN,Panama,ENG,England,0,0,FALSE,New York Stadium,17:00,6/27/2026 17:00
+67,Group Stage - Group L,L,6/27/2026,PAN,Panama,GBR,England,0,0,FALSE,New York Stadium,17:00,6/27/2026 17:00
 68,Group Stage - Group L,L,6/27/2026,HRV,Croatia,GHA,Ghana,0,0,FALSE,Philadelphia Stadium,17:00,6/27/2026 17:00
 69,Group Stage - Group K,K,6/27/2026,COL,Colombia,PRT,Portugal,0,0,FALSE,Miami Stadium,19:30,6/27/2026 19:30
-70,Group Stage - Group K,K,6/27/2026,NCL,NCL,UZB,Uzbekistan,0,0,FALSE,Atlanta Stadium,19:30,6/27/2026 19:30
+70,Group Stage - Group K,K,6/27/2026,TBD,NCL/JAM/COD,UZB,Uzbekistan,0,0,FALSE,Atlanta Stadium,19:30,6/27/2026 19:30
 71,Group Stage - Group J,J,6/27/2026,DZA,Algeria,AUT,Austria,0,0,FALSE,Kansas City Stadium,22:00,6/27/2026 22:00
 72,Group Stage - Group J,J,6/27/2026,JOR,Jordan,ARG,Argentina,0,0,FALSE,Dallas Stadium,22:00,6/27/2026 22:00
