@@ -19,13 +19,13 @@
                 <div class="text-right">
                     <button
                         id="auto-fill-scores-btn"
-                        class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors mr-2"
+                        class="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer mr-2"
                     >
                         🎲 Auto Fill Results
                     </button>
                     <button
                         id="view-standings-btn"
-                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                        class="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg cursor-pointer"
                     >
                         📊 View Standings
                     </button>
@@ -78,24 +78,24 @@
                         <!-- Result Buttons -->
                         <div class="grid grid-cols-3 gap-2">
                             <button
-                                class="result-btn py-2 px-3 rounded-lg font-semibold transition-all border-2 border-transparent
-                                       {% if match_data.selected_result == 'team1' %}bg-green-500 text-white border-gray-800 scale-105{% else %}bg-gray-200 text-gray-700 hover:bg-green-100{% endif %}"
+                                class="result-btn py-2 px-3 rounded-lg font-semibold border-2 border-transparent cursor-pointer
+                                       {% if match_data.selected_result == 'team1' %}bg-green-500 text-white border-gray-800{% else %}bg-gray-200 text-gray-700 hover:bg-green-100{% endif %}"
                                 data-match-id="{{ match_data.match.id }}"
                                 data-result="team1"
                             >
                                 {{ match_data.team1.code if match_data.team1 else 'T1' }} Win
                             </button>
                             <button
-                                class="result-btn py-2 px-3 rounded-lg font-semibold transition-all border-2 border-transparent
-                                       {% if match_data.selected_result == 'draw' %}bg-gray-500 text-white border-gray-800 scale-105{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
+                                class="result-btn py-2 px-3 rounded-lg font-semibold border-2 border-transparent cursor-pointer
+                                       {% if match_data.selected_result == 'draw' %}bg-gray-500 text-white border-gray-800{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %}"
                                 data-match-id="{{ match_data.match.id }}"
                                 data-result="draw"
                             >
                                 Draw
                             </button>
                             <button
-                                class="result-btn py-2 px-3 rounded-lg font-semibold transition-all border-2 border-transparent
-                                       {% if match_data.selected_result == 'team2' %}bg-green-500 text-white border-gray-800 scale-105{% else %}bg-gray-200 text-gray-700 hover:bg-green-100{% endif %}"
+                                class="result-btn py-2 px-3 rounded-lg font-semibold border-2 border-transparent cursor-pointer
+                                       {% if match_data.selected_result == 'team2' %}bg-green-500 text-white border-gray-800{% else %}bg-gray-200 text-gray-700 hover:bg-green-100{% endif %}"
                                 data-match-id="{{ match_data.match.id }}"
                                 data-result="team2"
                             >
@@ -120,7 +120,7 @@
         <div class="bg-white rounded-2xl shadow-lg p-6 text-center">
             <button
                 id="continue-to-knockout-btn"
-                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-bold py-4 px-8 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 disabled
             >
                 Continue to Knockout Stage →
@@ -183,7 +183,7 @@ function applyResultToMatch(matchCard, result, options = {}) {
     const selectedBtn = matchCard.querySelector(`.result-btn[data-result="${result}"]`);
 
     allBtns.forEach(b => {
-        b.classList.remove('bg-green-500', 'bg-gray-500', 'text-white', 'border-gray-800', 'scale-105');
+        b.classList.remove('bg-green-500', 'bg-gray-500', 'text-white', 'border-gray-800');
         b.classList.add('bg-gray-200', 'text-gray-700');
     });
 
@@ -193,9 +193,9 @@ function applyResultToMatch(matchCard, result, options = {}) {
 
     selectedBtn.classList.remove('bg-gray-200', 'text-gray-700');
     if (result === 'draw') {
-        selectedBtn.classList.add('bg-gray-500', 'text-white', 'border-gray-800', 'scale-105');
+        selectedBtn.classList.add('bg-gray-500', 'text-white', 'border-gray-800');
     } else {
-        selectedBtn.classList.add('bg-green-500', 'text-white', 'border-gray-800', 'scale-105');
+        selectedBtn.classList.add('bg-green-500', 'text-white', 'border-gray-800');
     }
 
     if (!wasSelected) {
