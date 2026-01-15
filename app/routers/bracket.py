@@ -79,10 +79,14 @@ async def groups_page(
             "predictions_count": len(predictions)
         }
 
+    # Get third place teams for the ranking section at bottom
+    third_place_teams = get_third_place_teams(db, current_user.id)
+
     return templates.TemplateResponse("bracket/groups.html", {
         "request": request,
         "current_user": current_user,
-        "groups": groups
+        "groups": groups,
+        "third_place_teams": third_place_teams
     })
 
 
@@ -122,6 +126,9 @@ async def save_third_place_ranking(
     ).all()
     for r in existing:
         db.delete(r)
+    
+    # Commit deletion to ensure unique constraints are cleared
+    db.commit()
 
     # Create new rankings
     for ranking in data.rankings:

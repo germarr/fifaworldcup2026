@@ -3,6 +3,26 @@
 
 {% block title %}Group Stage - FIFA World Cup 2026{% endblock %}
 
+{% block head %}
+<style>
+    .draggable {
+        cursor: move;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .draggable:hover {
+        transform: scale(1.02);
+    }
+    .draggable.dragging {
+        opacity: 0.5;
+        transform: scale(1.05);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+    }
+    .drag-over {
+        border: 2px dashed #326295;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Group Stage Predictions</h1>
@@ -231,10 +251,80 @@
             {% endfor %}
         </div>
 
-        <div class="mt-8 text-center">
-            <a href="/bracket/third-place" class="btn-primary">
-                Continue to Third Place Ranking &rarr;
-            </a>
+        <!-- Third Place Ranking Section -->
+        <div class="mt-12 border-t pt-8">
+            <h2 class="text-2xl font-bold mb-4">Third Place Ranking</h2>
+            <p class="text-gray-600 mb-6">
+                Based on your group predictions, these are the third-place teams.
+                Drag and drop to reorder. The top 8 teams will qualify for the Round of 32.
+            </p>
+
+            <div class="card mb-6 max-w-4xl mx-auto">
+                <h3 class="text-lg font-bold mb-3">Tiebreaker Rules</h3>
+                <ol class="text-sm text-gray-600 list-decimal list-inside space-y-1">
+                    <li>Points earned in group stage</li>
+                    <li>Goal difference</li>
+                    <li>Goals scored</li>
+                    <li>Your manual ranking (drag to adjust)</li>
+                </ol>
+            </div>
+
+            {% if third_place_teams %}
+                <div class="max-w-4xl mx-auto">
+                    <div class="card">
+                        <div id="ranking-list" class="space-y-2">
+                            {% for team in third_place_teams %}
+                                <div
+                                    class="draggable flex items-center justify-between p-3 bg-white border rounded-lg {{ 'border-green-500 bg-green-50' if team.rank <= 8 else 'border-gray-200' }}"
+                                    data-team-id="{{ team.team_id }}"
+                                    data-rank="{{ team.rank }}"
+                                    draggable="true"
+                                >
+                                    <div class="flex items-center gap-4">
+                                        <span class="w-8 h-8 flex items-center justify-center rounded-full {{ 'bg-green-500 text-white' if team.rank <= 8 else 'bg-gray-200' }} font-bold">
+                                            {{ team.rank }}
+                                        </span>
+                                        {{ flag(team.country_code, 24) }}
+                                        <div>
+                                            <div class="font-medium">{{ team.team_name }}</div>
+                                            <div class="text-sm text-gray-500">Group {{ team.group }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="flex gap-6 text-sm">
+                                        <div class="text-center">
+                                            <div class="font-bold">{{ team.points }}</div>
+                                            <div class="text-gray-500">Pts</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="font-bold">{{ team.goal_diff }}</div>
+                                            <div class="text-gray-500">GD</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="font-bold">{{ team.goals_for }}</div>
+                                            <div class="text-gray-500">GF</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
+                            <span class="inline-block w-4 h-4 bg-green-500 rounded mr-1"></span>
+                            Teams 1-8 qualify for Round of 32
+                        </div>
+                    </div>
+
+                    <div class="mt-8 text-center">
+                        <button onclick="saveRanking()" class="btn-primary text-lg px-8 py-3">
+                            Save Ranking & Go to Knockout Phase &rarr;
+                        </button>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card text-center py-12 max-w-4xl mx-auto">
+                    <p class="text-gray-500 mb-4">Complete your group stage predictions above to see the third-place ranking.</p>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 </div>
@@ -261,8 +351,13 @@ async function savePrediction(matchId, outcome, winnerId) {
                 btn.classList.add('selected');
             }
         });
-
-        // Note: reload removed here to allow bulk operations
+        
+        // If not a bulk operation, we might want to reload or update standings dynamically.
+        // For simplicity, we just reload if it's a single manual action to ensure standings/third place updates.
+        if (!window.bulkOperation) {
+             // Use a small timeout to allow the toast to appear
+             setTimeout(() => location.reload(), 500);
+        }
     }
     return success;
 }
@@ -476,6 +571,124 @@ async function resetAllPredictions() {
         setTimeout(() => location.reload(), 800);
     } else {
         showToast('No predictions to reset!', 'info');
+    }
+}
+
+// Third Place Ranking Drag and Drop
+document.addEventListener('DOMContentLoaded', function() {
+    const list = document.getElementById('ranking-list');
+    if (!list) return;
+
+    let draggedItem = null;
+
+    list.querySelectorAll('.draggable').forEach(item => {
+        item.addEventListener('dragstart', function(e) {
+            draggedItem = this;
+            this.classList.add('dragging');
+        });
+
+        item.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            draggedItem = null;
+            updateRankNumbers();
+        });
+
+        item.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('drag-over');
+        });
+
+        item.addEventListener('dragleave', function(e) {
+            this.classList.remove('drag-over');
+        });
+
+        item.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('drag-over');
+
+            if (draggedItem !== this) {
+                const allItems = [...list.querySelectorAll('.draggable')];
+                const draggedIdx = allItems.indexOf(draggedItem);
+                const targetIdx = allItems.indexOf(this);
+
+                if (draggedIdx < targetIdx) {
+                    this.parentNode.insertBefore(draggedItem, this.nextSibling);
+                } else {
+                    this.parentNode.insertBefore(draggedItem, this);
+                }
+            }
+        });
+    });
+});
+
+function updateRankNumbers() {
+    const items = document.querySelectorAll('#ranking-list .draggable');
+    items.forEach((item, index) => {
+        const rank = index + 1;
+        item.dataset.rank = rank;
+
+        const rankBadge = item.querySelector('span:first-child');
+        rankBadge.textContent = rank;
+
+        if (rank <= 8) {
+            item.classList.add('border-green-500', 'bg-green-50');
+            item.classList.remove('border-gray-200');
+            rankBadge.classList.add('bg-green-500', 'text-white');
+            rankBadge.classList.remove('bg-gray-200');
+        } else {
+            item.classList.remove('border-green-500', 'bg-green-50');
+            item.classList.add('border-gray-200');
+            rankBadge.classList.remove('bg-green-500', 'text-white');
+            rankBadge.classList.add('bg-gray-200');
+        }
+    });
+}
+
+async function saveRanking() {
+    const items = document.querySelectorAll('#ranking-list .draggable');
+    const rankings = [];
+    let hasError = false;
+
+    items.forEach((item, index) => {
+        const teamId = parseInt(item.dataset.teamId);
+        if (isNaN(teamId)) {
+            console.error('Invalid team ID for item:', item);
+            hasError = true;
+            return;
+        }
+        rankings.push({
+            team_id: teamId,
+            rank_position: index + 1
+        });
+    });
+
+    if (hasError) {
+        showToast('Error: Invalid team data found in list.', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch('/bracket/api/third-place', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ rankings })
+        });
+
+        if (response.ok) {
+            window.location.href = '/bracket';
+        } else {
+            const errorText = await response.text();
+            console.error('Failed to save ranking:', response.status, errorText);
+            try {
+                const errorJson = JSON.parse(errorText);
+                showToast(`Failed to save: ${errorJson.detail || 'Unknown error'}`, 'error');
+            } catch (e) {
+                showToast(`Failed to save ranking (Status ${response.status})`, 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Network error saving ranking:', error);
+        showToast('Network error - check console', 'error');
     }
 }
 </script>

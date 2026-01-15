@@ -12,5 +12,6 @@ class User(SQLModel, table=True):
     display_name: str
     is_admin: bool = Field(default=False)
     cookie_consent: bool = Field(default=False)
+    favorite_team_id: Optional[int] = Field(default=None, foreign_key="fifa_teams.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)

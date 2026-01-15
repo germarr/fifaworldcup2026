@@ -10,6 +10,7 @@ from app.database import engine, create_db_and_tables
 from app.models.user import User
 from app.models.match import Match
 from app.models.prediction import Prediction
+from app.models.fifa_team import FifaTeam
 from app.services.auth import hash_password
 
 # Test user names
@@ -64,6 +65,11 @@ def seed_players(num_users: int = 10):
             print("Please seed matches first!")
             return
 
+        # Get all teams for random assignment
+        teams = session.exec(select(FifaTeam)).all()
+        if not teams:
+            print("Warning: No teams found, users will not have a favorite team.")
+
         users_created = 0
         predictions_created = 0
 
@@ -82,7 +88,8 @@ def seed_players(num_users: int = 10):
                 email=user_data["email"],
                 password_hash=hash_password("password123"),
                 display_name=user_data["display_name"],
-                cookie_consent=True
+                cookie_consent=True,
+                favorite_team_id=random.choice(teams).id if teams else None
             )
             session.add(user)
             session.commit()
