@@ -51,27 +51,29 @@
 
     {% if not match.locked %}
         <!-- Score Inputs -->
-        <div class="flex items-center justify-center gap-2 mt-2">
+        <div class="flex items-center justify-center gap-1 mt-2 bg-white p-1 rounded border border-gray-200">
             <input
                 type="number"
                 min="0"
                 max="20"
-                class="w-10 text-center input-field text-xs py-1 home-score"
-                placeholder="-"
+                class="w-12 text-center font-semibold text-sm home-score"
+                placeholder="0"
                 value="{{ match.prediction.predicted_home_score if match.prediction and match.prediction.predicted_home_score is not none else '' }}"
                 data-match-id="{{ match.match_id }}"
-                onchange="updateScore({{ match.match_id }}, 'home', this.value)"
+                onchange="updateScoreAndSave({{ match.match_id }}, 'home', this.value)"
+                oninput="updateScore({{ match.match_id }}, 'home', this.value)"
             >
-            <span class="text-gray-400 text-xs">-</span>
+            <span class="text-gray-500 font-bold">-</span>
             <input
                 type="number"
                 min="0"
                 max="20"
-                class="w-10 text-center input-field text-xs py-1 away-score"
-                placeholder="-"
+                class="w-12 text-center font-semibold text-sm away-score"
+                placeholder="0"
                 value="{{ match.prediction.predicted_away_score if match.prediction and match.prediction.predicted_away_score is not none else '' }}"
                 data-match-id="{{ match.match_id }}"
-                onchange="updateScore({{ match.match_id }}, 'away', this.value)"
+                onchange="updateScoreAndSave({{ match.match_id }}, 'away', this.value)"
+                oninput="updateScore({{ match.match_id }}, 'away', this.value)"
             >
         </div>
 
@@ -327,6 +329,50 @@ function updateScore(matchId, side, value) {
         scores[matchId] = { home: null, away: null };
     }
     scores[matchId][side] = value ? parseInt(value) : null;
+}
+
+async function updateScoreAndSave(matchId, side, value) {
+    updateScore(matchId, side, value);
+    
+    // Get the current outcome to resave the prediction with updated score
+    const card = document.querySelector(`[data-match-id="${matchId}"]`);
+    if (!card) return;
+    
+    const selectedBtn = card.querySelector('.prediction-btn.selected');
+    if (!selectedBtn) return; // No outcome selected yet
+    
+    const outcome = selectedBtn.dataset.outcome;
+    const homeId = parseInt(card.dataset.homeId);
+    const awayId = parseInt(card.dataset.awayId);
+    
+    let winnerId;
+    if (outcome === 'home_win') {
+        winnerId = homeId;
+    } else if (outcome === 'away_win') {
+        winnerId = awayId;
+    } else if (outcome === 'draw') {
+        // For draw, get the penalty shootout winner if selected
+        const penaltySelect = card.querySelector('.penalty-select');
+        winnerId = penaltySelect && penaltySelect.value ? parseInt(penaltySelect.value) : null;
+    }
+    
+    // Save the prediction with updated scores
+    const data = {
+        predicted_outcome: outcome,
+        predicted_winner_team_id: winnerId,
+        predicted_home_score: scores[matchId]?.home,
+        predicted_away_score: scores[matchId]?.away
+    };
+    
+    try {
+        await fetch(`/api/predictions/match/${matchId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+    } catch (error) {
+        console.error('Error saving score:', error);
+    }
 }
 
 async function savePrediction(matchId, outcome, winnerId) {
