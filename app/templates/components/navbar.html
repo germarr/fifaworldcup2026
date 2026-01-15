@@ -1,0 +1,52 @@
+<nav class="bg-fifa-dark text-white shadow-lg">
+    <div class="container mx-auto px-4">
+        <div class="flex justify-between items-center py-4">
+            <a href="/" class="text-xl font-bold flex items-center gap-2">
+                <span class="text-2xl">&#9917;</span>
+                <span>WC 2026 Brackets</span>
+            </a>
+
+            <div class="hidden md:flex items-center space-x-6">
+                {% if current_user %}
+                    <a href="/bracket/groups" class="hover:text-fifa-gold transition-colors">Groups</a>
+                    <a href="/bracket" class="hover:text-fifa-gold transition-colors">My Bracket</a>
+                    <a href="/leaderboard" class="hover:text-fifa-gold transition-colors">Leaderboard</a>
+                    <a href="/teams" class="hover:text-fifa-gold transition-colors">Teams</a>
+                    {% if current_user.is_admin %}
+                        <a href="/admin" class="hover:text-fifa-gold transition-colors">Admin</a>
+                    {% endif %}
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-300">{{ current_user.display_name }}</span>
+                        <a href="/auth/logout" class="btn-gold text-sm">Logout</a>
+                    </div>
+                {% else %}
+                    <a href="/auth/login" class="hover:text-fifa-gold transition-colors">Login</a>
+                    <a href="/auth/register" class="btn-gold">Sign Up</a>
+                {% endif %}
+            </div>
+
+            <button id="mobile-menu-btn" class="md:hidden text-2xl">
+                &#9776;
+            </button>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden pb-4">
+            {% if current_user %}
+                <a href="/bracket/groups" class="block py-2 hover:text-fifa-gold">Groups</a>
+                <a href="/bracket" class="block py-2 hover:text-fifa-gold">My Bracket</a>
+                <a href="/leaderboard" class="block py-2 hover:text-fifa-gold">Leaderboard</a>
+                <a href="/teams" class="block py-2 hover:text-fifa-gold">Teams</a>
+                {% if current_user.is_admin %}
+                    <a href="/admin" class="block py-2 hover:text-fifa-gold">Admin</a>
+                {% endif %}
+                <div class="border-t border-gray-600 mt-2 pt-2">
+                    <span class="block py-2 text-gray-300">{{ current_user.display_name }}</span>
+                    <a href="/auth/logout" class="block py-2 text-fifa-gold">Logout</a>
+                </div>
+            {% else %}
+                <a href="/auth/login" class="block py-2 hover:text-fifa-gold">Login</a>
+                <a href="/auth/register" class="block py-2 hover:text-fifa-gold">Sign Up</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>

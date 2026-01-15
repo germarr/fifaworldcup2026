@@ -1,0 +1,29 @@
+<div id="cookie-banner" class="fixed bottom-0 left-0 right-0 bg-fifa-dark text-white p-4 shadow-lg z-50">
+    <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <p class="text-sm">
+            We use cookies to enhance your experience and remember your session.
+            By continuing to use this site, you accept our use of cookies.
+        </p>
+        <div class="flex gap-2">
+            <button onclick="acceptCookies()" class="btn-gold text-sm">
+                Accept Cookies
+            </button>
+            <button onclick="closeCookieBanner()" class="btn-secondary text-sm">
+                Dismiss
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function acceptCookies() {
+    fetch('/auth/cookie-consent', { method: 'POST' })
+        .then(() => {
+            document.getElementById('cookie-banner').style.display = 'none';
+        });
+}
+
+function closeCookieBanner() {
+    document.getElementById('cookie-banner').style.display = 'none';
+}
+</script>

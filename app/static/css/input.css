@@ -1,0 +1,45 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .btn-primary {
+    @apply bg-fifa-blue hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition-colors;
+  }
+
+  .btn-secondary {
+    @apply bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition-colors;
+  }
+
+  .btn-gold {
+    @apply bg-fifa-gold hover:bg-yellow-600 text-fifa-dark font-bold py-2 px-4 rounded transition-colors;
+  }
+
+  .card {
+    @apply bg-white rounded-lg shadow-md p-4;
+  }
+
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-fifa-blue focus:border-transparent;
+  }
+
+  .match-card {
+    @apply bg-white rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow;
+  }
+
+  .team-flag {
+    @apply inline-block w-8 h-6 rounded;
+  }
+
+  .prediction-btn {
+    @apply px-3 py-1 rounded border-2 transition-all cursor-pointer;
+  }
+
+  .prediction-btn.selected {
+    @apply bg-fifa-blue text-white border-fifa-blue;
+  }
+
+  .prediction-btn:not(.selected) {
+    @apply bg-white text-gray-700 border-gray-300 hover:border-fifa-blue;
+  }
+}

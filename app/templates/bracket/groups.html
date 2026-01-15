@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Group Stage - FIFA World Cup 2026{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Group Stage Predictions</h1>
+
+    {% if not groups %}
+        <div class="card text-center py-12">
+            <p class="text-gray-500 mb-4">No groups have been set up yet.</p>
+            <p class="text-sm text-gray-400">Check back when the tournament draw is complete.</p>
+        </div>
+    {% else %}
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for group_letter, group_data in groups.items() %}
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4 text-fifa-blue">Group {{ group_letter }}</h2>
+
+                    <!-- Standings -->
+                    <div class="mb-4">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="border-b">
+                                    <th class="text-left py-1">#</th>
+                                    <th class="text-left py-1">Team</th>
+                                    <th class="text-center py-1">P</th>
+                                    <th class="text-center py-1">GD</th>
+                                    <th class="text-center py-1">Pts</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for team in group_data.standings %}
+                                    <tr class="border-b {{ 'bg-green-50' if loop.index <= 2 else ('bg-yellow-50' if loop.index == 3 else '') }}">
+                                        <td class="py-1">{{ loop.index }}</td>
+                                        <td class="py-1">
+                                            <span class="mr-1">{{ team.flag_emoji or '🏳️' }}</span>
+                                            {{ team.team_name }}
+                                        </td>
+                                        <td class="text-center py-1">{{ team.played }}</td>
+                                        <td class="text-center py-1">{{ team.goal_diff }}</td>
+                                        <td class="text-center py-1 font-bold">{{ team.points }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <div class="text-xs text-gray-500 mt-2">
+                            <span class="inline-block w-3 h-3 bg-green-50 border mr-1"></span> Qualifies
+                            <span class="inline-block w-3 h-3 bg-yellow-50 border ml-2 mr-1"></span> Third place
+                        </div>
+                    </div>
+
+                    <!-- Matches -->
+                    <div class="space-y-2">
+                        {% for match in group_data.matches %}
+                            <div class="match-card p-2 text-sm" data-match="{{ match.id }}">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-1">
+                                        <span>{{ match.home_team.flag_emoji or '🏳️' }}</span>
+                                        <span class="truncate w-20">{{ match.home_team.name }}</span>
+                                    </div>
+
+                                    <div class="flex gap-1">
+                                        <button
+                                            type="button"
+                                            class="prediction-btn text-xs px-2 py-1 {{ 'selected' if match.prediction and match.prediction.predicted_outcome == 'home_win' }}"
+                                            data-outcome="home_win"
+                                            onclick="savePrediction({{ match.id }}, 'home_win', {{ match.home_team.id }})"
+                                            {{ 'disabled' if match.locked }}
+                                        >
+                                            H
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="prediction-btn text-xs px-2 py-1 {{ 'selected' if match.prediction and match.prediction.predicted_outcome == 'draw' }}"
+                                            data-outcome="draw"
+                                            onclick="savePrediction({{ match.id }}, 'draw', null)"
+                                            {{ 'disabled' if match.locked }}
+                                        >
+                                            D
+                                        </button>
+                                        <button
+                                            type="button"
+                                            class="prediction-btn text-xs px-2 py-1 {{ 'selected' if match.prediction and match.prediction.predicted_outcome == 'away_win' }}"
+                                            data-outcome="away_win"
+                                            onclick="savePrediction({{ match.id }}, 'away_win', {{ match.away_team.id }})"
+                                            {{ 'disabled' if match.locked }}
+                                        >
+                                            A
+                                        </button>
+                                    </div>
+
+                                    <div class="flex items-center gap-1">
+                                        <span class="truncate w-20 text-right">{{ match.away_team.name }}</span>
+                                        <span>{{ match.away_team.flag_emoji or '🏳️' }}</span>
+                                    </div>
+                                </div>
+
+                                {% if not match.locked %}
+                                    <div class="flex items-center justify-center gap-2 mt-2">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="20"
+                                            class="w-12 text-center input-field text-xs py-1"
+                                            placeholder="-"
+                                            value="{{ match.prediction.predicted_home_score if match.prediction else '' }}"
+                                            onchange="updateScore({{ match.id }}, 'home', this.value)"
+                                        >
+                                        <span class="text-gray-400">-</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            max="20"
+                                            class="w-12 text-center input-field text-xs py-1"
+                                            placeholder="-"
+                                            value="{{ match.prediction.predicted_away_score if match.prediction else '' }}"
+                                            onchange="updateScore({{ match.id }}, 'away', this.value)"
+                                        >
+                                    </div>
+                                {% endif %}
+
+                                {% if match.locked %}
+                                    <div class="text-xs text-gray-400 text-center mt-1">Locked</div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-4 text-center">
+                        <span class="text-sm text-gray-500">
+                            {{ group_data.predictions_count }}/{{ group_data.matches|length }} predicted
+                        </span>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="mt-8 text-center">
+            <a href="/bracket/third-place" class="btn-primary">
+                Continue to Third Place Ranking &rarr;
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+const scores = {};
+
+async function savePrediction(matchId, outcome, winnerId) {
+    const data = {
+        predicted_outcome: outcome,
+        predicted_winner_team_id: winnerId,
+        predicted_home_score: scores[matchId]?.home,
+        predicted_away_score: scores[matchId]?.away
+    };
+
+    const success = await submitPrediction(matchId, outcome, data.predicted_home_score, data.predicted_away_score);
+
+    if (success) {
+        // Update UI
+        const buttons = document.querySelectorAll(`[data-match="${matchId}"] .prediction-btn`);
+        buttons.forEach(btn => {
+            btn.classList.remove('selected');
+            if (btn.dataset.outcome === outcome) {
+                btn.classList.add('selected');
+            }
+        });
+
+        // Reload to update standings
+        setTimeout(() => location.reload(), 500);
+    }
+}
+
+function updateScore(matchId, side, value) {
+    if (!scores[matchId]) {
+        scores[matchId] = { home: null, away: null };
+    }
+    scores[matchId][side] = value ? parseInt(value) : null;
+}
+</script>
+{% endblock %}

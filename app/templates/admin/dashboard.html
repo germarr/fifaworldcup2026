@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - FIFA World Cup 2026{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-8">Admin Dashboard</h1>
+
+    <div class="grid md:grid-cols-4 gap-6 mb-8">
+        <div class="card text-center">
+            <div class="text-3xl font-bold text-fifa-blue">{{ teams_count }}</div>
+            <div class="text-gray-600">FIFA Teams</div>
+        </div>
+        <div class="card text-center">
+            <div class="text-3xl font-bold text-fifa-blue">{{ matches_count }}</div>
+            <div class="text-gray-600">Matches</div>
+        </div>
+        <div class="card text-center">
+            <div class="text-3xl font-bold text-fifa-blue">{{ users_count }}</div>
+            <div class="text-gray-600">Users</div>
+        </div>
+        <div class="card text-center">
+            <div class="text-3xl font-bold text-fifa-blue">{{ predictions_count }}</div>
+            <div class="text-gray-600">Predictions</div>
+        </div>
+    </div>
+
+    <div class="grid md:grid-cols-3 gap-6">
+        <a href="/admin/teams" class="card hover:shadow-lg transition-shadow">
+            <h3 class="text-xl font-bold mb-2">Manage FIFA Teams</h3>
+            <p class="text-gray-600">Add, edit, or remove national teams</p>
+        </a>
+
+        <a href="/admin/matches" class="card hover:shadow-lg transition-shadow">
+            <h3 class="text-xl font-bold mb-2">Manage Matches</h3>
+            <p class="text-gray-600">Input live scores and match results</p>
+        </a>
+
+        <a href="/admin/users" class="card hover:shadow-lg transition-shadow">
+            <h3 class="text-xl font-bold mb-2">View Users</h3>
+            <p class="text-gray-600">See all registered users and their stats</p>
+        </a>
+    </div>
+</div>
+{% endblock %}

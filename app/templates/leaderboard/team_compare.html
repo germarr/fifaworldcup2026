@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}Team Comparison - FIFA World Cup 2026{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">Team Comparison</h1>
+
+    <div class="grid md:grid-cols-2 gap-6">
+        <!-- Team 1 -->
+        <div class="card {{ 'border-4 border-green-500' if team1.total > team2.total else ('border-4 border-red-500' if team1.total < team2.total else '') }}">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">{{ team1.team.name }}</h2>
+                <div class="text-3xl font-bold text-fifa-blue">{{ team1.total }} pts</div>
+            </div>
+
+            <div class="space-y-2">
+                {% for member in team1.members %}
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span>{{ member.display_name }}</span>
+                        <span class="font-bold">{{ member.points }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Team 2 -->
+        <div class="card {{ 'border-4 border-green-500' if team2.total > team1.total else ('border-4 border-red-500' if team2.total < team1.total else '') }}">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold">{{ team2.team.name }}</h2>
+                <div class="text-3xl font-bold text-fifa-blue">{{ team2.total }} pts</div>
+            </div>
+
+            <div class="space-y-2">
+                {% for member in team2.members %}
+                    <div class="flex justify-between items-center p-2 bg-gray-50 rounded">
+                        <span>{{ member.display_name }}</span>
+                        <span class="font-bold">{{ member.points }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-6 text-center">
+        <a href="/teams" class="btn-secondary">Back to Teams</a>
+    </div>
+</div>
+{% endblock %}
