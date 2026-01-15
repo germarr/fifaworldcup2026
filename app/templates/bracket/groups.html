@@ -291,7 +291,9 @@ async function autoSelectAllGroups() {
     
     // Reload once at the end to update standings
     if (selectCount > 0) {
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(), 800);
+    } else {
+        alert('All matches are already selected or locked!');
     }
 }
 
@@ -334,7 +336,9 @@ async function autoSelectGroup(groupLetter) {
     
     // Reload once at the end to update standings
     if (selectCount > 0) {
-        setTimeout(() => location.reload(), 500);
+        setTimeout(() => location.reload(), 800);
+    } else {
+        alert('All matches in this group are already selected or locked!');
     }
 }
 
@@ -361,22 +365,11 @@ async function resetAllPredictions() {
         const hasSelection = Array.from(buttons).some(btn => btn.classList.contains('selected'));
         
         if (hasSelection && !buttons[0].disabled) {
-            // Delete the prediction by sending null/empty
-            const data = {
-                predicted_outcome: null,
-                predicted_winner_team_id: null,
-                predicted_home_score: null,
-                predicted_away_score: null
-            };
-            
-            // Make API call to delete/reset
+            // Call submitPrediction with null values to clear the prediction
             try {
-                const response = await fetch(`/predictions/match/${matchId}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
+                const success = await submitPrediction(matchId, null, null, null);
                 
-                if (response.ok) {
+                if (success) {
                     // Remove selected class from all buttons
                     buttons.forEach(btn => btn.classList.remove('selected'));
                     resetCount++;
@@ -390,7 +383,10 @@ async function resetAllPredictions() {
     }
     
     if (resetCount > 0) {
+        alert(`Reset ${resetCount} predictions. Reloading...`);
         setTimeout(() => location.reload(), 500);
+    } else {
+        alert('No predictions to reset!');
     }
 }
 </script>
