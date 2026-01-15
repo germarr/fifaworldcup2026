@@ -348,7 +348,7 @@ function getWinnerId(element) {
     return homeTeamButton?.getAttribute('onclick')?.match(/savePrediction\([^,]+,\s*'[^']+',\s*(\d+)/)?.[1] || null;
 }
 
-// Reset all predictions
+// Reset all predictions by clearing from database via API
 async function resetAllPredictions() {
     if (!confirm('Are you sure you want to reset ALL predictions? This cannot be undone.')) {
         return;
@@ -361,18 +361,28 @@ async function resetAllPredictions() {
         const matchId = element.getAttribute('data-match');
         const buttons = element.querySelectorAll('.prediction-btn');
         
-        // Check if any button is selected
+        // Check if any button is selected and not locked
         const hasSelection = Array.from(buttons).some(btn => btn.classList.contains('selected'));
         
         if (hasSelection && !buttons[0].disabled) {
-            // Call submitPrediction with null values to clear the prediction
+            // Call API to delete the prediction
             try {
-                const success = await submitPrediction(matchId, null, null, null);
+                const response = await fetch(`/api/predictions/match/${matchId}`, {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' }
+                });
                 
-                if (success) {
+                if (response.ok) {
                     // Remove selected class from all buttons
                     buttons.forEach(btn => btn.classList.remove('selected'));
+                    
+                    // Clear score inputs if they exist
+                    const scoreInputs = element.querySelectorAll('input[type="number"]');
+                    scoreInputs.forEach(input => input.value = '');
+                    
                     resetCount++;
+                } else {
+                    console.error('Failed to delete prediction:', response.statusText);
                 }
             } catch (error) {
                 console.error('Error resetting prediction:', error);
@@ -383,10 +393,10 @@ async function resetAllPredictions() {
     }
     
     if (resetCount > 0) {
-        alert(`Reset ${resetCount} predictions. Reloading...`);
-        setTimeout(() => location.reload(), 500);
+        showToast(`Reset ${resetCount} predictions!`, 'success');
+        setTimeout(() => location.reload(), 800);
     } else {
-        alert('No predictions to reset!');
+        showToast('No predictions to reset!', 'info');
     }
 }
 </script>

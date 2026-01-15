@@ -136,3 +136,35 @@ async def get_prediction(
         "predicted_winner_team_id": prediction.predicted_winner_team_id,
         "points_earned": prediction.points_earned
     }
+
+
+@router.delete("/match/{match_id}")
+async def delete_prediction(
+    match_id: int,
+    current_user: User = Depends(require_user),
+    db: Session = Depends(get_session)
+):
+    """Delete a prediction for a specific match."""
+    # Get match to verify it exists and hasn't started
+    match = db.get(Match, match_id)
+    if not match:
+        raise HTTPException(status_code=404, detail="Match not found")
+
+    # Check if match has started
+    if match.scheduled_datetime <= datetime.utcnow():
+        raise HTTPException(status_code=400, detail="Cannot delete prediction for a match that has started")
+
+    # Find and delete prediction
+    statement = select(Prediction).where(
+        Prediction.user_id == current_user.id,
+        Prediction.match_id == match_id
+    )
+    prediction = db.exec(statement).first()
+
+    if not prediction:
+        raise HTTPException(status_code=404, detail="Prediction not found")
+
+    db.delete(prediction)
+    db.commit()
+
+    return {"message": "Prediction deleted successfully"}
