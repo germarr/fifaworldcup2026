@@ -1,10 +1,67 @@
 {% extends "base.html" %}
+{% from "components/team_flag.html" import flag %}
 
 {% block title %}Group Stage - FIFA World Cup 2026{% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Group Stage Predictions</h1>
+
+    <!-- Instructions Banner -->
+    <div class="bg-gradient-to-r from-fifa-blue to-blue-600 text-white rounded-lg p-6 mb-8 shadow-lg">
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Left Column: Basics -->
+            <div>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">📋</span> How to Fill Your Bracket
+                </h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <p class="font-semibold mb-1">🎯 Predict Match Outcomes:</p>
+                        <ul class="ml-4 space-y-1 list-disc">
+                            <li><strong>H</strong> = Home team wins</li>
+                            <li><strong>D</strong> = Draw</li>
+                            <li><strong>A</strong> = Away team wins</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-1">📊 Optional Scores:</p>
+                        <p>Enter predicted scores (home-away). If you skip this, a random score matching your outcome will be generated automatically.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Scoring & Rules -->
+            <div>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🏆</span> Scoring & Rules
+                </h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <p class="font-semibold mb-1">💰 Points Earned:</p>
+                        <ul class="ml-4 space-y-1 list-disc">
+                            <li><strong>1 point</strong> - Correct outcome (H/D/A)</li>
+                            <li><strong>3 points</strong> - Exact score (bonus!)</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-1">🥉 Third-Place Qualification:</p>
+                        <p>Top 2 teams per group auto-qualify (24 teams). Best 8 of 12 third-place teams also advance to Round of 32 in your bracket.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Info Banner -->
+        <div class="mt-4 pt-4 border-t border-blue-400 text-xs">
+            <p class="mb-2">
+                <strong>⏰ Deadline:</strong> Predictions lock once a match starts. Plan carefully!
+            </p>
+            <p>
+                <strong>📈 Progress:</strong> Check the standings in real-time to see which teams are advancing based on your predictions.
+            </p>
+        </div>
+    </div>
 
     {% if not groups %}
         <div class="card text-center py-12">
@@ -34,8 +91,8 @@
                                     <tr class="border-b {{ 'bg-green-50' if loop.index <= 2 else ('bg-yellow-50' if loop.index == 3 else '') }}">
                                         <td class="py-1">{{ loop.index }}</td>
                                         <td class="py-1">
-                                            <span class="mr-1">{{ team.flag_emoji or '🏳️' }}</span>
-                                            {{ team.team_name }}
+                                            {{ flag(team.country_code, 16) }}
+                                            <span class="ml-1">{{ team.team_name }}</span>
                                         </td>
                                         <td class="text-center py-1">{{ team.played }}</td>
                                         <td class="text-center py-1">{{ team.goal_diff }}</td>
@@ -56,7 +113,7 @@
                             <div class="match-card p-2 text-sm" data-match="{{ match.id }}">
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-1">
-                                        <span>{{ match.home_team.flag_emoji or '🏳️' }}</span>
+                                        {{ flag(match.home_team.country_code, 16) }}
                                         <span class="truncate w-20">{{ match.home_team.name }}</span>
                                     </div>
 
@@ -92,7 +149,7 @@
 
                                     <div class="flex items-center gap-1">
                                         <span class="truncate w-20 text-right">{{ match.away_team.name }}</span>
-                                        <span>{{ match.away_team.flag_emoji or '🏳️' }}</span>
+                                        {{ flag(match.away_team.country_code, 16) }}
                                     </div>
                                 </div>
 
