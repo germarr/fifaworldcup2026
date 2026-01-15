@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "components/team_flag.html" import flag %}
 
 {% block title %}Knockout Bracket - FIFA World Cup 2026{% endblock %}
 
@@ -6,42 +7,85 @@
 <div class="max-w-7xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Knockout Bracket</h1>
 
+    <!-- Instructions Banner -->
+    <div class="bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-lg p-6 mb-8 shadow-md border border-slate-400">
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">🏆</span> How to Fill Your Bracket
+                </h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <p class="font-semibold mb-1">🎯 Select Winners:</p>
+                        <p>Click on the team you predict will win each match. Your selection will auto-advance to the next round.</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-1">📊 Optional Scores:</p>
+                        <p>Add predicted scores for extra points (exact score = 3pts, winner only = 2pts).</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">⚡</span> Progressive Advancement
+                </h2>
+                <div class="space-y-3 text-sm">
+                    <p>Winners automatically populate the next round. Fill each round as you go:</p>
+                    <ul class="ml-4 space-y-1 list-disc">
+                        <li><strong>Round of 32</strong> → Winners advance to Round of 16</li>
+                        <li><strong>Round of 16</strong> → Winners advance to Quarter Finals</li>
+                        <li><strong>Quarter Finals</strong> → Winners advance to Semi Finals</li>
+                        <li><strong>Semi Finals</strong> → Winners advance to Final</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
     {% if not bracket %}
         <div class="card text-center py-12">
-            <p class="text-gray-500 mb-4">Complete your group stage predictions first.</p>
+            <p class="text-gray-500 mb-4">Complete your group stage and third-place ranking first.</p>
             <a href="/bracket/groups" class="btn-primary">Go to Groups</a>
         </div>
     {% else %}
         <!-- Round of 32 -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-4">Round of 32</h2>
+        <div class="mb-12">
+            <h2 class="text-2xl font-bold mb-4">🔴 Round of 32</h2>
             <div class="grid md:grid-cols-4 gap-4">
                 {% for match in bracket.round_of_32 %}
-                    <div class="match-card">
-                        <div class="text-xs text-gray-500 mb-2">Match {{ match.match_number }}</div>
+                    <div class="card">
+                        <div class="text-xs text-gray-500 mb-3 font-semibold">Match {{ match.match_number }}</div>
 
-                        <div class="space-y-2">
+                        <div class="space-y-2 mb-3">
                             <button
-                                class="w-full p-2 rounded border-2 flex items-center gap-2 transition-all {{ 'border-fifa-blue bg-blue-50' if match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else 'border-gray-200 hover:border-fifa-blue' }}"
-                                onclick="selectKnockoutWinner({{ match.match_number }}, {{ match.home_team.team_id if match.home_team else 'null' }})"
+                                class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-green-500 bg-green-50' if match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else 'border-gray-300 hover:border-green-400' }}"
+                                onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.home_team.team_id }}, '{{ match.home_team.team_name }}')"
                                 {{ 'disabled' if not match.home_team or match.locked }}
                             >
-                                <span class="text-xl">{{ match.home_team.flag_emoji if match.home_team else '🏳️' }}</span>
-                                <span class="flex-1 text-left">{{ match.home_team.team_name if match.home_team else 'TBD' }}</span>
+                                {{ flag(match.home_team.country_code, 20) if match.home_team else '❓' }}
+                                <span class="flex-1 text-left text-sm font-medium">{{ match.home_team.team_name if match.home_team else 'TBD' }}</span>
                             </button>
 
                             <button
-                                class="w-full p-2 rounded border-2 flex items-center gap-2 transition-all {{ 'border-fifa-blue bg-blue-50' if match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else 'border-gray-200 hover:border-fifa-blue' }}"
-                                onclick="selectKnockoutWinner({{ match.match_number }}, {{ match.away_team.team_id if match.away_team else 'null' }})"
+                                class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-green-500 bg-green-50' if match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else 'border-gray-300 hover:border-green-400' }}"
+                                onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.away_team.team_id }}, '{{ match.away_team.team_name }}')"
                                 {{ 'disabled' if not match.away_team or match.locked }}
                             >
-                                <span class="text-xl">{{ match.away_team.flag_emoji if match.away_team else '🏳️' }}</span>
-                                <span class="flex-1 text-left">{{ match.away_team.team_name if match.away_team else 'TBD' }}</span>
+                                {{ flag(match.away_team.country_code, 20) if match.away_team else '❓' }}
+                                <span class="flex-1 text-left text-sm font-medium">{{ match.away_team.team_name if match.away_team else 'TBD' }}</span>
                             </button>
                         </div>
 
+                        {% if not match.locked %}
+                            <div class="flex items-center justify-center gap-2 mt-2 mb-2">
+                                <input type="number" min="0" max="20" class="w-10 text-center input-field text-xs py-1" placeholder="-" onchange="updateScore({{ match.match_id }}, 'home', this.value)">
+                                <span class="text-gray-400 text-xs">-</span>
+                                <input type="number" min="0" max="20" class="w-10 text-center input-field text-xs py-1" placeholder="-" onchange="updateScore({{ match.match_id }}, 'away', this.value)">
+                            </div>
+                        {% endif %}
+
                         {% if match.locked %}
-                            <div class="text-xs text-gray-400 text-center mt-2">Locked</div>
+                            <div class="text-xs text-gray-400 text-center">🔒 Locked</div>
                         {% endif %}
                     </div>
                 {% endfor %}
@@ -49,122 +93,218 @@
         </div>
 
         <!-- Round of 16 -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-4">Round of 16</h2>
-            <div class="grid md:grid-cols-4 gap-4">
-                {% for match in bracket.round_of_16 %}
-                    <div class="match-card">
-                        <div class="text-xs text-gray-500 mb-2">Match {{ match.match_number }}</div>
-                        <div class="space-y-2">
-                            <button
-                                class="w-full p-2 rounded border-2 flex items-center gap-2 {{ 'border-fifa-blue bg-blue-50' if match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else 'border-gray-200 hover:border-fifa-blue' }}"
-                                onclick="selectKnockoutWinner({{ match.match_number }}, {{ match.home_team.team_id if match.home_team else 'null' }})"
-                                {{ 'disabled' if not match.home_team }}
-                            >
-                                <span class="text-xl">{{ match.home_team.flag_emoji if match.home_team else '🏳️' }}</span>
-                                <span class="flex-1 text-left">{{ match.home_team.team_name if match.home_team else 'Winner R32' }}</span>
-                            </button>
-                            <button
-                                class="w-full p-2 rounded border-2 flex items-center gap-2 {{ 'border-fifa-blue bg-blue-50' if match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else 'border-gray-200 hover:border-fifa-blue' }}"
-                                onclick="selectKnockoutWinner({{ match.match_number }}, {{ match.away_team.team_id if match.away_team else 'null' }})"
-                                {{ 'disabled' if not match.away_team }}
-                            >
-                                <span class="text-xl">{{ match.away_team.flag_emoji if match.away_team else '🏳️' }}</span>
-                                <span class="flex-1 text-left">{{ match.away_team.team_name if match.away_team else 'Winner R32' }}</span>
-                            </button>
+        {% if bracket.round_of_16 %}
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold mb-4">🟠 Round of 16</h2>
+                <div class="grid md:grid-cols-4 gap-4">
+                    {% for match in bracket.round_of_16 %}
+                        <div class="card">
+                            <div class="text-xs text-gray-500 mb-3 font-semibold">Match {{ match.match_number }}</div>
+
+                            <div class="space-y-2 mb-3">
+                                <button
+                                    class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-orange-500 bg-orange-50' if match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else 'border-gray-300 hover:border-orange-400' }}"
+                                    onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.home_team.team_id }}, '{{ match.home_team.team_name }}')"
+                                    {{ 'disabled' if not match.home_team or match.locked }}
+                                >
+                                    {{ flag(match.home_team.country_code, 20) if match.home_team else '❓' }}
+                                    <span class="flex-1 text-left text-sm font-medium">{{ match.home_team.team_name if match.home_team else 'TBD' }}</span>
+                                </button>
+
+                                <button
+                                    class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-orange-500 bg-orange-50' if match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else 'border-gray-300 hover:border-orange-400' }}"
+                                    onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.away_team.team_id }}, '{{ match.away_team.team_name }}')"
+                                    {{ 'disabled' if not match.away_team or match.locked }}
+                                >
+                                    {{ flag(match.away_team.country_code, 20) if match.away_team else '❓' }}
+                                    <span class="flex-1 text-left text-sm font-medium">{{ match.away_team.team_name if match.away_team else 'TBD' }}</span>
+                                </button>
+                            </div>
+
+                            {% if not match.locked %}
+                                <div class="flex items-center justify-center gap-2 mt-2 mb-2">
+                                    <input type="number" min="0" max="20" class="w-10 text-center input-field text-xs py-1" placeholder="-" onchange="updateScore({{ match.match_id }}, 'home', this.value)">
+                                    <span class="text-gray-400 text-xs">-</span>
+                                    <input type="number" min="0" max="20" class="w-10 text-center input-field text-xs py-1" placeholder="-" onchange="updateScore({{ match.match_id }}, 'away', this.value)">
+                                </div>
+                            {% endif %}
+
+                            {% if match.locked %}
+                                <div class="text-xs text-gray-400 text-center">🔒 Locked</div>
+                            {% endif %}
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+        {% endif %}
 
         <!-- Quarter Finals -->
-        <div class="mb-8">
-            <h2 class="text-2xl font-bold mb-4">Quarter Finals</h2>
-            <div class="grid md:grid-cols-4 gap-4">
-                {% for match in bracket.quarter_finals %}
-                    <div class="match-card">
-                        <div class="text-xs text-gray-500 mb-2">Match {{ match.match_number }}</div>
-                        <div class="space-y-2">
-                            <button
-                                class="w-full p-2 rounded border-2 flex items-center gap-2 {{ 'border-fifa-blue bg-blue-50' if match.prediction else 'border-gray-200 hover:border-fifa-blue' }}"
-                                {{ 'disabled' if not match.home_team }}
-                            >
-                                <span class="text-xl">{{ match.home_team.flag_emoji if match.home_team else '🏳️' }}</span>
-                                <span class="flex-1 text-left">{{ match.home_team.team_name if match.home_team else 'Winner R16' }}</span>
-                            </button>
-                            <button
-                                class="w-full p-2 rounded border-2 flex items-center gap-2 {{ 'border-gray-200 hover:border-fifa-blue' }}"
-                                {{ 'disabled' if not match.away_team }}
-                            >
-                                <span class="text-xl">{{ match.away_team.flag_emoji if match.away_team else '🏳️' }}</span>
-                                <span class="flex-1 text-left">{{ match.away_team.team_name if match.away_team else 'Winner R16' }}</span>
-                            </button>
+        {% if bracket.quarter_finals %}
+            <div class="mb-12">
+                <h2 class="text-2xl font-bold mb-4">🟡 Quarter Finals</h2>
+                <div class="grid md:grid-cols-4 gap-4">
+                    {% for match in bracket.quarter_finals %}
+                        <div class="card">
+                            <div class="text-xs text-gray-500 mb-3 font-semibold">Match {{ match.match_number }}</div>
+
+                            <div class="space-y-2 mb-3">
+                                <button
+                                    class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-yellow-500 bg-yellow-50' if match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else 'border-gray-300 hover:border-yellow-400' }}"
+                                    onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.home_team.team_id }}, '{{ match.home_team.team_name }}')"
+                                    {{ 'disabled' if not match.home_team or match.locked }}
+                                >
+                                    {{ flag(match.home_team.country_code, 20) if match.home_team else '❓' }}
+                                    <span class="flex-1 text-left text-sm font-medium">{{ match.home_team.team_name if match.home_team else 'TBD' }}</span>
+                                </button>
+
+                                <button
+                                    class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-yellow-500 bg-yellow-50' if match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else 'border-gray-300 hover:border-yellow-400' }}"
+                                    onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.away_team.team_id }}, '{{ match.away_team.team_name }}')"
+                                    {{ 'disabled' if not match.away_team or match.locked }}
+                                >
+                                    {{ flag(match.away_team.country_code, 20) if match.away_team else '❓' }}
+                                    <span class="flex-1 text-left text-sm font-medium">{{ match.away_team.team_name if match.away_team else 'TBD' }}</span>
+                                </button>
+                            </div>
+
+                            {% if not match.locked %}
+                                <div class="flex items-center justify-center gap-2 mt-2 mb-2">
+                                    <input type="number" min="0" max="20" class="w-10 text-center input-field text-xs py-1" placeholder="-" onchange="updateScore({{ match.match_id }}, 'home', this.value)">
+                                    <span class="text-gray-400 text-xs">-</span>
+                                    <input type="number" min="0" max="20" class="w-10 text-center input-field text-xs py-1" placeholder="-" onchange="updateScore({{ match.match_id }}, 'away', this.value)">
+                                </div>
+                            {% endif %}
+
+                            {% if match.locked %}
+                                <div class="text-xs text-gray-400 text-center">🔒 Locked</div>
+                            {% endif %}
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
             </div>
-        </div>
+        {% endif %}
 
         <!-- Semi Finals, Third Place, Final -->
         <div class="grid md:grid-cols-3 gap-6">
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">Semi Finals</h2>
-                {% for match in bracket.semi_finals %}
-                    <div class="match-card mb-4">
-                        <div class="space-y-2">
-                            <div class="p-2 border rounded">{{ match.home_team.team_name if match.home_team else 'Winner QF' }}</div>
-                            <div class="p-2 border rounded">{{ match.away_team.team_name if match.away_team else 'Winner QF' }}</div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+            <!-- Semi Finals -->
+            {% if bracket.semi_finals %}
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">🟣 Semi Finals</h2>
+                    {% for match in bracket.semi_finals %}
+                        <div class="space-y-2 mb-4">
+                            <button
+                                class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-purple-500 bg-purple-50' if match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else 'border-gray-300 hover:border-purple-400' }}"
+                                onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.home_team.team_id }}, '{{ match.home_team.team_name }}')"
+                                {{ 'disabled' if not match.home_team or match.locked }}
+                            >
+                                {{ flag(match.home_team.country_code, 20) if match.home_team else '❓' }}
+                                <span class="flex-1 text-left text-sm font-medium">{{ match.home_team.team_name if match.home_team else 'TBD' }}</span>
+                            </button>
 
-            <div class="card">
-                <h2 class="text-xl font-bold mb-4">Third Place Match</h2>
-                {% if bracket.third_place_match %}
-                    <div class="match-card">
-                        <div class="space-y-2">
-                            <div class="p-2 border rounded">{{ bracket.third_place_match.home_team.team_name if bracket.third_place_match.home_team else 'Loser SF' }}</div>
-                            <div class="p-2 border rounded">{{ bracket.third_place_match.away_team.team_name if bracket.third_place_match.away_team else 'Loser SF' }}</div>
+                            <button
+                                class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-purple-500 bg-purple-50' if match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else 'border-gray-300 hover:border-purple-400' }}"
+                                onclick="selectKnockoutWinner({{ match.match_id }}, {{ match.away_team.team_id }}, '{{ match.away_team.team_name }}')"
+                                {{ 'disabled' if not match.away_team or match.locked }}
+                            >
+                                {{ flag(match.away_team.country_code, 20) if match.away_team else '❓' }}
+                                <span class="flex-1 text-left text-sm font-medium">{{ match.away_team.team_name if match.away_team else 'TBD' }}</span>
+                            </button>
                         </div>
-                    </div>
-                {% endif %}
-            </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
 
-            <div class="card bg-fifa-gold">
-                <h2 class="text-xl font-bold mb-4 text-fifa-dark">Final</h2>
-                {% if bracket.final %}
-                    <div class="bg-white rounded p-4">
+            <!-- Third Place Match -->
+            {% if bracket.third_place_match %}
+                <div class="card">
+                    <h2 class="text-xl font-bold mb-4">🥉 Third Place</h2>
+                    <div class="space-y-2">
+                        <button
+                            class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-amber-500 bg-amber-50' if bracket.third_place_match.prediction and bracket.third_place_match.prediction.predicted_winner_team_id == bracket.third_place_match.home_team.team_id else 'border-gray-300 hover:border-amber-400' }}"
+                            onclick="selectKnockoutWinner({{ bracket.third_place_match.match_id }}, {{ bracket.third_place_match.home_team.team_id }}, '{{ bracket.third_place_match.home_team.team_name }}')"
+                            {{ 'disabled' if not bracket.third_place_match.home_team or bracket.third_place_match.locked }}
+                        >
+                            {{ flag(bracket.third_place_match.home_team.country_code, 20) if bracket.third_place_match.home_team else '❓' }}
+                            <span class="flex-1 text-left text-sm font-medium">{{ bracket.third_place_match.home_team.team_name if bracket.third_place_match.home_team else 'TBD' }}</span>
+                        </button>
+
+                        <button
+                            class="w-full p-3 rounded-lg border-2 flex items-center gap-2 transition-all {{ 'border-amber-500 bg-amber-50' if bracket.third_place_match.prediction and bracket.third_place_match.prediction.predicted_winner_team_id == bracket.third_place_match.away_team.team_id else 'border-gray-300 hover:border-amber-400' }}"
+                            onclick="selectKnockoutWinner({{ bracket.third_place_match.match_id }}, {{ bracket.third_place_match.away_team.team_id }}, '{{ bracket.third_place_match.away_team.team_name }}')"
+                            {{ 'disabled' if not bracket.third_place_match.away_team or bracket.third_place_match.locked }}
+                        >
+                            {{ flag(bracket.third_place_match.away_team.country_code, 20) if bracket.third_place_match.away_team else '❓' }}
+                            <span class="flex-1 text-left text-sm font-medium">{{ bracket.third_place_match.away_team.team_name if bracket.third_place_match.away_team else 'TBD' }}</span>
+                        </button>
+                    </div>
+                </div>
+            {% endif %}
+
+            <!-- Final -->
+            {% if bracket.final %}
+                <div class="card bg-gradient-to-r from-fifa-gold to-yellow-300">
+                    <h2 class="text-xl font-bold mb-4 text-fifa-dark">👑 FINAL</h2>
+                    <div class="bg-white rounded-lg p-4">
                         <div class="space-y-2">
-                            <div class="p-2 border-2 border-fifa-gold rounded">{{ bracket.final.home_team.team_name if bracket.final.home_team else 'Winner SF' }}</div>
-                            <div class="p-2 border-2 border-fifa-gold rounded">{{ bracket.final.away_team.team_name if bracket.final.away_team else 'Winner SF' }}</div>
+                            <button
+                                class="w-full p-3 rounded-lg border-2 border-fifa-gold flex items-center gap-2 transition-all {{ 'bg-yellow-50' if bracket.final.prediction and bracket.final.prediction.predicted_winner_team_id == bracket.final.home_team.team_id else 'hover:bg-yellow-50' }}"
+                                onclick="selectKnockoutWinner({{ bracket.final.match_id }}, {{ bracket.final.home_team.team_id }}, '{{ bracket.final.home_team.team_name }}')"
+                                {{ 'disabled' if not bracket.final.home_team or bracket.final.locked }}
+                            >
+                                {{ flag(bracket.final.home_team.country_code, 24) if bracket.final.home_team else '❓' }}
+                                <span class="flex-1 text-left font-bold">{{ bracket.final.home_team.team_name if bracket.final.home_team else 'TBD' }}</span>
+                            </button>
+
+                            <button
+                                class="w-full p-3 rounded-lg border-2 border-fifa-gold flex items-center gap-2 transition-all {{ 'bg-yellow-50' if bracket.final.prediction and bracket.final.prediction.predicted_winner_team_id == bracket.final.away_team.team_id else 'hover:bg-yellow-50' }}"
+                                onclick="selectKnockoutWinner({{ bracket.final.match_id }}, {{ bracket.final.away_team.team_id }}, '{{ bracket.final.away_team.team_name }}')"
+                                {{ 'disabled' if not bracket.final.away_team or bracket.final.locked }}
+                            >
+                                {{ flag(bracket.final.away_team.country_code, 24) if bracket.final.away_team else '❓' }}
+                                <span class="flex-1 text-left font-bold">{{ bracket.final.away_team.team_name if bracket.final.away_team else 'TBD' }}</span>
+                            </button>
                         </div>
                     </div>
-                {% endif %}
-            </div>
+                </div>
+            {% endif %}
         </div>
     {% endif %}
 </div>
 
 <script>
-async function selectKnockoutWinner(matchNumber, teamId) {
+const knockoutScores = {};
+
+async function selectKnockoutWinner(matchId, teamId, teamName) {
     if (!teamId) return;
 
-    // Find match ID from match number
-    const response = await fetch(`/api/predictions/match-by-number/${matchNumber}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            predicted_outcome: 'home_win', // Will be determined by which team
-            predicted_winner_team_id: teamId
-        })
-    });
+    try {
+        const response = await fetch(`/api/predictions/match/${matchId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                predicted_outcome: 'home_win',
+                predicted_winner_team_id: teamId,
+                predicted_home_score: knockoutScores[matchId]?.home,
+                predicted_away_score: knockoutScores[matchId]?.away
+            })
+        });
 
-    if (response.ok) {
-        showToast('Prediction saved!', 'success');
-        setTimeout(() => location.reload(), 500);
+        if (response.ok) {
+            showToast(`${teamName} selected!`, 'success');
+            setTimeout(() => location.reload(), 800);
+        } else {
+            showToast('Failed to save prediction', 'error');
+        }
+    } catch (error) {
+        showToast('Network error', 'error');
     }
+}
+
+function updateScore(matchId, side, value) {
+    if (!knockoutScores[matchId]) {
+        knockoutScores[matchId] = { home: null, away: null };
+    }
+    knockoutScores[matchId][side] = value ? parseInt(value) : null;
 }
 </script>
 {% endblock %}
