@@ -198,7 +198,7 @@ def build_round_of_16(
             winner_team = r32_match["home_team"] if r32_match["home_team"]["team_id"] == winner_id else r32_match["away_team"]
             r32_winners.append(winner_team)
     
-    match_number = 85
+    match_number = 89
     for i in range(0, len(r32_winners), 2):
         home_team = r32_winners[i] if i < len(r32_winners) else None
         away_team = r32_winners[i + 1] if i + 1 < len(r32_winners) else None
@@ -238,7 +238,7 @@ def build_quarter_finals(
                 continue
             r16_winners.append(winner_team)
     
-    match_number = 89
+    match_number = 97
     for i in range(0, len(r16_winners), 2):
         home_team = r16_winners[i] if i < len(r16_winners) else None
         away_team = r16_winners[i + 1] if i + 1 < len(r16_winners) else None
@@ -278,7 +278,7 @@ def build_semi_finals(
                 continue
             qf_winners.append(winner_team)
     
-    match_number = 93
+    match_number = 101
     for i in range(0, len(qf_winners), 2):
         home_team = qf_winners[i] if i < len(qf_winners) else None
         away_team = qf_winners[i + 1] if i + 1 < len(qf_winners) else None
@@ -320,7 +320,7 @@ def build_third_place_match(
     if len(sf_losers) < 2:
         return None
     
-    match_obj = db.exec(select(Match).where(Match.match_number == 95)).first()
+    match_obj = db.exec(select(Match).where(Match.match_number == 103)).first()
     match_id = match_obj.id if match_obj else None
     
     prediction = None
@@ -329,7 +329,7 @@ def build_third_place_match(
         if pred:
             prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
     
-    return {"match_id": match_id, "match_number": 95, "home_team": sf_losers[0], "away_team": sf_losers[1], "prediction": prediction, "locked": False}
+    return {"match_id": match_id, "match_number": 103, "home_team": sf_losers[0], "away_team": sf_losers[1], "prediction": prediction, "locked": False}
 
 
 def build_final(
@@ -354,7 +354,7 @@ def build_final(
     if len(sf_winners) < 2:
         return None
     
-    match_obj = db.exec(select(Match).where(Match.match_number == 96)).first()
+    match_obj = db.exec(select(Match).where(Match.match_number == 104)).first()
     match_id = match_obj.id if match_obj else None
     
     prediction = None
@@ -363,4 +363,4 @@ def build_final(
         if pred:
             prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
     
-    return {"match_id": match_id, "match_number": 96, "home_team": sf_winners[0], "away_team": sf_winners[1], "prediction": prediction, "locked": False}
+    return {"match_id": match_id, "match_number": 104, "home_team": sf_winners[0], "away_team": sf_winners[1], "prediction": prediction, "locked": False}
