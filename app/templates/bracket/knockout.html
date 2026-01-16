@@ -9,6 +9,14 @@
 
 <div class="match-card p-2 text-sm" data-match-id="{{ match.match_id }}" data-home-id="{{ match.home_team.team_id if match.home_team else '' }}" data-away-id="{{ match.away_team.team_id if match.away_team else '' }}" data-home-name="{{ match.home_team.team_name if match.home_team else 'TBD' }}" data-away-name="{{ match.away_team.team_name if match.away_team else 'TBD' }}">
     <div class="text-xs text-gray-400 mb-2">Match {{ match.match_number }}</div>
+    <div class="text-xs text-gray-500 mb-2">
+        {% if match.scheduled_datetime %}
+            <span>{{ match.scheduled_datetime.strftime('%b %d, %Y %H:%M') }}</span>
+        {% endif %}
+        {% if match.stadium %}
+            <span class="ml-1">• {{ match.stadium.city }} — {{ match.stadium.name }}</span>
+        {% endif %}
+    </div>
 
     <div class="flex items-center justify-between gap-2">
         <!-- Home Team -->

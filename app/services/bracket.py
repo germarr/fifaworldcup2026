@@ -4,6 +4,7 @@ from ..models.match import Match
 from ..models.prediction import Prediction
 from ..models.fifa_team import FifaTeam
 from ..models.third_place_ranking import UserThirdPlaceRanking
+from ..models.stadium import Stadium
 from .standings import calculate_group_standings, get_third_place_teams
 
 
@@ -66,6 +67,22 @@ def get_user_bracket(db: Session, user_id: int) -> Dict[str, Any]:
     return bracket
 
 
+def get_match_meta(db: Session, match_obj: Optional[Match]) -> Dict[str, Any]:
+    if not match_obj:
+        return {"scheduled_datetime": None, "stadium": None}
+
+    stadium_data = None
+    if match_obj.stadium_id:
+        stadium = db.get(Stadium, match_obj.stadium_id)
+        if stadium:
+            stadium_data = {"name": stadium.name, "city": stadium.city}
+
+    return {
+        "scheduled_datetime": match_obj.scheduled_datetime,
+        "stadium": stadium_data
+    }
+
+
 def build_round_of_32(
     db: Session,
     user_id: int,
@@ -118,6 +135,7 @@ def build_round_of_32(
         ).first()
         
         match_id = match_obj.id if match_obj else None
+        match_meta = get_match_meta(db, match_obj)
         
         # Get prediction if it exists
         prediction = None
@@ -144,6 +162,8 @@ def build_round_of_32(
             "away_slot": away_slot,
             "home_team": home_team,
             "away_team": away_team,
+            "scheduled_datetime": match_meta["scheduled_datetime"],
+            "stadium": match_meta["stadium"],
             "prediction": prediction,
             "locked": False  # Would check match.scheduled_datetime
         })
@@ -205,6 +225,7 @@ def build_round_of_16(
         
         match_obj = db.exec(select(Match).where(Match.match_number == match_number)).first()
         match_id = match_obj.id if match_obj else None
+        match_meta = get_match_meta(db, match_obj)
         
         prediction = None
         if match_id:
@@ -212,7 +233,16 @@ def build_round_of_16(
             if pred:
                 prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
         
-        r16_matches.append({"match_id": match_id, "match_number": match_number, "home_team": home_team, "away_team": away_team, "prediction": prediction, "locked": False})
+        r16_matches.append({
+            "match_id": match_id,
+            "match_number": match_number,
+            "home_team": home_team,
+            "away_team": away_team,
+            "scheduled_datetime": match_meta["scheduled_datetime"],
+            "stadium": match_meta["stadium"],
+            "prediction": prediction,
+            "locked": False
+        })
         match_number += 1
     
     return r16_matches
@@ -245,6 +275,7 @@ def build_quarter_finals(
         
         match_obj = db.exec(select(Match).where(Match.match_number == match_number)).first()
         match_id = match_obj.id if match_obj else None
+        match_meta = get_match_meta(db, match_obj)
         
         prediction = None
         if match_id:
@@ -252,7 +283,16 @@ def build_quarter_finals(
             if pred:
                 prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
         
-        qf_matches.append({"match_id": match_id, "match_number": match_number, "home_team": home_team, "away_team": away_team, "prediction": prediction, "locked": False})
+        qf_matches.append({
+            "match_id": match_id,
+            "match_number": match_number,
+            "home_team": home_team,
+            "away_team": away_team,
+            "scheduled_datetime": match_meta["scheduled_datetime"],
+            "stadium": match_meta["stadium"],
+            "prediction": prediction,
+            "locked": False
+        })
         match_number += 1
     
     return qf_matches
@@ -285,6 +325,7 @@ def build_semi_finals(
         
         match_obj = db.exec(select(Match).where(Match.match_number == match_number)).first()
         match_id = match_obj.id if match_obj else None
+        match_meta = get_match_meta(db, match_obj)
         
         prediction = None
         if match_id:
@@ -292,7 +333,16 @@ def build_semi_finals(
             if pred:
                 prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
         
-        sf_matches.append({"match_id": match_id, "match_number": match_number, "home_team": home_team, "away_team": away_team, "prediction": prediction, "locked": False})
+        sf_matches.append({
+            "match_id": match_id,
+            "match_number": match_number,
+            "home_team": home_team,
+            "away_team": away_team,
+            "scheduled_datetime": match_meta["scheduled_datetime"],
+            "stadium": match_meta["stadium"],
+            "prediction": prediction,
+            "locked": False
+        })
         match_number += 1
     
     return sf_matches
@@ -322,6 +372,7 @@ def build_third_place_match(
     
     match_obj = db.exec(select(Match).where(Match.match_number == 103)).first()
     match_id = match_obj.id if match_obj else None
+    match_meta = get_match_meta(db, match_obj)
     
     prediction = None
     if match_id:
@@ -329,7 +380,16 @@ def build_third_place_match(
         if pred:
             prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
     
-    return {"match_id": match_id, "match_number": 103, "home_team": sf_losers[0], "away_team": sf_losers[1], "prediction": prediction, "locked": False}
+    return {
+        "match_id": match_id,
+        "match_number": 103,
+        "home_team": sf_losers[0],
+        "away_team": sf_losers[1],
+        "scheduled_datetime": match_meta["scheduled_datetime"],
+        "stadium": match_meta["stadium"],
+        "prediction": prediction,
+        "locked": False
+    }
 
 
 def build_final(
@@ -356,6 +416,7 @@ def build_final(
     
     match_obj = db.exec(select(Match).where(Match.match_number == 104)).first()
     match_id = match_obj.id if match_obj else None
+    match_meta = get_match_meta(db, match_obj)
     
     prediction = None
     if match_id:
@@ -363,4 +424,13 @@ def build_final(
         if pred:
             prediction = {"id": pred.id, "predicted_outcome": pred.predicted_outcome, "predicted_winner_team_id": pred.predicted_winner_team_id, "predicted_home_score": pred.predicted_home_score, "predicted_away_score": pred.predicted_away_score}
     
-    return {"match_id": match_id, "match_number": 104, "home_team": sf_winners[0], "away_team": sf_winners[1], "prediction": prediction, "locked": False}
+    return {
+        "match_id": match_id,
+        "match_number": 104,
+        "home_team": sf_winners[0],
+        "away_team": sf_winners[1],
+        "scheduled_datetime": match_meta["scheduled_datetime"],
+        "stadium": match_meta["stadium"],
+        "prediction": prediction,
+        "locked": False
+    }

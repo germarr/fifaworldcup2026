@@ -14,6 +14,7 @@ from ..models.user import User
 from ..models.match import Match
 from ..models.prediction import Prediction
 from ..models.fifa_team import FifaTeam
+from ..models.stadium import Stadium
 from ..models.third_place_ranking import UserThirdPlaceRanking
 from ..services.standings import calculate_group_standings, get_third_place_teams
 from ..services.bracket import get_user_bracket
@@ -60,6 +61,7 @@ async def groups_page(
         for match in matches:
             home_team = db.get(FifaTeam, match.home_team_id) if match.home_team_id else None
             away_team = db.get(FifaTeam, match.away_team_id) if match.away_team_id else None
+            stadium = db.get(Stadium, match.stadium_id) if match.stadium_id else None
 
             matches_data.append({
                 "id": match.id,
@@ -67,6 +69,10 @@ async def groups_page(
                 "home_team": home_team,
                 "away_team": away_team,
                 "scheduled_datetime": match.scheduled_datetime,
+                "stadium": {
+                    "name": stadium.name,
+                    "city": stadium.city
+                } if stadium else None,
                 "prediction": pred_by_match.get(match.id),
                 "locked": match.scheduled_datetime <= datetime.utcnow() if match.scheduled_datetime else False
             })

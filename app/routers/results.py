@@ -11,6 +11,8 @@ from ..models.user import User
 from ..models.match import Match
 from ..models.prediction import Prediction
 from ..models.fifa_team import FifaTeam
+from ..models.stadium import Stadium
+from ..services.bracket import get_user_bracket
 
 router = APIRouter(prefix="/results", tags=["results"])
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -160,11 +162,120 @@ def build_result_entry(
     }
 
 
+def build_result_entry_v2(
+    match: Match,
+    prediction: Prediction,
+    home_team_data: Optional[Dict[str, Any]],
+    away_team_data: Optional[Dict[str, Any]],
+    winner_team: Optional[FifaTeam],
+    predicted_winner_data: Optional[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Build a single result entry with team data as dictionaries (for knockout matches)."""
+    is_completed = match.status == "completed"
+    is_knockout = match.round != "group_stage"
+
+    result_status = determine_result_status(match, prediction, is_completed, is_knockout)
+    points_info = get_points_display(prediction.points_earned, is_completed, is_knockout)
+
+    return {
+        "match_id": match.id,
+        "match_number": match.match_number,
+        "round": match.round,
+        "group_letter": match.group_letter,
+        "scheduled_datetime": match.scheduled_datetime,
+        "status": match.status,
+
+        # Teams (already in dict format)
+        "home_team": home_team_data,
+        "away_team": away_team_data,
+
+        # Prediction
+        "predicted_outcome": prediction.predicted_outcome,
+        "predicted_home_score": prediction.predicted_home_score,
+        "predicted_away_score": prediction.predicted_away_score,
+        "predicted_winner": predicted_winner_data,
+
+        # Actual Result
+        "actual_home_score": match.actual_home_score,
+        "actual_away_score": match.actual_away_score,
+        "actual_winner": {
+            "id": winner_team.id,
+            "name": winner_team.name
+        } if winner_team else None,
+        "actual_outcome": get_actual_outcome(match) if is_completed else None,
+
+        # Points & Status
+        "points_earned": prediction.points_earned if is_completed else None,
+        "result_status": result_status,
+        "points_display": points_info["display"],
+        "points_breakdown": points_info["breakdown"],
+        "points_class": points_info["class"],
+        "is_completed": is_completed,
+        "is_knockout": is_knockout
+    }
+
+
+def build_knockout_teams_map(bracket: Dict[str, Any]) -> Dict[int, Dict[str, Any]]:
+    """
+    Build a mapping from match_id to team information and prediction from the bracket.
+    This is needed because knockout match teams are calculated dynamically.
+    """
+    teams_map = {}
+
+    # Helper to add match to map
+    def add_match(match: Dict[str, Any]):
+        if match and match.get("match_id"):
+            teams_map[match["match_id"]] = {
+                "home_team": match.get("home_team"),
+                "away_team": match.get("away_team"),
+                "prediction": match.get("prediction")
+            }
+
+    # Round of 32
+    for match in bracket.get("round_of_32", []):
+        add_match(match)
+
+    # Round of 16
+    for match in bracket.get("round_of_16", []):
+        add_match(match)
+
+    # Quarter Finals
+    for match in bracket.get("quarter_finals", []):
+        add_match(match)
+
+    # Semi Finals
+    for match in bracket.get("semi_finals", []):
+        add_match(match)
+
+    # Third Place Match
+    add_match(bracket.get("third_place_match"))
+
+    # Final
+    add_match(bracket.get("final"))
+
+    return teams_map
+
+
+def convert_bracket_team(team_data: Optional[Dict]) -> Optional[Dict[str, Any]]:
+    """Convert bracket team format to result team format."""
+    if not team_data:
+        return None
+    return {
+        "id": team_data.get("team_id"),
+        "name": team_data.get("team_name"),
+        "country_code": team_data.get("country_code")
+    }
+
+
 def get_user_results(db: Session, user_id: int) -> Dict[str, Any]:
     """
     Fetch all predictions for a user with associated match and team data.
     Returns structured data for display.
     """
+    # Get user's bracket to get knockout team information
+    bracket = get_user_bracket(db, user_id)
+    knockout_teams_map = build_knockout_teams_map(bracket)
+
     # Get all predictions for user
     query = select(Prediction).where(Prediction.user_id == user_id)
     predictions = db.exec(query).all()
@@ -184,16 +295,51 @@ def get_user_results(db: Session, user_id: int) -> Dict[str, Any]:
         if not match:
             continue
 
+        is_knockout = match.round != "group_stage"
+
         # Get team information
-        home_team = db.get(FifaTeam, match.home_team_id) if match.home_team_id else None
-        away_team = db.get(FifaTeam, match.away_team_id) if match.away_team_id else None
+        predicted_winner_data = None
+        if is_knockout and match.id in knockout_teams_map:
+            # For knockout matches, get teams from the bracket calculation
+            bracket_data = knockout_teams_map[match.id]
+            home_team_data = convert_bracket_team(bracket_data.get("home_team"))
+            away_team_data = convert_bracket_team(bracket_data.get("away_team"))
+
+            # Determine predicted winner from the bracket teams
+            bracket_pred = bracket_data.get("prediction")
+            if bracket_pred and bracket_pred.get("predicted_winner_team_id"):
+                winner_id = bracket_pred["predicted_winner_team_id"]
+                # Match winner to one of the teams
+                if home_team_data and home_team_data.get("id") == winner_id:
+                    predicted_winner_data = home_team_data
+                elif away_team_data and away_team_data.get("id") == winner_id:
+                    predicted_winner_data = away_team_data
+        else:
+            # For group stage, get teams from the match record
+            home_team = db.get(FifaTeam, match.home_team_id) if match.home_team_id else None
+            away_team = db.get(FifaTeam, match.away_team_id) if match.away_team_id else None
+            home_team_data = {
+                "id": home_team.id,
+                "name": home_team.name,
+                "country_code": home_team.country_code
+            } if home_team else None
+            away_team_data = {
+                "id": away_team.id,
+                "name": away_team.name,
+                "country_code": away_team.country_code
+            } if away_team else None
+
         winner_team = db.get(FifaTeam, match.actual_winner_team_id) if match.actual_winner_team_id else None
-        predicted_winner = db.get(FifaTeam, prediction.predicted_winner_team_id) if prediction.predicted_winner_team_id else None
+        stadium = db.get(Stadium, match.stadium_id) if match.stadium_id else None
 
         # Build result entry
-        result_entry = build_result_entry(
-            match, prediction, home_team, away_team, winner_team, predicted_winner
+        result_entry = build_result_entry_v2(
+            match, prediction, home_team_data, away_team_data, winner_team, predicted_winner_data
         )
+        result_entry["stadium"] = {
+            "name": stadium.name,
+            "city": stadium.city
+        } if stadium else None
 
         # Group by round
         round_name = match.round

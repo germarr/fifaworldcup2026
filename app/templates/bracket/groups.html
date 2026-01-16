@@ -169,6 +169,14 @@
                     <div class="space-y-2">
                         {% for match in group_data.matches %}
                             <div class="match-card p-2 text-sm" data-match="{{ match.id }}">
+                                <div class="text-xs text-gray-500 mt-1 mb-2">
+                                    {% if match.scheduled_datetime %}
+                                        <span>{{ match.scheduled_datetime.strftime('%b %d, %Y %H:%M') }}</span>
+                                    {% endif %}
+                                    {% if match.stadium %}
+                                        <span class="ml-1">• {{ match.stadium.city }} — {{ match.stadium.name }}</span>
+                                    {% endif %}
+                                </div>
                                 <div class="flex items-center justify-between">
                                     <div class="flex items-center gap-1">
                                         {{ flag(match.home_team.country_code, 16) }}
