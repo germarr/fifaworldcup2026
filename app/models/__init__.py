@@ -4,6 +4,7 @@ from .fifa_team import FifaTeam
 from .stadium import Stadium
 from .match import Match
 from .prediction import Prediction
+from .bracket import Bracket
 from .third_place_ranking import UserThirdPlaceRanking
 from .competition_team import CompetitionTeam, TeamMembership
 
@@ -14,6 +15,7 @@ __all__ = [
     "Stadium",
     "Match",
     "Prediction",
+    "Bracket",
     "UserThirdPlaceRanking",
     "CompetitionTeam",
     "TeamMembership",

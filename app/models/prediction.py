@@ -9,6 +9,7 @@ class Prediction(SQLModel, table=True):
 
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
+    bracket_id: Optional[int] = Field(default=None, foreign_key="brackets.id", index=True)
     match_id: int = Field(foreign_key="matches.id", index=True)
 
     # Prediction

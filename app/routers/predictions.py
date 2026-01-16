@@ -15,6 +15,7 @@ from ..models.match import Match
 from ..models.prediction import Prediction
 from ..models.fifa_team import FifaTeam
 from ..services.standings import calculate_group_standings
+from ..services.brackets import get_or_create_user_bracket
 
 router = APIRouter(prefix="/api/predictions", tags=["predictions"])
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -48,6 +49,8 @@ async def submit_prediction(
     current_user: User = Depends(require_user),
     db: Session = Depends(get_session)
 ):
+    bracket = get_or_create_user_bracket(db, current_user.id)
+
     # Get match
     match = db.get(Match, match_id)
     if not match:
@@ -73,6 +76,8 @@ async def submit_prediction(
 
     if prediction:
         # Update existing
+        if prediction.bracket_id is None:
+            prediction.bracket_id = bracket.id
         prediction.predicted_outcome = prediction_data.predicted_outcome
         prediction.predicted_home_score = home_score
         prediction.predicted_away_score = away_score
@@ -82,6 +87,7 @@ async def submit_prediction(
         # Create new
         prediction = Prediction(
             user_id=current_user.id,
+            bracket_id=bracket.id,
             match_id=match_id,
             predicted_outcome=prediction_data.predicted_outcome,
             predicted_home_score=home_score,

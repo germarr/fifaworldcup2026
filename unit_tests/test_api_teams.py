@@ -28,7 +28,7 @@ def test_create_team(client: TestClient, session: Session):
     response = client.post(
         "/teams/create",
         data={"name": "My New Team"},
-        allow_redirects=False
+        follow_redirects=False
     )
 
     assert response.status_code == 303
@@ -67,7 +67,7 @@ def test_join_team(client: TestClient, session: Session):
 
     response = client.post(
         f"/teams/{team.id}/join",
-        allow_redirects=False
+        follow_redirects=False
     )
 
     assert response.status_code == 303

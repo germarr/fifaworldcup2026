@@ -26,6 +26,7 @@
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Group Stage Predictions</h1>
+    <div class="text-xs text-gray-500 mb-4">Bracket ID: {{ bracket_id }}</div>
 
     <!-- Instructions Banner -->
     <div class="bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-lg p-6 mb-8 shadow-md border border-slate-400">
@@ -140,6 +141,8 @@
                                     <th class="text-left py-1">#</th>
                                     <th class="text-left py-1">Team</th>
                                     <th class="text-center py-1">P</th>
+                                    <th class="text-center py-1">GF</th>
+                                    <th class="text-center py-1">GA</th>
                                     <th class="text-center py-1">GD</th>
                                     <th class="text-center py-1">Pts</th>
                                 </tr>
@@ -150,9 +153,11 @@
                                         <td class="py-1">{{ loop.index }}</td>
                                         <td class="py-1">
                                             {{ flag(team.country_code, 16) }}
-                                            <span class="ml-1">{{ team.team_name }}</span>
+                                            <span class="ml-1">{{ team.country_code }}</span>
                                         </td>
                                         <td class="text-center py-1">{{ team.played }}</td>
+                                        <td class="text-center py-1">{{ team.goals_for }}</td>
+                                        <td class="text-center py-1">{{ team.goals_against }}</td>
                                         <td class="text-center py-1">{{ team.goal_diff }}</td>
                                         <td class="text-center py-1 font-bold">{{ team.points }}</td>
                                     </tr>

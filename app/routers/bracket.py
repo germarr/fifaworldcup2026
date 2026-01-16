@@ -18,6 +18,7 @@ from ..models.stadium import Stadium
 from ..models.third_place_ranking import UserThirdPlaceRanking
 from ..services.standings import calculate_group_standings, get_third_place_teams
 from ..services.bracket import get_user_bracket
+from ..services.brackets import get_or_create_user_bracket
 
 router = APIRouter(prefix="/bracket", tags=["bracket"])
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -32,6 +33,8 @@ async def groups_page(
     if not current_user:
         from fastapi.responses import RedirectResponse
         return RedirectResponse(url="/auth/login", status_code=303)
+
+    bracket_record = get_or_create_user_bracket(db, current_user.id)
 
     groups = {}
 
@@ -92,6 +95,7 @@ async def groups_page(
     return templates.TemplateResponse("bracket/groups.html", {
         "request": request,
         "current_user": current_user,
+        "bracket_id": bracket_record.id,
         "groups": groups,
         "third_place_teams": third_place_teams
     })
