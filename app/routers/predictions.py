@@ -1,7 +1,7 @@
 import random
-from datetime import datetime
-from typing import Optional
-from fastapi import APIRouter, Request, Depends, HTTPException
+from datetime import datetime, UTC
+from typing import List, Optional
+from fastapi import APIRouter, Depends, HTTPException, Request, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
@@ -57,7 +57,7 @@ async def submit_prediction(
         raise HTTPException(status_code=404, detail="Match not found")
 
     # Check if match has started
-    if match.scheduled_datetime <= datetime.utcnow():
+    if match.scheduled_datetime <= datetime.now(UTC):
         raise HTTPException(status_code=400, detail="Match has already started")
 
     # Generate random scores if not provided
@@ -82,7 +82,7 @@ async def submit_prediction(
         prediction.predicted_home_score = home_score
         prediction.predicted_away_score = away_score
         prediction.predicted_winner_team_id = prediction_data.predicted_winner_team_id
-        prediction.updated_at = datetime.utcnow()
+        prediction.updated_at = datetime.now(UTC)
     else:
         # Create new
         prediction = Prediction(
@@ -157,7 +157,7 @@ async def delete_prediction(
         raise HTTPException(status_code=404, detail="Match not found")
 
     # Check if match has started
-    if match.scheduled_datetime <= datetime.utcnow():
+    if match.scheduled_datetime <= datetime.now(UTC):
         raise HTTPException(status_code=400, detail="Cannot delete prediction for a match that has started")
 
     # Find and delete prediction

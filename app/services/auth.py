@@ -1,5 +1,5 @@
 import secrets
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 from typing import Optional
 import bcrypt
 from sqlmodel import Session, select
@@ -26,7 +26,7 @@ def create_session(db: Session, user_id: int) -> str:
     session_token = secrets.token_urlsafe(32)
 
     # Calculate expiry
-    expires_at = datetime.utcnow() + timedelta(days=SESSION_EXPIRE_DAYS)
+    expires_at = datetime.now(UTC) + timedelta(days=SESSION_EXPIRE_DAYS)
 
     # Create session
     user_session = UserSession(

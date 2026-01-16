@@ -1,7 +1,6 @@
-from datetime import datetime
-from typing import Optional, List
-
-from fastapi import APIRouter, Request, Depends
+from datetime import datetime, UTC
+from typing import Optional, Dict, Any, List
+from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
@@ -77,7 +76,7 @@ async def groups_page(
                     "city": stadium.city
                 } if stadium else None,
                 "prediction": pred_by_match.get(match.id),
-                "locked": match.scheduled_datetime <= datetime.utcnow() if match.scheduled_datetime else False
+                "locked": match.scheduled_datetime <= datetime.now(UTC) if match.scheduled_datetime else False
             })
 
         # Calculate standings

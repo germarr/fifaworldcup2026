@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 from fastapi import APIRouter, Request, Depends, HTTPException, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -97,7 +97,7 @@ async def update_fifa_team(
     team.country_code = country_code or None
     team.flag_emoji = flag_emoji or None
     team.group_letter = group_letter or None
-    team.updated_at = datetime.utcnow()
+    team.updated_at = datetime.now(UTC)
 
     db.add(team)
     db.commit()
@@ -178,7 +178,7 @@ async def update_match_score(
     match.actual_home_score = home_score
     match.actual_away_score = away_score
     match.status = "completed"
-    match.updated_at = datetime.utcnow()
+    match.updated_at = datetime.now(UTC)
 
     # Determine winner for knockout matches
     if match.round != "group_stage":
@@ -210,7 +210,7 @@ async def set_match_winner(
         raise HTTPException(status_code=404, detail="Match not found")
 
     match.actual_winner_team_id = winner_team_id
-    match.updated_at = datetime.utcnow()
+    match.updated_at = datetime.now(UTC)
 
     db.add(match)
     db.commit()

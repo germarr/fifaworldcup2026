@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from app.models.match import Match
 from app.models.prediction import Prediction
 from app.services.scoring import calculate_points
@@ -7,7 +7,7 @@ def test_calculate_points_group_stage_exact_score():
     match = Match(
         match_number=1,
         round="group_stage",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         actual_home_score=2,
         actual_away_score=1
     )
@@ -25,7 +25,7 @@ def test_calculate_points_group_stage_correct_outcome():
     match = Match(
         match_number=1,
         round="group_stage",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         actual_home_score=2,
         actual_away_score=1
     )
@@ -43,7 +43,7 @@ def test_calculate_points_group_stage_wrong_outcome():
     match = Match(
         match_number=1,
         round="group_stage",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         actual_home_score=2,
         actual_away_score=1
     )
@@ -61,7 +61,7 @@ def test_calculate_points_knockout_exact_score():
     match = Match(
         match_number=100,
         round="round_of_16",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         actual_home_score=1,
         actual_away_score=1,
         actual_winner_team_id=10
@@ -81,7 +81,7 @@ def test_calculate_points_knockout_correct_winner():
     match = Match(
         match_number=100,
         round="round_of_16",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         actual_home_score=1,
         actual_away_score=1,
         actual_winner_team_id=10
@@ -102,7 +102,7 @@ def test_calculate_points_knockout_wrong_winner():
     match = Match(
         match_number=100,
         round="round_of_16",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         actual_home_score=1,
         actual_away_score=1,
         actual_winner_team_id=10
@@ -122,7 +122,7 @@ def test_calculate_points_incomplete_match():
     match = Match(
         match_number=1,
         round="group_stage",
-        scheduled_datetime=datetime.utcnow(),
+        scheduled_datetime=datetime.now(UTC),
         # No actual scores
     )
     prediction = Prediction(

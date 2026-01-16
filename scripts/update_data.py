@@ -3,7 +3,7 @@ import sys
 import csv
 import os
 from pathlib import Path
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 
 # Add parent directory to path
@@ -65,7 +65,7 @@ def update_teams(session: Session):
             if row.get("group_letter"):
                 team.group_letter = row["group_letter"].strip() or None
             
-            team.updated_at = datetime.utcnow()
+            team.updated_at = datetime.now(UTC)
             session.add(team)
             count += 1
             
@@ -74,7 +74,7 @@ def update_teams(session: Session):
             extra_teams = session.exec(select(FifaTeam).where(FifaTeam.name.not_in(csv_names))).all()
             for team in extra_teams:
                 team.group_letter = None
-                team.updated_at = datetime.utcnow()
+                team.updated_at = datetime.now(UTC)
                 session.add(team)
 
         session.commit()
@@ -170,7 +170,7 @@ def update_matches(session: Session):
                 if row.get("status"):
                     match.status = row["status"].strip()
 
-            match.updated_at = datetime.utcnow()
+            match.updated_at = datetime.now(UTC)
             session.add(match)
             
             # If match is completed, recalculate points

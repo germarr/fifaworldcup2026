@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 from sqlmodel import SQLModel, Field, UniqueConstraint
 
@@ -15,5 +15,5 @@ class UserThirdPlaceRanking(SQLModel, table=True):
     team_id: int = Field(foreign_key="fifa_teams.id")
     rank_position: int  # 1-12, where 1-8 qualify for knockout
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

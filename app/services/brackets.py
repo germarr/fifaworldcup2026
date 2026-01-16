@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from sqlmodel import Session, select
 
 from ..models.bracket import Bracket
@@ -22,7 +22,7 @@ def get_or_create_user_bracket(db: Session, user_id: int) -> Bracket:
     if missing_predictions:
         for prediction in missing_predictions:
             prediction.bracket_id = bracket.id
-            prediction.updated_at = datetime.utcnow()
+            prediction.updated_at = datetime.now(UTC)
             db.add(prediction)
         db.commit()
 

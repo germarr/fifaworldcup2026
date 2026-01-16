@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 from sqlmodel import SQLModel, Field
 
@@ -13,5 +13,5 @@ class User(SQLModel, table=True):
     is_admin: bool = Field(default=False)
     cookie_consent: bool = Field(default=False)
     favorite_team_id: Optional[int] = Field(default=None, foreign_key="fifa_teams.id")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(UTC))

@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from sqlmodel import Session
 from app.models.fifa_team import FifaTeam
 from app.models.match import Match
@@ -19,7 +19,7 @@ def create_match(session: Session, team1_id: int, team2_id: int, group: str) -> 
         group_letter=group,
         home_team_id=team1_id,
         away_team_id=team2_id,
-        scheduled_datetime=datetime.utcnow()
+        scheduled_datetime=datetime.now(UTC)
     )
     # Dirty hack for match number unique constraint if creating multiple matches
     # Since I might create multiple matches, I should let the caller handle match_number or autoincrement it
@@ -35,9 +35,9 @@ def test_calculate_group_standings(session: Session):
 
     # Setup Matches
     # A vs B
-    m1 = Match(match_number=1, round="group_stage", group_letter="A", home_team_id=team_a.id, away_team_id=team_b.id, scheduled_datetime=datetime.utcnow())
+    m1 = Match(match_number=1, round="group_stage", group_letter="A", home_team_id=team_a.id, away_team_id=team_b.id, scheduled_datetime=datetime.now(UTC))
     # C vs D
-    m2 = Match(match_number=2, round="group_stage", group_letter="A", home_team_id=team_c.id, away_team_id=team_d.id, scheduled_datetime=datetime.utcnow())
+    m2 = Match(match_number=2, round="group_stage", group_letter="A", home_team_id=team_c.id, away_team_id=team_d.id, scheduled_datetime=datetime.now(UTC))
     session.add(m1)
     session.add(m2)
     session.commit()

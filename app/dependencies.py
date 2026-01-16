@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from typing import Optional
 from fastapi import Request, Depends, HTTPException, status
 from sqlmodel import Session, select
@@ -21,7 +21,7 @@ async def get_current_user(
     # Find valid session
     statement = select(UserSession).where(
         UserSession.session_token == session_token,
-        UserSession.expires_at > datetime.utcnow()
+        UserSession.expires_at > datetime.now(UTC)
     )
     user_session = db.exec(statement).first()
 
