@@ -139,20 +139,27 @@
         font-weight: 600;
         cursor: pointer;
         transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
     }
     .auto-btn.select {
         background: #3b82f6;
         color: white;
     }
-    .auto-btn.select:hover {
+    .auto-btn.select:hover:not(:disabled) {
         background: #2563eb;
     }
     .auto-btn.reset {
         background: #ef4444;
         color: white;
     }
-    .auto-btn.reset:hover {
+    .auto-btn.reset:hover:not(:disabled) {
         background: #dc2626;
+    }
+    .auto-btn:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
     }
 </style>
 {% endblock %}
@@ -218,8 +225,14 @@
             <div class="round-header">
                 <h2 class="text-2xl font-bold text-red-600">Round of 32</h2>
                 <div class="round-buttons">
-                    <button class="auto-btn select" onclick="autoSelectRound('round_of_32')">Auto Select</button>
-                    <button class="auto-btn reset" onclick="resetRound('round_of_32')">Reset</button>
+                    <button class="auto-btn select" onclick="autoSelectRound('round_of_32', this)">
+                        <span>Auto Select</span>
+                        <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
+                    <button class="auto-btn reset" onclick="resetRound('round_of_32', this)">
+                        <span>Reset</span>
+                        <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                    </button>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" data-round="round_of_32">
@@ -235,8 +248,14 @@
                 <div class="round-header">
                     <h2 class="text-2xl font-bold text-orange-600">Round of 16</h2>
                     <div class="round-buttons">
-                        <button class="auto-btn select" onclick="autoSelectRound('round_of_16')">Auto Select</button>
-                        <button class="auto-btn reset" onclick="resetRound('round_of_16')">Reset</button>
+                        <button class="auto-btn select" onclick="autoSelectRound('round_of_16', this)">
+                            <span>Auto Select</span>
+                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
+                        <button class="auto-btn reset" onclick="resetRound('round_of_16', this)">
+                            <span>Reset</span>
+                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" data-round="round_of_16">
@@ -253,8 +272,14 @@
                 <div class="round-header">
                     <h2 class="text-2xl font-bold text-yellow-600">Quarter Finals</h2>
                     <div class="round-buttons">
-                        <button class="auto-btn select" onclick="autoSelectRound('quarter_finals')">Auto Select</button>
-                        <button class="auto-btn reset" onclick="resetRound('quarter_finals')">Reset</button>
+                        <button class="auto-btn select" onclick="autoSelectRound('quarter_finals', this)">
+                            <span>Auto Select</span>
+                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
+                        <button class="auto-btn reset" onclick="resetRound('quarter_finals', this)">
+                            <span>Reset</span>
+                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" data-round="quarter_finals">
@@ -271,8 +296,14 @@
                 <div class="round-header">
                     <h2 class="text-2xl font-bold text-purple-600">Semi Finals</h2>
                     <div class="round-buttons">
-                        <button class="auto-btn select" onclick="autoSelectRound('semi_finals')">Auto Select</button>
-                        <button class="auto-btn reset" onclick="resetRound('semi_finals')">Reset</button>
+                        <button class="auto-btn select" onclick="autoSelectRound('semi_finals', this)">
+                            <span>Auto Select</span>
+                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
+                        <button class="auto-btn reset" onclick="resetRound('semi_finals', this)">
+                            <span>Reset</span>
+                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                        </button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl" data-round="semi_finals">
@@ -291,8 +322,14 @@
                     <div class="round-header">
                         <h2 class="text-xl font-bold text-amber-700">🥉 Third Place</h2>
                         <div class="round-buttons">
-                            <button class="auto-btn select text-xs" onclick="autoSelectRound('third_place')">Auto</button>
-                            <button class="auto-btn reset text-xs" onclick="resetRound('third_place')">Reset</button>
+                            <button class="auto-btn select text-xs" onclick="autoSelectRound('third_place', this)">
+                                <span>Auto</span>
+                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                            <button class="auto-btn reset text-xs" onclick="resetRound('third_place', this)">
+                                <span>Reset</span>
+                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
                         </div>
                     </div>
                     <div data-round="third_place">
@@ -307,8 +344,14 @@
                     <div class="round-header">
                         <h2 class="text-xl font-bold text-fifa-gold">👑 FINAL</h2>
                         <div class="round-buttons">
-                            <button class="auto-btn select text-xs" onclick="autoSelectRound('final')">Auto</button>
-                            <button class="auto-btn reset text-xs" onclick="resetRound('final')">Reset</button>
+                            <button class="auto-btn select text-xs" onclick="autoSelectRound('final', this)">
+                                <span>Auto</span>
+                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
+                            <button class="auto-btn reset text-xs" onclick="resetRound('final', this)">
+                                <span>Reset</span>
+                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                            </button>
                         </div>
                     </div>
                     <div data-round="final">
@@ -316,6 +359,16 @@
                     </div>
                 </div>
             {% endif %}
+        </div>
+
+        <!-- Print Action -->
+        <div class="mt-12 text-center border-t border-slate-200 pt-8 pb-12">
+            <h3 class="text-xl font-bold mb-4">Ready to share?</h3>
+            <p class="text-slate-500 mb-6">Get a printable summary of your entire World Cup prediction journey.</p>
+            <a href="/bracket/print" target="_blank" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Print My Bracket
+            </a>
         </div>
     {% endif %}
 </div>
@@ -493,9 +546,14 @@ function onPenaltySelect(matchId) {
     savePrediction(matchId, 'draw', parseInt(winnerId));
 }
 
-async function autoSelectRound(roundName) {
+async function autoSelectRound(roundName, btn) {
     const roundContainer = document.querySelector(`[data-round="${roundName}"]`);
     if (!roundContainer) return;
+
+    // Show spinner and disable button
+    const spinner = btn?.querySelector('svg');
+    if (spinner) spinner.classList.remove('hidden');
+    if (btn) btn.disabled = true;
 
     window.bulkOperation = true;
     let count = 0;
@@ -542,15 +600,23 @@ async function autoSelectRound(roundName) {
         showToast(`Auto-selected ${count} matches!`, 'success');
         setTimeout(() => location.reload(), 800);
     } else {
+        // Reset button state if nothing changed
+        if (spinner) spinner.classList.add('hidden');
+        if (btn) btn.disabled = false;
         showToast('No matches to select', 'info');
     }
 }
 
-async function resetRound(roundName) {
+async function resetRound(roundName, btn) {
     const roundContainer = document.querySelector(`[data-round="${roundName}"]`);
     if (!roundContainer) return;
 
     if (!confirm(`Reset all predictions in this round?`)) return;
+
+    // Show spinner and disable button
+    const spinner = btn?.querySelector('svg');
+    if (spinner) spinner.classList.remove('hidden');
+    if (btn) btn.disabled = true;
 
     window.bulkOperation = true;
     let count = 0;
@@ -584,6 +650,9 @@ async function resetRound(roundName) {
         showToast(`Reset ${count} predictions!`, 'success');
         setTimeout(() => location.reload(), 800);
     } else {
+        // Reset button state if nothing changed
+        if (spinner) spinner.classList.add('hidden');
+        if (btn) btn.disabled = false;
         showToast('No predictions to reset', 'info');
     }
 }

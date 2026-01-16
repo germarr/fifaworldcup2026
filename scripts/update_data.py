@@ -1,4 +1,4 @@
-"""Update teams and matches from CSV files."""
+"""Update teams, stadiums, and matches from CSV files."""
 import sys
 import csv
 import os
@@ -18,6 +18,7 @@ from app.services.scoring import calculate_match_points
 
 CORE_FILES_DIR = Path(__file__).parent.parent / "app" / "core_files"
 TEAMS_CSV = CORE_FILES_DIR / "teams.csv"
+STADIUMS_CSV = CORE_FILES_DIR / "stadiums.csv"
 MATCHES_CSV = CORE_FILES_DIR / "matches.csv"
 
 def parse_date(date_str: str) -> Optional[datetime]:
@@ -41,10 +42,12 @@ def update_teams(session: Session):
     with open(TEAMS_CSV, mode="r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         count = 0
+        csv_names = set()
         for row in reader:
             name = row["name"].strip()
             if not name:
                 continue
+            csv_names.add(name)
             
             # Find existing team
             team = session.exec(select(FifaTeam).where(FifaTeam.name == name)).first()
@@ -54,17 +57,26 @@ def update_teams(session: Session):
                 print(f"  Creating new team: {name}")
             
             # Update fields
-            if row.get("country_code"):
-                team.country_code = row["country_code"].strip()
+            iso_alpha_2 = row.get("iso_alpha_2", "").strip()
+            country_code = row.get("country_code", "").strip()
+            team.country_code = iso_alpha_2 or country_code or None
             if row.get("flag_emoji"):
                 team.flag_emoji = row["flag_emoji"].strip()
             if row.get("group_letter"):
-                team.group_letter = row["group_letter"].strip()
+                team.group_letter = row["group_letter"].strip() or None
             
             team.updated_at = datetime.utcnow()
             session.add(team)
             count += 1
             
+        # Clear group assignments for teams not in the CSV
+        if csv_names:
+            extra_teams = session.exec(select(FifaTeam).where(FifaTeam.name.not_in(csv_names))).all()
+            for team in extra_teams:
+                team.group_letter = None
+                team.updated_at = datetime.utcnow()
+                session.add(team)
+
         session.commit()
         print(f"Processed {count} teams.")
 
@@ -116,15 +128,12 @@ def update_matches(session: Session):
                 else:
                     print(f"  Warning: Away team '{away_team_name}' not found for match #{match_number}")
 
-            # Resolve Stadium
-            stadium_name = row.get("stadium", "").strip()
-            if stadium_name:
-                # Try exact match first
-                stadium = session.exec(select(Stadium).where(Stadium.name == stadium_name)).first()
+            # Resolve Stadium (matches.csv uses "stadium" as the stadium_id value)
+            stadium_key = row.get("stadium_id", "").strip() or row.get("stadium", "").strip()
+            if stadium_key:
+                stadium = session.exec(select(Stadium).where(Stadium.stadium_id == stadium_key)).first()
                 if not stadium:
-                    # Try partial match if needed, or just warn
-                    # For now, strict match
-                    print(f"  Warning: Stadium '{stadium_name}' not found for match #{match_number}")
+                    print(f"  Warning: Stadium ID '{stadium_key}' not found for match #{match_number}")
                 else:
                     match.stadium_id = stadium.id
 
@@ -200,10 +209,54 @@ def update_matches(session: Session):
         print(f"Processed {count} matches.")
 
 
+def update_stadiums(session: Session):
+    if not STADIUMS_CSV.exists():
+        print(f"Error: {STADIUMS_CSV} not found.")
+        return
+
+    print(f"Updating stadiums from {STADIUMS_CSV}...")
+    with open(STADIUMS_CSV, mode="r", encoding="utf-8") as f:
+        reader = csv.DictReader(f)
+        count = 0
+        for row in reader:
+            try:
+                stadium_pk = int(row["id"])
+            except (ValueError, TypeError):
+                print(f"  Skipping row with invalid id: {row}")
+                continue
+
+            stadium = session.get(Stadium, stadium_pk)
+            if not stadium:
+                stadium = Stadium(id=stadium_pk)
+                print(f"  Creating new stadium: {row.get('name', '').strip() or stadium_pk}")
+
+            stadium_id = row.get("stadium_id", "").strip()
+            if stadium_id:
+                stadium.stadium_id = stadium_id
+
+            name = row.get("name", "").strip()
+            city = row.get("city", "").strip()
+            country = row.get("country", "").strip()
+
+            if name:
+                stadium.name = name
+            if city:
+                stadium.city = city
+            if country:
+                stadium.country = country
+
+            session.add(stadium)
+            count += 1
+
+        session.commit()
+        print(f"Processed {count} stadiums.")
+
+
 def main():
     create_db_and_tables()
     with Session(engine) as session:
         update_teams(session)
+        update_stadiums(session)
         update_matches(session)
 
 if __name__ == "__main__":

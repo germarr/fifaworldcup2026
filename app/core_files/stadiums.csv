@@ -1,0 +1,17 @@
+id,stadium_id,name,city,country
+1,New York Stadium,MetLife Stadium,"East Rutherford, NJ",USA
+2,Dallas Stadium,AT&T Stadium,"Arlington, TX",USA
+3,Los Angeles Stadium,SoFi Stadium,"Inglewood, CA",USA
+4,Miami Stadium,Hard Rock Stadium,"Miami Gardens, FL",USA
+5,Atlanta Stadium,Mercedes-Benz Stadium,"Atlanta, GA",USA
+6,San Francisco Stadium,Levi's Stadium,"Santa Clara, CA",USA
+7,Houston Stadium,NRG Stadium,"Houston, TX",USA
+8,Philadelphia Stadium,Lincoln Financial Field,"Philadelphia, PA",USA
+9,Boston Stadium,Gillette Stadium,"Foxborough, MA",USA
+10,Kansas City Stadium,Arrowhead Stadium,"Kansas City, MO",USA
+11,Seattle Stadium,Lumen Field,"Seattle, WA",USA
+12,Mexico City Stadium,Estadio Azteca,Mexico City,Mexico
+13,Guadlajara Stadium,Estadio Akron,Guadalajara,Mexico
+14,Monterrey Stadium,Estadio BBVA,Monterrey,Mexico
+15,Toronto Stadium,BMO Field,Toronto,Canada
+16,BC Place Vancouver,BC Place,Vancouver,Canada

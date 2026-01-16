@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% from "components/team_flag.html" import flag %}
+
+{% block title %}My Results - FIFA World Cup 2026{% endblock %}
+
+{% block head %}
+<style>
+    .result-card {
+        background: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: box-shadow 0.2s;
+    }
+    .result-card:hover {
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .result-correct {
+        border-left: 4px solid #22c55e;
+    }
+    .result-partial {
+        border-left: 4px solid #c9a227;
+    }
+    .result-incorrect {
+        border-left: 4px solid #f87171;
+    }
+    .result-pending {
+        border-left: 4px solid #d1d5db;
+    }
+    .points-badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        font-weight: 700;
+    }
+    .round-nav {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f3f4f6;
+        padding: 0.5rem 0;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">My Results</h1>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+        <!-- Total Points -->
+        <div class="card bg-fifa-blue text-white text-center">
+            <div class="text-sm opacity-75">Total Points</div>
+            <div class="text-4xl font-bold">{{ summary.total_points }}</div>
+        </div>
+
+        <!-- Predictions Made -->
+        <div class="card text-center">
+            <div class="text-sm text-gray-500">Predictions</div>
+            <div class="text-2xl font-bold text-fifa-dark">{{ summary.total_predictions }}</div>
+        </div>
+
+        <!-- Exact Scores -->
+        <div class="card text-center bg-green-50 border border-green-200">
+            <div class="text-sm text-green-600">Exact Scores</div>
+            <div class="text-2xl font-bold text-green-700">{{ summary.exact_scores }}</div>
+        </div>
+
+        <!-- Pending -->
+        <div class="card text-center bg-yellow-50 border border-yellow-200">
+            <div class="text-sm text-yellow-600">Pending</div>
+            <div class="text-2xl font-bold text-yellow-700">{{ summary.pending_matches }}</div>
+        </div>
+    </div>
+
+    <!-- Points by Round Breakdown -->
+    <div class="card mb-8">
+        <h2 class="text-lg font-bold mb-4">Points by Round</h2>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
+            {% for round_key, round_label in round_order %}
+                <div class="text-center p-3 bg-gray-50 rounded-lg">
+                    <div class="text-xs text-gray-500 truncate">{{ round_label }}</div>
+                    <div class="text-xl font-bold text-fifa-blue">
+                        {{ summary.points_by_round.get(round_key, 0) }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if results_by_round %}
+        <!-- Round Filter Navigation -->
+        <div class="round-nav flex flex-wrap gap-2 mb-6">
+            {% for round_key, round_label in round_order %}
+                {% if round_key in results_by_round %}
+                    <a href="#{{ round_key }}" class="btn-secondary text-sm py-1 px-3">
+                        {{ round_label }}
+                    </a>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Results by Round -->
+        {% for round_key, round_label in round_order %}
+            {% if round_key in results_by_round %}
+                <div id="{{ round_key }}" class="mb-10 scroll-mt-16">
+                    <!-- Round Header -->
+                    <h2 class="text-2xl font-bold mb-4 {% if round_key == 'group_stage' %}text-blue-600{% elif round_key == 'knockout_stage_roundof32' %}text-red-600{% elif round_key == 'knockout_stage_roundof16' %}text-orange-600{% elif round_key == 'knockout_stage_quarterfinal' %}text-yellow-600{% elif round_key == 'knockout_stage_semifinal' %}text-purple-600{% elif round_key == 'knockout_stage_thirdplace' %}text-amber-700{% elif round_key == 'knockout_stage_final' %}text-fifa-gold{% endif %}">
+                        {% if round_key == 'knockout_stage_final' %}
+                            <span class="mr-1">&#128081;</span>
+                        {% elif round_key == 'knockout_stage_thirdplace' %}
+                            <span class="mr-1">&#129353;</span>
+                        {% endif %}
+                        {{ round_label }}
+                        <span class="text-base font-normal text-gray-400 ml-2">({{ results_by_round[round_key]|length }} predictions)</span>
+                    </h2>
+
+                    <!-- Match Results Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {% for result in results_by_round[round_key] %}
+                            <div class="result-card p-4 {% if result.result_status == 'correct' %}result-correct{% elif result.result_status == 'partial' %}result-partial{% elif result.result_status == 'incorrect' %}result-incorrect{% else %}result-pending{% endif %}">
+                                <!-- Match Header -->
+                                <div class="flex items-center justify-between mb-3">
+                                    <div class="text-xs text-gray-500">
+                                        Match #{{ result.match_number }}
+                                        {% if result.group_letter %}
+                                            <span class="text-gray-400">| Group {{ result.group_letter }}</span>
+                                        {% endif %}
+                                    </div>
+                                    <!-- Points Badge -->
+                                    {% if result.is_completed %}
+                                        <span class="points-badge {{ result.points_class }}">
+                                            {{ result.points_display }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400 italic">Awaiting Result</span>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Teams and Scores -->
+                                <div class="space-y-3">
+                                    <!-- Home Team Row -->
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 flex-1">
+                                            {% if result.home_team %}
+                                                {{ flag(result.home_team.country_code, 24) }}
+                                                <span class="font-medium truncate">{{ result.home_team.name }}</span>
+                                            {% else %}
+                                                <span class="text-gray-400">TBD</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-3 text-lg">
+                                            <!-- Predicted Score -->
+                                            <span class="font-semibold text-gray-600" title="Your prediction">
+                                                {{ result.predicted_home_score if result.predicted_home_score is not none else '-' }}
+                                            </span>
+                                            <!-- Actual Score -->
+                                            {% if result.is_completed %}
+                                                <span class="font-bold {% if result.result_status == 'correct' %}text-green-600{% else %}text-gray-900{% endif %}" title="Actual result">
+                                                    {{ result.actual_home_score }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-gray-300">?</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Away Team Row -->
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex items-center gap-2 flex-1">
+                                            {% if result.away_team %}
+                                                {{ flag(result.away_team.country_code, 24) }}
+                                                <span class="font-medium truncate">{{ result.away_team.name }}</span>
+                                            {% else %}
+                                                <span class="text-gray-400">TBD</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex items-center gap-3 text-lg">
+                                            <!-- Predicted Score -->
+                                            <span class="font-semibold text-gray-600" title="Your prediction">
+                                                {{ result.predicted_away_score if result.predicted_away_score is not none else '-' }}
+                                            </span>
+                                            <!-- Actual Score -->
+                                            {% if result.is_completed %}
+                                                <span class="font-bold {% if result.result_status == 'correct' %}text-green-600{% else %}text-gray-900{% endif %}" title="Actual result">
+                                                    {{ result.actual_away_score }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-gray-300">?</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <!-- Score Legend -->
+                                    <div class="flex justify-end gap-6 text-xs text-gray-400 border-t pt-2 mt-2">
+                                        <span>Predicted</span>
+                                        <span>Actual</span>
+                                    </div>
+                                </div>
+
+                                <!-- Knockout Winner Section -->
+                                {% if result.is_knockout %}
+                                    <div class="mt-3 pt-3 border-t border-gray-100 text-sm">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-gray-500">Winner Prediction:</span>
+                                            <span class="font-medium">
+                                                {{ result.predicted_winner.name if result.predicted_winner else 'Not selected' }}
+                                            </span>
+                                        </div>
+                                        {% if result.is_completed and result.actual_winner %}
+                                            <div class="flex justify-between items-center mt-1">
+                                                <span class="text-gray-500">Actual Winner:</span>
+                                                <span class="font-medium {% if result.predicted_winner and result.predicted_winner.id == result.actual_winner.id %}text-green-600{% else %}text-red-500{% endif %}">
+                                                    {{ result.actual_winner.name }}
+                                                    {% if result.predicted_winner and result.predicted_winner.id == result.actual_winner.id %}
+                                                        <span class="ml-1">&#10003;</span>
+                                                    {% else %}
+                                                        <span class="ml-1">&#10007;</span>
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                <!-- Outcome Summary -->
+                                {% if result.is_completed %}
+                                    <div class="mt-3 pt-2 border-t border-gray-100">
+                                        <div class="text-xs {% if result.result_status == 'correct' %}text-green-600{% elif result.result_status == 'partial' %}text-yellow-700{% else %}text-red-500{% endif %}">
+                                            {{ result.points_breakdown }}
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+        {% endfor %}
+
+    {% else %}
+        <!-- Empty State -->
+        <div class="card text-center py-12">
+            <div class="text-6xl mb-4">&#9917;</div>
+            <p class="text-gray-500 mb-4">You haven't made any predictions yet.</p>
+            <a href="/bracket/groups" class="btn-primary">Start Predicting</a>
+        </div>
+    {% endif %}
+
+    <!-- Scoring Info Banner -->
+    <div class="bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-lg p-6 mt-8 shadow-md border border-slate-400">
+        <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <span class="text-2xl">&#9989;</span> Scoring System
+        </h2>
+        <div class="grid md:grid-cols-2 gap-6 text-sm">
+            <div>
+                <p class="font-semibold mb-2">Group Stage:</p>
+                <ul class="ml-4 list-disc space-y-1">
+                    <li><strong>1 point</strong> - Correct outcome (H/D/A)</li>
+                    <li><strong>3 points</strong> - Exact score (replaces outcome points)</li>
+                </ul>
+            </div>
+            <div>
+                <p class="font-semibold mb-2">Knockout Rounds:</p>
+                <ul class="ml-4 list-disc space-y-1">
+                    <li><strong>2 points</strong> - Correct winner</li>
+                    <li><strong>3 points</strong> - Exact score (replaces winner points)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Optional, List
-from fastapi import APIRouter, Request, Depends, HTTPException
+
+from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from sqlmodel import Session, select
@@ -126,7 +127,7 @@ async def save_third_place_ranking(
     ).all()
     for r in existing:
         db.delete(r)
-    
+
     # Commit deletion to ensure unique constraints are cleared
     db.commit()
 
@@ -150,9 +151,116 @@ async def bracket_page(
     db: Session = Depends(get_session)
 ):
     bracket = get_user_bracket(db, current_user.id)
-
     return templates.TemplateResponse("bracket/knockout.html", {
         "request": request,
         "current_user": current_user,
         "bracket": bracket
+    })
+
+
+def get_flag_code(country_code: str) -> str:
+    code_map = {
+        "USA": "us",
+        "MEX": "mx",
+        "CAN": "ca",
+        "BRA": "br",
+        "ARG": "ar",
+        "COL": "co",
+        "GER": "de",
+        "FRA": "fr",
+        "ESP": "es",
+        "ENG": "gb-eng",
+        "NED": "nl",
+        "BEL": "be",
+        "POR": "pt",
+        "ITA": "it",
+        "CRO": "hr",
+        "JPN": "jp",
+        "KOR": "kr",
+        "AUS": "au",
+        "MAR": "ma",
+        "SEN": "sn",
+        "NGA": "ng",
+        "URU": "uy",
+        "ECU": "ec",
+        "CHI": "cl",
+        "SUI": "ch",
+        "DEN": "dk",
+        "POL": "pl",
+        "SRB": "rs",
+        "UKR": "ua",
+        "AUT": "at",
+        "KSA": "sa",
+        "IRN": "ir",
+        "QAT": "qa",
+        "CRC": "cr",
+        "PAN": "pa",
+        "JAM": "jm",
+    }
+
+    return code_map.get(country_code, country_code.lower() if country_code else "xx")
+
+
+@router.get("/print", response_class=HTMLResponse)
+async def print_bracket(
+    request: Request,
+    current_user: User = Depends(require_user),
+    db: Session = Depends(get_session)
+):
+    bracket = get_user_bracket(db, current_user.id)
+
+    # Extract Champion
+    champion = None
+    if bracket.get("final") and bracket["final"].get("prediction"):
+        pred = bracket["final"]["prediction"]
+        winner_id = pred["predicted_winner_team_id"]
+        if winner_id:
+            if bracket["final"]["home_team"] and bracket["final"]["home_team"]["team_id"] == winner_id:
+                champion = bracket["final"]["home_team"]
+            elif bracket["final"]["away_team"] and bracket["final"]["away_team"]["team_id"] == winner_id:
+                champion = bracket["final"]["away_team"]
+            else:
+                # Fallback: Fetch from DB if prediction exists but team not in final slots
+                team = db.get(FifaTeam, winner_id)
+                if team:
+                    champion = {
+                        "team_id": team.id,
+                        "team_name": team.name,
+                        "country_code": team.country_code
+                    }
+
+    # Extract Third Place Winner
+    third_place_winner = None
+    if bracket.get("third_place_match") and bracket["third_place_match"].get("prediction"):
+        pred = bracket["third_place_match"]["prediction"]
+        winner_id = pred["predicted_winner_team_id"]
+        if winner_id:
+            if (
+                bracket["third_place_match"]["home_team"]
+                and bracket["third_place_match"]["home_team"]["team_id"] == winner_id
+            ):
+                third_place_winner = bracket["third_place_match"]["home_team"]
+            elif (
+                bracket["third_place_match"]["away_team"]
+                and bracket["third_place_match"]["away_team"]["team_id"] == winner_id
+            ):
+                third_place_winner = bracket["third_place_match"]["away_team"]
+            else:
+                # Fallback: Fetch from DB
+                team = db.get(FifaTeam, winner_id)
+                if team:
+                    third_place_winner = {
+                        "team_id": team.id,
+                        "team_name": team.name,
+                        "country_code": team.country_code
+                    }
+
+    return templates.TemplateResponse("bracket/print.html", {
+        "request": request,
+        "current_user": current_user,
+        "bracket": bracket,
+        "champion": champion,
+        "third_place_winner": third_place_winner,
+        "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M"),
+        "flag_code": get_flag_code
     })

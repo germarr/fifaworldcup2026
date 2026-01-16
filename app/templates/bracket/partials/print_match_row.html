@@ -1,0 +1,40 @@
+{% set pred = match.prediction %}
+{% set is_home_winner = pred and pred.predicted_outcome == 'home_win' %}
+{% set is_away_winner = pred and pred.predicted_outcome == 'away_win' %}
+{% set home_score = pred.predicted_home_score if pred and pred.predicted_home_score is not none else '' %}
+{% set away_score = pred.predicted_away_score if pred and pred.predicted_away_score is not none else '' %}
+{% set is_draw = pred and pred.predicted_outcome == 'draw' %}
+{% set winner_id = pred.predicted_winner_team_id if pred else none %}
+
+<div class="flex items-center border rounded overflow-hidden bg-white shadow-sm break-inside-avoid text-[10px] h-7">
+    <!-- Home Team -->
+    <div class="flex-1 flex items-center justify-between px-2 h-full {{ 'bg-green-100 font-bold text-green-900' if is_home_winner or (is_draw and match.home_team and match.home_team.team_id == winner_id) else '' }}">
+        <div class="flex items-center gap-1 overflow-hidden min-w-0">
+            {% if match.home_team %}
+                <img src="https://flagcdn.com/w40/{{ flag_code(match.home_team.country_code) }}.png" class="w-3 h-auto shadow-sm">
+                <span class="truncate">{{ match.home_team.team_name|truncate(10, True) }}</span>
+            {% else %}
+                <span class="text-gray-400">TBD</span>
+            {% endif %}
+        </div>
+        <span class="font-mono font-bold ml-1">{{ home_score }}</span>
+    </div>
+
+    <!-- Divider -->
+    <div class="bg-gray-100 px-1 text-gray-300 h-full flex items-center justify-center border-l border-r border-gray-100 w-4">
+        vs
+    </div>
+
+    <!-- Away Team -->
+    <div class="flex-1 flex items-center justify-between px-2 h-full {{ 'bg-green-100 font-bold text-green-900' if is_away_winner or (is_draw and match.away_team and match.away_team.team_id == winner_id) else '' }}">
+        <span class="font-mono font-bold mr-1">{{ away_score }}</span>
+        <div class="flex items-center gap-1 justify-end overflow-hidden min-w-0 w-full">
+            {% if match.away_team %}
+                <span class="truncate text-right">{{ match.away_team.team_name|truncate(10, True) }}</span>
+                <img src="https://flagcdn.com/w40/{{ flag_code(match.away_team.country_code) }}.png" class="w-3 h-auto shadow-sm">
+            {% else %}
+                <span class="text-gray-400">TBD</span>
+            {% endif %}
+        </div>
+    </div>
+</div>

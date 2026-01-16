@@ -2,10 +2,11 @@
   "name": "fifaworldcup2026",
   "version": "1.0.0",
   "scripts": {
-    "build:css": "npx tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css",
-    "watch:css": "npx tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --watch"
+    "build:css": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css",
+    "watch:css": "tailwindcss -i ./app/static/css/input.css -o ./app/static/css/output.css --watch"
   },
   "devDependencies": {
-    "tailwindcss": "^3.4.0"
+    "@tailwindcss/cli": "^4.1.18",
+    "tailwindcss": "^4.1.18"
   }
 }

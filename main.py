@@ -5,7 +5,7 @@ from fastapi.templating import Jinja2Templates
 
 from app.config import TEMPLATES_DIR, STATIC_DIR
 from app.database import create_db_and_tables
-from app.routers import auth, pages, predictions, leaderboard, teams, admin, bracket
+from app.routers import auth, pages, predictions, leaderboard, teams, admin, bracket, results
 
 
 @asynccontextmanager
@@ -37,6 +37,7 @@ app.include_router(leaderboard.router)
 app.include_router(teams.router)
 app.include_router(admin.router)
 app.include_router(bracket.router)
+app.include_router(results.router)
 
 
 if __name__ == "__main__":

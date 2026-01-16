@@ -1,49 +1,49 @@
-name,country_code,flag_emoji,group_letter
-USA,USA,🇺🇸,A
-Mexico,MEX,🇲🇽,A
-Canada,CAN,🇨🇦,A
-Panama,PAN,🇵🇦,A
-Brazil,BRA,🇧🇷,B
-Argentina,ARG,🇦🇷,B
-Colombia,COL,🇨🇴,B
-Chile,CHI,🇨🇱,B
-Germany,GER,🇩🇪,C
-France,FRA,🇫🇷,C
-Spain,ESP,🇪🇸,C
-Italy,ITA,🇮🇹,C
-England,ENG,🏴󠁧󠁢󠁥󠁮󠁧󠁿,D
-Netherlands,NED,🇳🇱,D
-Belgium,BEL,🇧🇪,D
-TBD D4,,,D
-Portugal,POR,🇵🇹,E
-Croatia,CRO,🇭🇷,E
-TBD E3,,,E
-TBD E4,,,E
-Japan,JPN,🇯🇵,F
-South Korea,KOR,🇰🇷,F
-Australia,AUS,🇦🇺,F
-TBD F4,,,F
-Morocco,MAR,🇲🇦,G
-Senegal,SEN,🇸🇳,G
-Nigeria,NGA,🇳🇬,G
-TBD G4,,,G
-Uruguay,URU,🇺🇾,H
-Ecuador,ECU,🇪🇨,H
-TBD H3,,,H
-TBD H4,,,H
-Switzerland,SUI,🇨🇭,I
-Denmark,DEN,🇩🇰,I
-Poland,POL,🇵🇱,I
-TBD I4,,,I
-Serbia,SRB,🇷🇸,J
-Ukraine,UKR,🇺🇦,J
-Austria,AUT,🇦🇹,J
-TBD J4,,,J
-Saudi Arabia,KSA,🇸🇦,K
-Iran,IRN,🇮🇷,K
-Qatar,QAT,🇶🇦,K
-TBD K4,,,K
-Costa Rica,CRC,🇨🇷,L
-Jamaica,JAM,🇯🇲,L
-TBD L3,,,L
-TBD L4,,,L
+name,country_code,flag_emoji,group_letter,iso_alpha_2
+Mexico,MEX,https://flagcdn.com/16x12/mx.png,A,MX
+South Korea,KOR,https://flagcdn.com/16x12/kr.png,A,KR
+TBD - A,TBD,https://flagcdn.com/16x12/tbd.png,A,TBD
+South Africa,ZAF,https://flagcdn.com/16x12/za.png,A,ZA
+Canada,CAN,https://flagcdn.com/16x12/ca.png,B,CA
+Qatar,QAT,https://flagcdn.com/16x12/qa.png,B,QA
+Switzerland,CHE,https://flagcdn.com/16x12/ch.png,B,CH
+TBD - B,TBD,https://flagcdn.com/16x12/tbd.png,B,TBD
+Brazil,BRA,https://flagcdn.com/16x12/br.png,C,BR
+Haiti,HTI,https://flagcdn.com/16x12/ht.png,C,HT
+Scotland,SCO,https://flagcdn.com/16x12/sco.png,C,GB-SCT
+Morocco,MAR,https://flagcdn.com/16x12/ma.png,C,MA
+USA,USA,https://flagcdn.com/16x12/us.png,D,US
+Australia,AUS,https://flagcdn.com/16x12/au.png,D,AU
+TBD - D,TBD,https://flagcdn.com/16x12/tbd.png,D,TBD
+Paraguay,PRY,https://flagcdn.com/16x12/py.png,D,PY
+Germany,DEU,https://flagcdn.com/16x12/de.png,E,DE
+Ivory Coast,CIV,https://flagcdn.com/16x12/ci.png,E,CI
+Ecuador,ECU,https://flagcdn.com/16x12/ec.png,E,EC
+Curaçao,CUW,https://flagcdn.com/16x12/cw.png,E,CW
+Netherlands,NLD,https://flagcdn.com/16x12/nl.png,F,NL
+TBD - F,TBD,https://flagcdn.com/16x12/tbd.png,F,TBD
+Tunisia,TUN,https://flagcdn.com/16x12/tn.png,F,TN
+Japan,JPN,https://flagcdn.com/16x12/jp.png,F,JP
+Belgium,BEL,https://flagcdn.com/16x12/be.png,G,BE
+Iran,IRN,https://flagcdn.com/16x12/ir.png,G,IR
+New Zealand,NZL,https://flagcdn.com/16x12/nz.png,G,NZ
+Egypt,EGY,https://flagcdn.com/16x12/eg.png,G,EG
+Spain,ESP,https://flagcdn.com/16x12/es.png,H,ES
+Saudi Arabia,SAU,https://flagcdn.com/16x12/sa.png,H,SA
+Uruguay,URY,https://flagcdn.com/16x12/uy.png,H,UY
+Cape Verde Islands,CPV,https://flagcdn.com/16x12/cv.png,H,CV
+France,FRA,https://flagcdn.com/16x12/fr.png,I,FR
+TBD - I,TBD,https://flagcdn.com/16x12/tbd.png,I,TBD
+Norway,NOR,https://flagcdn.com/16x12/no.png,I,NO
+Senegal,SEN,https://flagcdn.com/16x12/sn.png,I,SN
+Argentina,ARG,https://flagcdn.com/16x12/ar.png,J,AR
+Austria,AUT,https://flagcdn.com/16x12/at.png,J,AT
+Jordan,JOR,https://flagcdn.com/16x12/jo.png,J,JO
+Algeria,DZA,https://flagcdn.com/16x12/dz.png,J,DZ
+Portugal,PRT,https://flagcdn.com/16x12/pt.png,K,PT
+Uzbekistan,UZB,https://flagcdn.com/16x12/uz.png,K,UZ
+Colombia,COL,https://flagcdn.com/16x12/co.png,K,CO
+TBD - K,TBD,https://flagcdn.com/16x12/tbd.png,K,TBD
+England,ENG,https://flagcdn.com/16x12/eng.png,L,ENG
+Ghana,GHA,https://flagcdn.com/16x12/gh.png,L,GH
+Panama,PAN,https://flagcdn.com/16x12/pa.png,L,PA
+Croatia,HRV,https://flagcdn.com/16x12/hr.png,L,HR

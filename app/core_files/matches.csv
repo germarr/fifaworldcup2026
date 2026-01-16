@@ -1,7 +1,105 @@
 match_number,round,group_letter,home_team,away_team,home_slot,away_slot,stadium,scheduled_datetime,home_score,away_score,status
-1,group_stage,A,USA,Mexico,,,Estadio Azteca,2026-06-11 18:00:00,,,scheduled
-2,group_stage,A,Canada,Panama,,,BMO Field,2026-06-11 21:00:00,,,scheduled
-7,group_stage,B,Brazil,Argentina,,,MetLife Stadium,2026-06-12 18:00:00,,,scheduled
-8,group_stage,B,Colombia,Chile,,,Hard Rock Stadium,2026-06-12 21:00:00,,,scheduled
-13,group_stage,C,Germany,France,,,Mercedes-Benz Stadium,2026-06-13 18:00:00,,,scheduled
-14,group_stage,C,Spain,Italy,,,SoFi Stadium,2026-06-13 21:00:00,,,scheduled
+1,group_stage,A,Mexico,South Africa,,,Mexico City Stadium,2026-06-11 15:00:00,,,scheduled
+2,group_stage,A,South Korea,TBD - A,,,Guadlajara Stadium,2026-06-11 22:00:00,,,scheduled
+3,group_stage,B,Canada,TBD - B,,,Toronto Stadium,2026-06-12 15:00:00,,,scheduled
+4,group_stage,D,USA,Paraguay,,,Los Angeles Stadium,2026-06-12 21:00:00,,,scheduled
+5,group_stage,B,Qatar,Switzerland,,,San Francisco Stadium,2026-06-13 15:00:00,,,scheduled
+6,group_stage,C,Brazil,Morocco,,,New York Stadium,2026-06-13 18:00:00,,,scheduled
+7,group_stage,C,Haiti,Scotland,,,Boston Stadium,2026-06-13 21:00:00,,,scheduled
+8,group_stage,D,Australia,TBD - D,,,BC Place Vancouver,2026-06-14 00:00:00,,,scheduled
+9,group_stage,E,Germany,Curaçao,,,Houston Stadium,2026-06-14 13:00:00,,,scheduled
+10,group_stage,F,Netherlands,Japan,,,Dallas Stadium,2026-06-14 16:00:00,,,scheduled
+11,group_stage,E,Ivory Coast,Ecuador,,,Philadelphia Stadium,2026-06-14 19:00:00,,,scheduled
+12,group_stage,F,TBD - F,Tunisia,,,Monterrey Stadium,2026-06-14 22:00:00,,,scheduled
+13,group_stage,H,Spain,Cape Verde Islands,,,Atlanta Stadium,2026-06-15 12:00:00,,,scheduled
+14,group_stage,G,Belgium,Egypt,,,Seattle Stadium,2026-06-15 15:00:00,,,scheduled
+15,group_stage,H,Saudi Arabia,Uruguay,,,Miami Stadium,2026-06-15 18:00:00,,,scheduled
+16,group_stage,G,Iran,New Zealand,,,Los Angeles Stadium,2026-06-15 21:00:00,,,scheduled
+17,group_stage,I,France,Senegal,,,New York Stadium,2026-06-16 15:00:00,,,scheduled
+18,group_stage,I,TBD - I,Norway,,,Boston Stadium,2026-06-16 18:00:00,,,scheduled
+19,group_stage,J,Argentina,Algeria,,,Kansas City Stadium,2026-06-16 21:00:00,,,scheduled
+20,group_stage,J,Austria,Jordan,,,San Francisco Stadium,2026-06-17 00:00:00,,,scheduled
+21,group_stage,K,Portugal,TBD - K,,,Houston Stadium,2026-06-17 13:00:00,,,scheduled
+22,group_stage,L,England,Croatia,,,Dallas Stadium,2026-06-17 16:00:00,,,scheduled
+23,group_stage,L,Ghana,Panama,,,Toronto Stadium,2026-06-17 19:00:00,,,scheduled
+24,group_stage,K,Uzbekistan,Colombia,,,Mexico City Stadium,2026-06-17 22:00:00,,,scheduled
+25,group_stage,A,TBD - A,South Africa,,,Atlanta Stadium,2026-06-18 12:00:00,,,scheduled
+26,group_stage,B,Switzerland,TBD - B,,,Los Angeles Stadium,2026-06-18 15:00:00,,,scheduled
+27,group_stage,B,Canada,Qatar,,,BC Place Vancouver,2026-06-18 18:00:00,,,scheduled
+28,group_stage,A,Mexico,South Korea,,,Guadlajara Stadium,2026-06-18 21:00:00,,,scheduled
+29,group_stage,D,USA,Australia,,,Seattle Stadium,2026-06-19 15:00:00,,,scheduled
+30,group_stage,C,Scotland,Morocco,,,Boston Stadium,2026-06-19 18:00:00,,,scheduled
+31,group_stage,C,Brazil,Haiti,,,Philadelphia Stadium,2026-06-19 21:00:00,,,scheduled
+32,group_stage,D,TBD - D,Paraguay,,,San Francisco Stadium,2026-06-20 00:00:00,,,scheduled
+33,group_stage,F,Netherlands,TBD - F,,,Houston Stadium,2026-06-20 13:00:00,,,scheduled
+34,group_stage,E,Germany,Ivory Coast,,,Toronto Stadium,2026-06-20 16:00:00,,,scheduled
+35,group_stage,E,Ecuador,Curaçao,,,Kansas City Stadium,2026-06-20 20:00:00,,,scheduled
+36,group_stage,F,Tunisia,Japan,,,Monterrey Stadium,2026-06-21 00:00:00,,,scheduled
+37,group_stage,H,Spain,Saudi Arabia,,,Atlanta Stadium,2026-06-21 15:00:00,,,scheduled
+38,group_stage,G,Belgium,Iran,,,Los Angeles Stadium,2026-06-21 18:00:00,,,scheduled
+39,group_stage,H,Uruguay,Cape Verde Islands,,,Miami Stadium,2026-06-21 21:00:00,,,scheduled
+40,group_stage,G,New Zealand,Egypt,,,BC Place Vancouver,2026-06-21 21:00:00,,,scheduled
+41,group_stage,J,Argentina,Austria,,,Dallas Stadium,2026-06-22 13:00:00,,,scheduled
+42,group_stage,I,France,TBD - I,,,Philadelphia Stadium,2026-06-22 17:00:00,,,scheduled
+43,group_stage,I,Norway,Senegal,,,New York Stadium,2026-06-22 20:00:00,,,scheduled
+44,group_stage,J,Jordan,Algeria,,,San Francisco Stadium,2026-06-22 23:00:00,,,scheduled
+45,group_stage,K,Portugal,Uzbekistan,,,Houston Stadium,2026-06-23 13:00:00,,,scheduled
+46,group_stage,L,England,Ghana,,,Boston Stadium,2026-06-23 16:00:00,,,scheduled
+47,group_stage,L,Panama,Croatia,,,Toronto Stadium,2026-06-23 19:00:00,,,scheduled
+48,group_stage,K,Colombia,TBD - K,,,Guadlajara Stadium,2026-06-23 22:00:00,,,scheduled
+49,group_stage,B,Switzerland,Canada,,,BC Place Vancouver,2026-06-24 15:00:00,,,scheduled
+50,group_stage,B,TBD - B,Qatar,,,Seattle Stadium,2026-06-24 15:00:00,,,scheduled
+51,group_stage,C,Scotland,Brazil,,,Miami Stadium,2026-06-24 18:00:00,,,scheduled
+52,group_stage,C,Morocco,Haiti,,,Atlanta Stadium,2026-06-24 18:00:00,,,scheduled
+53,group_stage,A,TBD - A,Mexico,,,Mexico City Stadium,2026-06-24 21:00:00,,,scheduled
+54,group_stage,A,South Africa,South Korea,,,Monterrey Stadium,2026-06-24 21:00:00,,,scheduled
+55,group_stage,E,Curaçao,Ivory Coast,,,Philadelphia Stadium,2026-06-25 16:00:00,,,scheduled
+56,group_stage,E,Ecuador,Germany,,,New York Stadium,2026-06-25 16:00:00,,,scheduled
+57,group_stage,F,Japan,TBD - F,,,Dallas Stadium,2026-06-25 19:00:00,,,scheduled
+58,group_stage,F,Tunisia,Netherlands,,,Kansas City Stadium,2026-06-25 19:00:00,,,scheduled
+59,group_stage,D,TBD - D,USA,,,Los Angeles Stadium,2026-06-25 22:00:00,,,scheduled
+60,group_stage,D,Paraguay,Australia,,,San Francisco Stadium,2026-06-25 22:00:00,,,scheduled
+61,group_stage,I,Norway,France,,,Boston Stadium,2026-06-26 15:00:00,,,scheduled
+62,group_stage,I,Senegal,TBD - I,,,Toronto Stadium,2026-06-26 15:00:00,,,scheduled
+63,group_stage,H,Cape Verde Islands,Saudi Arabia,,,Houston Stadium,2026-06-26 20:00:00,,,scheduled
+64,group_stage,H,Uruguay,Spain,,,Guadlajara Stadium,2026-06-26 20:00:00,,,scheduled
+65,group_stage,G,Egypt,Iran,,,Seattle Stadium,2026-06-26 23:00:00,,,scheduled
+66,group_stage,G,New Zealand,Belgium,,,BC Place Vancouver,2026-06-26 23:00:00,,,scheduled
+67,group_stage,L,Panama,England,,,New York Stadium,2026-06-27 17:00:00,,,scheduled
+68,group_stage,L,Croatia,Ghana,,,Philadelphia Stadium,2026-06-27 17:00:00,,,scheduled
+69,group_stage,K,Colombia,Portugal,,,Miami Stadium,2026-06-27 19:30:00,,,scheduled
+70,group_stage,K,TBD - K,Uzbekistan,,,Atlanta Stadium,2026-06-27 19:30:00,,,scheduled
+71,group_stage,J,Algeria,Austria,,,Kansas City Stadium,2026-06-27 22:00:00,,,scheduled
+72,group_stage,J,Jordan,Argentina,,,Dallas Stadium,2026-06-27 22:00:00,,,scheduled
+73,knockout_stage_roundof32,,TBD - 2A,TBD - 2B,,,Los Angeles Stadium,2026-06-28 22:00:00,,,scheduled
+74,knockout_stage_roundof32,,TBD - 1C,TBD - 2F,,,Houston Stadium,2026-06-29 13:00:00,,,scheduled
+75,knockout_stage_roundof32,,TBD - 1E,TBD - 3ABCDF,,,Boston Stadium,2026-06-29 16:30:00,,,scheduled
+76,knockout_stage_roundof32,,TBD - 1F,TBD - 2C,,,Monterrey Stadium,2026-06-29 21:00:00,,,scheduled
+77,knockout_stage_roundof32,,TBD - 2E,TBD - 2I,,,Dallas Stadium,2026-06-30 13:00:00,,,scheduled
+78,knockout_stage_roundof32,,TBD - 1I,TBD - 3CDFGH,,,New York Stadium,2026-06-30 17:00:00,,,scheduled
+79,knockout_stage_roundof32,,TBD - 1A,TBD - 3CEFHI,,,Mexico City Stadium,2026-06-30 21:00:00,,,scheduled
+80,knockout_stage_roundof32,,TBD - 1L,TBD - 3EHIJK,,,Atlanta Stadium,2026-06-30 12:00:00,,,scheduled
+81,knockout_stage_roundof32,,TBD - 1G,TBD - 3AEHIJ,,,Seattle Stadium,2026-07-01 16:00:00,,,scheduled
+82,knockout_stage_roundof32,,TBD - 1D,TBD - 3BEFIJ,,,San Francisco Stadium,2026-07-01 20:00:00,,,scheduled
+83,knockout_stage_roundof32,,TBD - 1H,TBD - 2J,,,Los Angeles Stadium,2026-07-02 15:00:00,,,scheduled
+84,knockout_stage_roundof32,,TBD - 2K,TBD - 2L,,,Toronto Stadium,2026-07-02 17:00:00,,,scheduled
+85,knockout_stage_roundof32,,TBD - 1B,TBD - 3EFGIJ,,,BC Place Vancouver,2026-07-02 23:00:00,,,scheduled
+86,knockout_stage_roundof32,,TBD - 2D,TBD - 2G,,,Dallas Stadium,2026-07-03 14:00:00,,,scheduled
+87,knockout_stage_roundof32,,TBD - 1J,TBD - 2H,,,Miami Stadium,2026-07-03 18:00:00,,,scheduled
+88,knockout_stage_roundof32,,TBD - 1K,TBD - 3DEIJL,,,Kansas City Stadium,2026-07-03 21:30:00,,,scheduled
+89,knockout_stage_roundof16,,W73,W75,,,Houston Stadium,2026-07-04 13:00:00,,,scheduled
+90,knockout_stage_roundof16,,W74,W77,,,Philadelphia Stadium,2026-07-04 17:00:00,,,scheduled
+91,knockout_stage_roundof16,,W76,W78,,,New York Stadium,2026-07-05 16:00:00,,,scheduled
+92,knockout_stage_roundof16,,W79,W80,,,Mexico City Stadium,2026-07-05 20:00:00,,,scheduled
+93,knockout_stage_roundof16,,W83,W84,,,Dallas Stadium,2026-07-06 15:00:00,,,scheduled
+94,knockout_stage_roundof16,,W81,W82,,,Seattle Stadium,2026-07-06 20:00:00,,,scheduled
+95,knockout_stage_roundof16,,W86,W88,,,Atlanta Stadium,2026-07-07 12:00:00,,,scheduled
+96,knockout_stage_roundof16,,W85,W87,,,BC Place Vancouver,2026-07-07 16:00:00,,,scheduled
+97,knockout_stage_quarterfinal,,W89,W90,,,Boston Stadium,2026-07-09 16:00:00,,,scheduled
+98,knockout_stage_quarterfinal,,W93,W94,,,Los Angeles Stadium,2026-07-10 15:00:00,,,scheduled
+99,knockout_stage_quarterfinal,,W91,W92,,,Miami Stadium,2026-07-11 17:00:00,,,scheduled
+100,knockout_stage_quarterfinal,,W95,W96,,,Kansas City Stadium,2026-07-11 21:00:00,,,scheduled
+101,knockout_stage_semifinal,,W97,W98,,,Dallas Stadium,2026-07-14 15:00:00,,,scheduled
+102,knockout_stage_semifinal,,W99,W100,,,Atlanta Stadium,2026-07-15 15:00:00,,,scheduled
+103,knockout_stage_thirdplace,,RU101,RU102,,,Miami Stadium,2026-07-18 17:00:00,,,scheduled
+104,knockout_stage_final,,W101,W102,,,New York Stadium,2026-07-19 15:00:00,,,scheduled

@@ -1,0 +1,72 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.19.2"
+  },
+  "cells": [
+    {
+      "id": "MJUe",
+      "code_hash": "dd4deaa842ad274c4e2bcb318cd37094",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RpqT",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "NZym",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    },
+    {
+      "id": "mmsQ",
+      "code_hash": "3d868d42da06a5e97700f73c5df91b71",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EwFf",
+      "code_hash": "c484d0a047db40545a584b8f226e8bff",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/html": "<marimo-ui-element object-id='EwFf-1' random-id='c97036ae-6e8f-f364-3f3c-c48f1688bc4c'><marimo-table data-initial-value='[]' data-label='null' data-data='&quot;[{&#92;&quot;id&#92;&quot;:1,&#92;&quot;name&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;USA&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/us.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;D&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.376514&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.803527&#92;&quot;},{&#92;&quot;id&#92;&quot;:2,&#92;&quot;name&#92;&quot;:&#92;&quot;Mexico&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;MEX&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/mx.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;A&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.376645&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.784956&#92;&quot;},{&#92;&quot;id&#92;&quot;:3,&#92;&quot;name&#92;&quot;:&#92;&quot;Canada&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;CAN&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/ca.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;B&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.376722&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.802900&#92;&quot;},{&#92;&quot;id&#92;&quot;:5,&#92;&quot;name&#92;&quot;:&#92;&quot;Brazil&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;BRA&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/br.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;C&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.376846&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.805978&#92;&quot;},{&#92;&quot;id&#92;&quot;:6,&#92;&quot;name&#92;&quot;:&#92;&quot;Argentina&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;ARG&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/ar.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;J&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.376902&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.811506&#92;&quot;},{&#92;&quot;id&#92;&quot;:7,&#92;&quot;name&#92;&quot;:&#92;&quot;Colombia&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;COL&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/co.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;K&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.376959&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.823506&#92;&quot;},{&#92;&quot;id&#92;&quot;:9,&#92;&quot;name&#92;&quot;:&#92;&quot;Germany&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;DEU&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/de.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;E&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.377075&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.807612&#92;&quot;},{&#92;&quot;id&#92;&quot;:10,&#92;&quot;name&#92;&quot;:&#92;&quot;France&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;FRA&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/fr.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;I&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.377140&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.810727&#92;&quot;},{&#92;&quot;id&#92;&quot;:11,&#92;&quot;name&#92;&quot;:&#92;&quot;Spain&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;ESP&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/es.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;H&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.377198&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.809216&#92;&quot;},{&#92;&quot;id&#92;&quot;:13,&#92;&quot;name&#92;&quot;:&#92;&quot;England&#92;&quot;,&#92;&quot;country_code&#92;&quot;:&#92;&quot;ENG&#92;&quot;,&#92;&quot;flag_emoji&#92;&quot;:&#92;&quot;https://flagcdn.com/16x12/eng.png&#92;&quot;,&#92;&quot;group_letter&#92;&quot;:&#92;&quot;L&#92;&quot;,&#92;&quot;created_at&#92;&quot;:&#92;&quot;2026-01-15 19:59:44.377310&#92;&quot;,&#92;&quot;updated_at&#92;&quot;:&#92;&quot;2026-01-16 00:06:50.814510&#92;&quot;}]&quot;' data-total-rows='69' data-total-columns='7' data-max-columns='50' data-banner-text='&quot;&quot;' data-pagination='true' data-page-size='10' data-field-types='[[&quot;id&quot;,[&quot;integer&quot;,&quot;int64&quot;]],[&quot;name&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;country_code&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;flag_emoji&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;group_letter&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;created_at&quot;,[&quot;string&quot;,&quot;object&quot;]],[&quot;updated_at&quot;,[&quot;string&quot;,&quot;object&quot;]]]' data-show-filters='true' data-show-download='true' data-show-column-summaries='true' data-show-data-types='true' data-show-page-size-selector='true' data-show-column-explorer='true' data-show-chart-builder='true' data-row-headers='[]' data-has-stable-row-id='false' data-lazy='false' data-preload='false'></marimo-table></marimo-ui-element>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "EcUt",
+      "code_hash": null,
+      "outputs": [],
+      "console": []
+    }
+  ]
+}
