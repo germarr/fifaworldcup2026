@@ -10,6 +10,7 @@ class Prediction(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     user_id: int = Field(foreign_key="users.id", index=True)
     match_id: int = Field(foreign_key="matches.id", index=True)
+    bracket_id: Optional[int] = Field(default=None, foreign_key="bracket_states.id", index=True)
 
     # Prediction
     predicted_outcome: str  # home_win, away_win, draw

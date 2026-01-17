@@ -1,4 +1,5 @@
 from sqlmodel import SQLModel, Session, create_engine
+from . import models  # noqa: F401
 from .config import DATABASE_URL
 
 # Create engine with SQLite
@@ -21,7 +22,7 @@ def _ensure_prediction_bracket_id():
         columns = {row[1] for row in result}
         if "bracket_id" not in columns:
             conn.exec_driver_sql(
-                "ALTER TABLE predictions ADD COLUMN bracket_id INTEGER REFERENCES brackets(id)"
+                "ALTER TABLE predictions ADD COLUMN bracket_id INTEGER REFERENCES bracket_states(id)"
             )
 
 

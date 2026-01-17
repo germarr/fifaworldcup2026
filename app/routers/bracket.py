@@ -76,7 +76,7 @@ async def groups_page(
                     "city": stadium.city
                 } if stadium else None,
                 "prediction": pred_by_match.get(match.id),
-                "locked": match.scheduled_datetime <= datetime.now(UTC) if match.scheduled_datetime else False
+                "locked": match.scheduled_datetime.replace(tzinfo=UTC) <= datetime.now(UTC) if match.scheduled_datetime else False
             })
 
         # Calculate standings

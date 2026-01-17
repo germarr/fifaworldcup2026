@@ -7,6 +7,8 @@ from .prediction import Prediction
 from .bracket import Bracket
 from .third_place_ranking import UserThirdPlaceRanking
 from .competition_team import CompetitionTeam, TeamMembership
+from .kalshi_team_chance import KalshiTeamChance
+from .kalshi_team_ranking import KalshiTeamRanking
 
 __all__ = [
     "User",
@@ -19,4 +21,6 @@ __all__ = [
     "UserThirdPlaceRanking",
     "CompetitionTeam",
     "TeamMembership",
+    "KalshiTeamChance",
+    "KalshiTeamRanking",
 ]

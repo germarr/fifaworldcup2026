@@ -42,6 +42,13 @@ def generate_random_score(outcome: str) -> tuple[int, int]:
     return home, away
 
 
+def normalize_utc(dt: datetime) -> datetime:
+    """Return an aware UTC datetime, assuming naive values are already UTC."""
+    if dt.tzinfo is None:
+        return dt.replace(tzinfo=UTC)
+    return dt.astimezone(UTC)
+
+
 @router.post("/match/{match_id}")
 async def submit_prediction(
     match_id: int,
@@ -57,7 +64,8 @@ async def submit_prediction(
         raise HTTPException(status_code=404, detail="Match not found")
 
     # Check if match has started
-    if match.scheduled_datetime <= datetime.now(UTC):
+    match_time = normalize_utc(match.scheduled_datetime)
+    if match_time <= datetime.now(UTC):
         raise HTTPException(status_code=400, detail="Match has already started")
 
     # Generate random scores if not provided
@@ -157,7 +165,8 @@ async def delete_prediction(
         raise HTTPException(status_code=404, detail="Match not found")
 
     # Check if match has started
-    if match.scheduled_datetime <= datetime.now(UTC):
+    match_time = normalize_utc(match.scheduled_datetime)
+    if match_time <= datetime.now(UTC):
         raise HTTPException(status_code=400, detail="Cannot delete prediction for a match that has started")
 
     # Find and delete prediction

@@ -21,7 +21,7 @@ class Match(SQLModel, table=True):
 
     # Venue
     stadium_id: Optional[int] = Field(default=None, foreign_key="stadiums.id")
-    scheduled_datetime: datetime
+    scheduled_datetime: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
     # Actual results (filled by admin)
     actual_home_score: Optional[int] = Field(default=None)
