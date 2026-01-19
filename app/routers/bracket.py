@@ -141,13 +141,32 @@ async def bracket_page(request: Request, db: Session = Depends(get_session)):
                 match_data_js[match.match_number] = {
                     "group": group_letter,
                     "homeTeamId": match.home_team_id,
-                    "awayTeamId": match.away_team_id
+                    "awayTeamId": match.away_team_id,
+                    "status": match.status,
+                    "actualHomeScore": match.actual_home_score,
+                    "actualAwayScore": match.actual_away_score
                 }
 
         groups[group_letter] = {
             "matches": matches_data,
             "teams": [{"id": t.id, "name": t.name, "country_code": t.country_code} for t in group_teams]
         }
+
+    # Add knockout matches to match_data_js
+    knockout_matches = db.exec(
+        select(Match).where(Match.round != "group_stage")
+    ).all()
+    for match in knockout_matches:
+        if match.match_number:
+            match_data_js[match.match_number] = {
+                "round": match.round,
+                "homeTeamId": match.home_team_id,
+                "awayTeamId": match.away_team_id,
+                "status": match.status,
+                "actualHomeScore": match.actual_home_score,
+                "actualAwayScore": match.actual_away_score,
+                "actualWinnerTeamId": match.actual_winner_team_id
+            }
 
     return templates.TemplateResponse("bracket/full.html", {
         "request": request,

@@ -98,6 +98,24 @@
         </div>
     </div>
 
+    <!-- Score Summary Panel -->
+    <div id="score-summary" class="score-summary mb-8 hidden">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="score-label">Your Score</div>
+                <div class="score-value" id="total-score">0</div>
+            </div>
+            <div class="text-right">
+                <div class="text-sm text-gray-600">
+                    Based on <span id="completed-matches-count">0</span> completed matches
+                </div>
+                <div class="text-sm text-gray-600">
+                    <span id="correct-predictions-count">0</span> correct predictions
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- ============================================ -->
     <!-- SECTION 1: GROUP STAGE -->
     <!-- ============================================ -->
@@ -634,6 +652,137 @@ function renderKnockoutBracket() {
 }
 
 // ============================================
+// ACTUAL RESULTS & SCORING
+// ============================================
+
+/**
+ * Calculate points for a single match prediction
+ * Group stage: 1 pt correct outcome, 3 pts exact score
+ * Knockout: 2 pts correct winner, 3 pts exact score
+ */
+function calculateMatchPoints(matchNumber, prediction) {
+    const matchInfo = window.matchData[matchNumber];
+    if (!matchInfo || matchInfo.status !== 'completed') return null;
+    if (matchInfo.actualHomeScore === null || matchInfo.actualAwayScore === null) return null;
+    if (!prediction) return null;
+
+    const predHomeScore = prediction.homeScore ?? null;
+    const predAwayScore = prediction.awayScore ?? null;
+    const actualHomeScore = matchInfo.actualHomeScore;
+    const actualAwayScore = matchInfo.actualAwayScore;
+
+    // Determine actual outcome
+    let actualOutcome;
+    if (actualHomeScore > actualAwayScore) actualOutcome = 'home_win';
+    else if (actualAwayScore > actualHomeScore) actualOutcome = 'away_win';
+    else actualOutcome = 'draw';
+
+    const isKnockout = matchNumber > 72;
+
+    // Check for exact score match
+    if (predHomeScore !== null && predAwayScore !== null &&
+        predHomeScore === actualHomeScore && predAwayScore === actualAwayScore) {
+        return { points: 3, type: 'exact' };
+    }
+
+    // Check for correct outcome
+    if (prediction.outcome === actualOutcome) {
+        // Knockout matches award 2 pts for correct winner, group stage 1 pt
+        return { points: isKnockout ? 2 : 1, type: 'outcome' };
+    }
+
+    return { points: 0, type: 'incorrect' };
+}
+
+/**
+ * Apply actual results to match cards UI
+ */
+function applyActualResultsToUI() {
+    // Remove existing result bars and classes
+    document.querySelectorAll('.actual-result-bar').forEach(el => el.remove());
+    document.querySelectorAll('.match-card').forEach(card => {
+        card.classList.remove('correct-exact', 'correct-outcome', 'incorrect');
+    });
+
+    let totalPoints = 0;
+    let completedMatches = 0;
+    let correctPredictions = 0;
+
+    // Process all matches in matchData
+    Object.entries(window.matchData).forEach(([matchNum, matchInfo]) => {
+        if (matchInfo.status !== 'completed') return;
+        if (matchInfo.actualHomeScore === null || matchInfo.actualAwayScore === null) return;
+
+        completedMatches++;
+        const card = document.querySelector(`[data-match-number="${matchNum}"]`);
+        if (!card) return;
+
+        // Get prediction for this match
+        const isKnockout = parseInt(matchNum) > 72;
+        const predictions = isKnockout
+            ? window.bracketState.knockoutPredictions
+            : window.bracketState.groupPredictions;
+        const prediction = predictions?.[matchNum];
+
+        // Calculate points
+        const result = calculateMatchPoints(matchNum, prediction);
+
+        // Add actual result bar
+        const resultBar = document.createElement('div');
+        resultBar.className = 'actual-result-bar';
+
+        if (result) {
+            totalPoints += result.points;
+            if (result.points > 0) correctPredictions++;
+
+            // Apply styling class based on result
+            if (result.type === 'exact') {
+                card.classList.add('correct-exact');
+            } else if (result.type === 'outcome') {
+                card.classList.add('correct-outcome');
+            } else {
+                card.classList.add('incorrect');
+            }
+
+            const pointsClass = result.points >= 2 ? 'points-3' : (result.points === 1 ? 'points-1' : 'points-0');
+            resultBar.innerHTML = `
+                <span class="actual-score">Actual: ${matchInfo.actualHomeScore} - ${matchInfo.actualAwayScore}</span>
+                <span class="points-badge-small ${pointsClass}">+${result.points} pts</span>
+            `;
+        } else {
+            // No prediction made for this completed match
+            card.classList.add('incorrect');
+            resultBar.innerHTML = `
+                <span class="actual-score">Actual: ${matchInfo.actualHomeScore} - ${matchInfo.actualAwayScore}</span>
+                <span class="points-badge-small points-0">No prediction</span>
+            `;
+        }
+
+        card.appendChild(resultBar);
+    });
+
+    // Update score summary
+    updateScoreSummary(totalPoints, completedMatches, correctPredictions);
+}
+
+/**
+ * Update the score summary panel
+ */
+function updateScoreSummary(totalPoints, completedMatches, correctPredictions) {
+    const summaryPanel = document.getElementById('score-summary');
+
+    if (completedMatches === 0) {
+        summaryPanel.classList.add('hidden');
+        return;
+    }
+
+    summaryPanel.classList.remove('hidden');
+    document.getElementById('total-score').textContent = totalPoints;
+    document.getElementById('completed-matches-count').textContent = completedMatches;
+    document.getElementById('correct-predictions-count').textContent = `${correctPredictions}/${completedMatches}`;
+}
+
+// ============================================
 // PROGRESS & RECALCULATION
 // ============================================
 function updateProgress() {
@@ -672,6 +821,12 @@ function recalculateAll() {
             renderKnockoutBracket();
         } catch (e) {
             console.error('Error rendering knockout bracket:', e);
+        }
+
+        try {
+            applyActualResultsToUI();
+        } catch (e) {
+            console.error('Error applying actual results to UI:', e);
         }
     } catch (e) {
         console.error('Error in recalculateAll:', e);

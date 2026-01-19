@@ -1,63 +1,282 @@
 {% extends "base.html" %}
 
-{% block title %}FIFA World Cup 2026 Bracket Game{% endblock %}
+{% block title %}World Cup 2026 — Bracket Predictions{% endblock %}
+
+{% block head %}
+<style>
+    .landing-page {
+        font-family: 'Work Sans', sans-serif;
+        background-color: var(--color-paper);
+        min-height: 100vh;
+    }
+
+    .font-editorial {
+        font-family: 'Cormorant Garamond', Georgia, serif;
+    }
+
+    /* Hero section with subtle pitch texture */
+    .hero-section {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 200px;
+        background: linear-gradient(to top, rgba(45, 90, 39, 0.03), transparent);
+        pointer-events: none;
+    }
+
+    /* Pitch lines decoration */
+    .pitch-lines {
+        position: absolute;
+        bottom: 40px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 300px;
+        height: 100px;
+        opacity: 0.08;
+    }
+
+    .pitch-lines::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        height: 100%;
+        border: 2px solid var(--color-pitch);
+        border-bottom: none;
+        border-radius: 0 0 50% 50% / 0 0 100% 100%;
+    }
+
+    .pitch-lines::after {
+        content: '';
+        position: absolute;
+        top: 30px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 8px;
+        height: 8px;
+        background: var(--color-pitch);
+        border-radius: 50%;
+    }
+
+    /* Ball icon */
+    .ball-icon {
+        width: 48px;
+        height: 48px;
+        border: 2px solid currentColor;
+        border-radius: 50%;
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ball-icon::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        background: currentColor;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+
+    .ball-icon::after {
+        content: '';
+        position: absolute;
+        width: 2px;
+        height: 100%;
+        background: currentColor;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+
+    /* Step cards */
+    .step-card {
+        position: relative;
+        padding: 2rem 1.5rem;
+        background: transparent;
+        border-left: 1px solid rgba(28, 28, 28, 0.1);
+        transition: all 0.3s ease;
+    }
+
+    .step-card:hover {
+        border-left-color: var(--color-pitch);
+        background: rgba(45, 90, 39, 0.02);
+    }
+
+    .step-number {
+        font-family: 'Cormorant Garamond', serif;
+        font-size: 3.5rem;
+        font-weight: 300;
+        line-height: 1;
+        color: var(--color-ink-muted);
+        opacity: 0.4;
+        margin-bottom: 1rem;
+    }
+
+    /* CTA Button */
+    .cta-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 40px;
+        background: var(--color-pitch);
+        color: white;
+        font-family: 'Work Sans', sans-serif;
+        font-weight: 500;
+        font-size: 1rem;
+        letter-spacing: 0.02em;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+    }
+
+    .cta-btn:hover {
+        background: var(--color-pitch-light);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(45, 90, 39, 0.2);
+    }
+
+    .cta-btn svg {
+        transition: transform 0.3s ease;
+    }
+
+    .cta-btn:hover svg {
+        transform: translateX(4px);
+    }
+
+    /* Feature highlight */
+    .feature-box {
+        background: var(--color-paper-dark);
+        border-left: 3px solid var(--color-trophy);
+        padding: 2rem;
+    }
+
+    /* Decorative line */
+    .deco-line {
+        width: 60px;
+        height: 1px;
+        background: var(--color-ink);
+    }
+
+    /* Trophy accent */
+    .trophy-mark {
+        color: var(--color-trophy);
+    }
+
+    /* Hide default navbar on landing */
+    .landing-page ~ footer {
+        background: var(--color-ink);
+    }
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="max-w-4xl mx-auto">
-    <div class="text-center mb-12">
-        <h1 class="text-4xl md:text-5xl font-bold text-fifa-dark mb-4">
-            FIFA World Cup 2026
+<div class="landing-page -mx-4 -mt-8 px-4">
+    <!-- Hero Section -->
+    <section class="hero-section min-h-[85vh] flex flex-col justify-center items-center text-center px-6 py-20 relative">
+
+        <!-- Subtle ball icon -->
+        <div class="ball-icon text-ink-muted opacity-30 mb-12 animate-fade-up animate-float"></div>
+
+        <!-- Year marker -->
+        <p class="text-ink-muted text-sm tracking-[0.3em] uppercase mb-6 animate-fade-up animation-delay-100" style="opacity: 0;">
+            United States · Mexico · Canada
+        </p>
+
+        <!-- Main headline -->
+        <h1 class="font-editorial text-5xl md:text-7xl lg:text-8xl font-medium text-ink leading-[0.95] mb-6 animate-fade-up animation-delay-200" style="opacity: 0;">
+            World Cup<br>
+            <span class="italic font-normal">2026</span>
         </h1>
-        <h2 class="text-2xl md:text-3xl text-fifa-blue mb-6">
-            Bracket Prediction Game
-        </h2>
-        <p class="text-gray-600 text-lg mb-8">
-            Predict match outcomes, build your bracket, and share with friends!
-        </p>
-        <div class="flex gap-4 justify-center">
-            <a href="/bracket" class="btn-primary text-lg px-8 py-3">Start Predicting</a>
-        </div>
-    </div>
 
-    <div class="mt-12 text-center">
-        <h3 class="text-xl font-bold mb-6">How It Works</h3>
-        <div class="grid md:grid-cols-3 gap-6">
-            <div class="card">
-                <div class="text-3xl mb-3">1</div>
-                <h4 class="font-bold mb-2">Predict Group Stage</h4>
-                <p class="text-gray-600 text-sm">
-                    Predict the outcome of all 72 group stage matches.
+        <!-- Decorative line -->
+        <div class="deco-line my-8 animate-draw-line animation-delay-300" style="opacity: 0;"></div>
+
+        <!-- Subheadline -->
+        <p class="text-ink-light text-lg md:text-xl font-light max-w-md mb-12 animate-fade-up animation-delay-400" style="opacity: 0;">
+            Predict every match. Build your bracket.<br>
+            Share your vision of the tournament.
+        </p>
+
+        <!-- CTA -->
+        <a href="/bracket" class="cta-btn animate-fade-up animation-delay-500" style="opacity: 0;">
+            Begin Your Predictions
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+        </a>
+
+        <!-- Pitch lines decoration -->
+        <div class="pitch-lines animate-fade-in animation-delay-600" style="opacity: 0;"></div>
+    </section>
+
+    <!-- How it works -->
+    <section class="max-w-5xl mx-auto px-6 py-24">
+        <div class="mb-16">
+            <p class="text-ink-muted text-xs tracking-[0.25em] uppercase mb-3">The Process</p>
+            <h2 class="font-editorial text-3xl md:text-4xl text-ink font-medium">Three simple steps</h2>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-0">
+            <div class="step-card">
+                <div class="step-number">01</div>
+                <h3 class="font-editorial text-xl text-ink mb-3">Group Stage</h3>
+                <p class="text-ink-light text-sm leading-relaxed">
+                    Predict outcomes for all 72 group matches. Each result shapes your tournament path.
                 </p>
             </div>
-            <div class="card">
-                <div class="text-3xl mb-3">2</div>
-                <h4 class="font-bold mb-2">Build Your Bracket</h4>
-                <p class="text-gray-600 text-sm">
-                    Pick winners through the knockout rounds to the final.
+
+            <div class="step-card">
+                <div class="step-number">02</div>
+                <h3 class="font-editorial text-xl text-ink mb-3">Knockout Rounds</h3>
+                <p class="text-ink-light text-sm leading-relaxed">
+                    Chart your course through the bracket. From Round of 32 to the Final.
                 </p>
             </div>
-            <div class="card">
-                <div class="text-3xl mb-3">3</div>
-                <h4 class="font-bold mb-2">Share Your Bracket</h4>
-                <p class="text-gray-600 text-sm">
-                    Get a shareable link and compare with friends!
+
+            <div class="step-card">
+                <div class="step-number">03</div>
+                <h3 class="font-editorial text-xl text-ink mb-3">Share & Compare</h3>
+                <p class="text-ink-light text-sm leading-relaxed">
+                    Get a unique link to your bracket. Challenge friends. Track your accuracy.
                 </p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <div class="mt-8 card bg-fifa-blue text-white">
-        <h3 class="text-xl font-bold mb-4">Your Predictions Are Stored in the URL</h3>
-        <p class="mb-4">
-            No account needed! All your predictions are saved directly in the URL.
-            Just bookmark your page or copy the link to save and share your bracket.
+    <!-- Feature highlight -->
+    <section class="max-w-5xl mx-auto px-6 pb-24">
+        <div class="feature-box">
+            <div class="flex items-start gap-4">
+                <span class="trophy-mark font-editorial text-3xl">*</span>
+                <div>
+                    <h3 class="font-editorial text-xl text-ink mb-2">No account needed</h3>
+                    <p class="text-ink-light text-sm leading-relaxed max-w-lg">
+                        Your predictions live in the URL. Bookmark your bracket, share it with a link,
+                        return anytime. Simple as the beautiful game itself.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer quote -->
+    <section class="border-t border-ink/10 py-16 text-center">
+        <p class="font-editorial text-2xl md:text-3xl text-ink-muted italic max-w-2xl mx-auto px-6">
+            "The ball is round. The game lasts 90 minutes. Everything else is pure theory."
         </p>
-        <ul class="text-sm space-y-1">
-            <li>&#10003; No login required</li>
-            <li>&#10003; Share your bracket with a simple link</li>
-            <li>&#10003; Bookmark to save your progress</li>
-            <li>&#10003; Compare brackets with friends</li>
-        </ul>
-    </div>
+        <p class="text-ink-muted text-xs tracking-[0.2em] uppercase mt-4">Sepp Herberger</p>
+    </section>
 </div>
 {% endblock %}
