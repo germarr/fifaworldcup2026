@@ -386,60 +386,7 @@ function autoSelectAllGroups() {
     showToast('All groups auto-filled!', 'success');
 }
 
-function calculateGroupStandings(groupLetter) {
-    const teams = window.groupTeams[groupLetter];
-    const preds = window.bracketState.groupPredictions || {};
-    const stats = {};
-
-    if (!teams) {
-        console.error('No teams found for group', groupLetter);
-        return [];
-    }
-
-    teams.forEach(t => {
-        stats[t.id] = { ...t, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
-    });
-
-    // Debug: log what we're working with
-    const matchDataKeys = Object.keys(window.matchData);
-    const predKeys = Object.keys(preds);
-    console.log(`Group ${groupLetter}: matchData has ${matchDataKeys.length} entries, preds has ${predKeys.length} entries`);
-
-    Object.entries(preds).forEach(([num, pred]) => {
-        const match = window.matchData[String(num)] || window.matchData[parseInt(num)];
-
-        if (!match) {
-            console.log(`No match found for num ${num}, matchData keys sample:`, matchDataKeys.slice(0, 5));
-            return;
-        }
-
-        if (match.group !== groupLetter) return;
-
-        const home = stats[match.homeTeamId];
-        const away = stats[match.awayTeamId];
-
-        if (!home || !away) {
-            console.log(`Team not found: homeTeamId=${match.homeTeamId}, awayTeamId=${match.awayTeamId}`);
-            return;
-        }
-
-        home.played++; away.played++;
-        const hs = pred.homeScore || 0, as = pred.awayScore || 0;
-        home.gf += hs; home.ga += as;
-        away.gf += as; away.ga += hs;
-
-        if (pred.outcome === 'home_win') { home.won++; home.pts += 3; away.lost++; }
-        else if (pred.outcome === 'away_win') { away.won++; away.pts += 3; home.lost++; }
-        else { home.drawn++; away.drawn++; home.pts++; away.pts++; }
-    });
-
-    const result = Object.values(stats)
-        .map(s => ({ ...s, gd: s.gf - s.ga }))
-        .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
-
-    console.log(`Group ${groupLetter} standings:`, result.map(t => `${t.name}: ${t.pts}pts, ${t.played}P`));
-    return result;
-}
+// NOTE: calculateGroupStandings is now provided by app.js
 
 function updateStandingsUI(groupLetter, standings) {
     const table = document.getElementById(`standings-${groupLetter}`);
@@ -467,7 +414,7 @@ function updateStandingsUI(groupLetter, standings) {
 function getThirdPlaceTeams() {
     const thirds = [];
     Object.keys(window.groupTeams).forEach(g => {
-        const standings = calculateGroupStandings(g);
+        const standings = calculateGroupStandings(g, window.groupTeams[g], window.bracketState.groupPredictions || {});
         if (standings.length >= 3 && standings[2].played > 0) {
             thirds.push({ ...standings[2], group: g });
         }
@@ -553,7 +500,7 @@ function saveThirdPlaceOrder() {
 function getQualifiers() {
     const q = { winners: {}, runners: {}, thirds: getThirdPlaceTeams() };
     Object.keys(window.groupTeams).forEach(g => {
-        const s = calculateGroupStandings(g);
+        const s = calculateGroupStandings(g, window.groupTeams[g], window.bracketState.groupPredictions || {});
         if (s[0]?.played > 0) q.winners[`1${g}`] = s[0];
         if (s[1]?.played > 0) q.runners[`2${g}`] = s[1];
     });
@@ -699,7 +646,7 @@ function updateProgress() {
 
 function recalculateAll() {
     Object.keys(window.groupTeams).forEach(g => {
-        const standings = calculateGroupStandings(g);
+        const standings = calculateGroupStandings(g, window.groupTeams[g], window.bracketState.groupPredictions || {});
         updateStandingsUI(g, standings);
     });
     renderThirdPlaceList();

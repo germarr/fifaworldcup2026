@@ -353,6 +353,7 @@ function calculateGroupStandings(groupLetter, teams, predictions) {
     // Initialize team stats
     teams.forEach(team => {
         teamStats[team.id] = {
+            id: team.id,
             team_id: team.id,
             team_name: team.name,
             country_code: team.country_code,
@@ -409,7 +410,18 @@ function calculateGroupStandings(groupLetter, teams, predictions) {
     // Calculate goal difference and sort
     console.log(`Group ${groupLetter}: Found ${matchesForGroup} predictions for this group`);
     const result = Object.values(teamStats)
-        .map(s => ({ ...s, goal_diff: s.goals_for - s.goals_against }))
+        .map(s => {
+            const gd = s.goals_for - s.goals_against;
+            return {
+                ...s,
+                goal_diff: gd,
+                // Aliases for compatibility
+                gf: s.goals_for,
+                ga: s.goals_against,
+                gd: gd,
+                pts: s.points
+            };
+        })
         .sort((a, b) => {
             if (b.points !== a.points) return b.points - a.points;
             if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
@@ -418,6 +430,7 @@ function calculateGroupStandings(groupLetter, teams, predictions) {
     
     console.log(`Group ${groupLetter} final standings:`, result);
     return result;
+}
 
 // Form validation (legacy support)
 function validatePredictionForm(form) {
