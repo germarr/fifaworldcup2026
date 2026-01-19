@@ -645,13 +645,34 @@ function updateProgress() {
 }
 
 function recalculateAll() {
-    Object.keys(window.groupTeams).forEach(g => {
-        const standings = calculateGroupStandings(g, window.groupTeams[g], window.bracketState.groupPredictions || {});
-        updateStandingsUI(g, standings);
-    });
-    renderThirdPlaceList();
-    renderKnockoutBracket();
-    updateProgress();
+    try {
+        if (!window.bracketState) return;
+
+        Object.keys(window.groupTeams).forEach(g => {
+            try {
+                const standings = calculateGroupStandings(g, window.groupTeams[g], window.bracketState.groupPredictions || {});
+                updateStandingsUI(g, standings);
+            } catch (e) {
+                console.error(`Error calculating standings for group ${g}:`, e);
+            }
+        });
+
+        try {
+            renderThirdPlaceList();
+        } catch (e) {
+            console.error('Error rendering third place list:', e);
+        }
+
+        try {
+            renderKnockoutBracket();
+        } catch (e) {
+            console.error('Error rendering knockout bracket:', e);
+        }
+    } catch (e) {
+        console.error('Error in recalculateAll:', e);
+    } finally {
+        updateProgress();
+    }
 }
 
 // ============================================

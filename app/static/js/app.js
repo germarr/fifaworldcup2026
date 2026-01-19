@@ -355,6 +355,7 @@ function calculateGroupStandings(groupLetter, teams, predictions) {
         teamStats[team.id] = {
             id: team.id,
             team_id: team.id,
+            name: team.name,
             team_name: team.name,
             country_code: team.country_code,
             played: 0,
