@@ -298,10 +298,10 @@ function handlePrediction(matchNumber, outcome) {
     // Update UI
     selectPrediction(matchNumber, outcome);
 
-    // Save to local state and URL
-    savePredictionLocal(matchNumber, outcome, homeScore, awayScore);
+    // Save to local state and URL (with isBulkOperation=true to prevent double recalculation)
+    savePredictionLocal(matchNumber, outcome, homeScore, awayScore, null, true);
 
-    // Recalculate standings
+    // Recalculate standings once after save
     recalculateAllStandings();
 }
 
