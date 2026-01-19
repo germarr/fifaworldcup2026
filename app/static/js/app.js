@@ -367,11 +367,13 @@ function calculateGroupStandings(groupLetter, teams, predictions) {
     });
 
     // Process predictions for this group
+    let matchesForGroup = 0;
     Object.entries(predictions).forEach(([matchNum, pred]) => {
         // Convert to string for consistent lookup (match data keys are strings from JSON)
         const matchInfo = window.matchData[String(matchNum)] || window.matchData[parseInt(matchNum)];
         if (!matchInfo || matchInfo.group !== groupLetter) return;
 
+        matchesForGroup++;
         const homeStats = teamStats[matchInfo.homeTeamId];
         const awayStats = teamStats[matchInfo.awayTeamId];
 
@@ -405,14 +407,17 @@ function calculateGroupStandings(groupLetter, teams, predictions) {
     });
 
     // Calculate goal difference and sort
-    return Object.values(teamStats)
+    console.log(`Group ${groupLetter}: Found ${matchesForGroup} predictions for this group`);
+    const result = Object.values(teamStats)
         .map(s => ({ ...s, goal_diff: s.goals_for - s.goals_against }))
         .sort((a, b) => {
             if (b.points !== a.points) return b.points - a.points;
             if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
             return b.goals_for - a.goals_for;
         });
-}
+    
+    console.log(`Group ${groupLetter} final standings:`, result);
+    return result;
 
 // Form validation (legacy support)
 function validatePredictionForm(form) {

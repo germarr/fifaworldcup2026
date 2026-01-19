@@ -343,11 +343,14 @@ async function autoSelectAllGroups() {
     
     let selectedCount = 0;
     const processedMatches = [];
+    const groupsProcessed = new Set();
 
     matchCards.forEach(card => {
         const matchNumber = parseInt(card.dataset.matchNumber);
+        const groupLetter = card.dataset.group;
         
         if (matchNumber <= 72) { // Only group stage
+            groupsProcessed.add(groupLetter);
             const outcomes = ['home_win', 'draw', 'away_win'];
             const randomOutcome = outcomes[Math.floor(Math.random() * 3)];
 
@@ -371,13 +374,15 @@ async function autoSelectAllGroups() {
             // Save
             savePredictionLocal(matchNumber, randomOutcome, homeScore, awayScore, null, true);
             selectedCount++;
-            processedMatches.push(matchNumber);
+            processedMatches.push(`${matchNumber}(${groupLetter})`);
         }
     });
 
     console.log(`Auto-selected ${selectedCount} group stage matches`);
+    console.log(`Groups processed: ${Array.from(groupsProcessed).sort().join(', ')}`);
     console.log(`Match numbers processed: ${processedMatches.join(', ')}`);
     console.log(`Current groupPredictions state:`, window.bracketState.groupPredictions);
+    console.log(`Number of predictions saved: ${Object.keys(window.bracketState.groupPredictions).length}`);
     
     // Ensure state is updated properly
     updateURLState();
