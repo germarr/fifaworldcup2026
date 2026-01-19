@@ -636,12 +636,13 @@ function updateProgress() {
     const groupCount = Object.keys(window.bracketState.groupPredictions || {}).length;
     const koCount = Object.keys(window.bracketState.knockoutPredictions || {}).length;
     const total = groupCount + koCount;
-    const pct = Math.round((total / 103) * 100);
+    const TOTAL_PREDICTIONS = 104; // 72 group stage + 32 knockout
+    const pct = Math.round((total / TOTAL_PREDICTIONS) * 100);
 
     document.getElementById('progress-bar').style.width = pct + '%';
-    document.getElementById('progress-text').textContent = `${total}/103 predictions`;
+    document.getElementById('progress-text').textContent = `${total}/${TOTAL_PREDICTIONS} predictions`;
     document.getElementById('groups-count').textContent = `(${groupCount}/72)`;
-    document.getElementById('knockout-count').textContent = `(${koCount}/31)`;
+    document.getElementById('knockout-count').textContent = `(${koCount}/32)`;
 }
 
 function recalculateAll() {
