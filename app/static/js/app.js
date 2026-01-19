@@ -211,8 +211,9 @@ function savePredictionLocal(matchNumber, outcome, homeScore = null, awayScore =
 
     updateURLState();
 
-    // Recalculate standings if the function exists
-    if (typeof recalculateAllStandings === 'function') {
+    // Recalculate standings only if NOT in bulk operation
+    // (bulk operations will call recalculateAllStandings manually after all saves)
+    if (!isBulkOperation && typeof recalculateAllStandings === 'function') {
         recalculateAllStandings();
     }
 

@@ -339,10 +339,14 @@ function handleScoreChange(matchNumber) {
 // Auto-select all groups with random outcomes
 async function autoSelectAllGroups() {
     const matchCards = document.querySelectorAll('[data-match-number]');
+    console.log(`Found ${matchCards.length} total match cards in DOM`);
+    
     let selectedCount = 0;
+    const processedMatches = [];
 
     matchCards.forEach(card => {
         const matchNumber = parseInt(card.dataset.matchNumber);
+        
         if (matchNumber <= 72) { // Only group stage
             const outcomes = ['home_win', 'draw', 'away_win'];
             const randomOutcome = outcomes[Math.floor(Math.random() * 3)];
@@ -367,10 +371,13 @@ async function autoSelectAllGroups() {
             // Save
             savePredictionLocal(matchNumber, randomOutcome, homeScore, awayScore, null, true);
             selectedCount++;
+            processedMatches.push(matchNumber);
         }
     });
 
-    console.log(`Auto-selected ${selectedCount} matches`);
+    console.log(`Auto-selected ${selectedCount} group stage matches`);
+    console.log(`Match numbers processed: ${processedMatches.join(', ')}`);
+    console.log(`Current groupPredictions state:`, window.bracketState.groupPredictions);
     
     // Ensure state is updated properly
     updateURLState();
@@ -378,6 +385,7 @@ async function autoSelectAllGroups() {
     // Small delay to ensure recalculation happens after state is updated
     await new Promise(resolve => setTimeout(resolve, 50));
     
+    console.log(`About to recalculate standings...`);
     recalculateAllStandings();
     showToast(`All groups auto-selected! (${selectedCount} matches)`, 'success');
 }
@@ -429,11 +437,14 @@ async function autoSelectGroup(groupLetter) {
 
 // Recalculate all group standings
 function recalculateAllStandings() {
+    console.log(`recalculateAllStandings called with predictions:`, window.bracketState.groupPredictions);
     const groupLetters = Object.keys(window.groupTeams);
     const thirdPlaceTeams = [];
 
     groupLetters.forEach(group => {
+        console.log(`Calculating standings for group ${group}...`);
         const standings = calculateGroupStandings(group, window.groupTeams[group], window.bracketState.groupPredictions);
+        console.log(`Group ${group} standings:`, standings);
         updateStandingsUI(group, standings);
 
         // Track third place team

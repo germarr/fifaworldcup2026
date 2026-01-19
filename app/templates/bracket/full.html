@@ -391,17 +391,37 @@ function calculateGroupStandings(groupLetter) {
     const preds = window.bracketState.groupPredictions || {};
     const stats = {};
 
+    if (!teams) {
+        console.error('No teams found for group', groupLetter);
+        return [];
+    }
+
     teams.forEach(t => {
         stats[t.id] = { ...t, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
     });
 
+    // Debug: log what we're working with
+    const matchDataKeys = Object.keys(window.matchData);
+    const predKeys = Object.keys(preds);
+    console.log(`Group ${groupLetter}: matchData has ${matchDataKeys.length} entries, preds has ${predKeys.length} entries`);
+
     Object.entries(preds).forEach(([num, pred]) => {
         const match = window.matchData[String(num)] || window.matchData[parseInt(num)];
-        if (!match || match.group !== groupLetter) return;
+
+        if (!match) {
+            console.log(`No match found for num ${num}, matchData keys sample:`, matchDataKeys.slice(0, 5));
+            return;
+        }
+
+        if (match.group !== groupLetter) return;
 
         const home = stats[match.homeTeamId];
         const away = stats[match.awayTeamId];
-        if (!home || !away) return;
+
+        if (!home || !away) {
+            console.log(`Team not found: homeTeamId=${match.homeTeamId}, awayTeamId=${match.awayTeamId}`);
+            return;
+        }
 
         home.played++; away.played++;
         const hs = pred.homeScore || 0, as = pred.awayScore || 0;
@@ -413,9 +433,12 @@ function calculateGroupStandings(groupLetter) {
         else { home.drawn++; away.drawn++; home.pts++; away.pts++; }
     });
 
-    return Object.values(stats)
+    const result = Object.values(stats)
         .map(s => ({ ...s, gd: s.gf - s.ga }))
         .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+
+    console.log(`Group ${groupLetter} standings:`, result.map(t => `${t.name}: ${t.pts}pts, ${t.played}P`));
+    return result;
 }
 
 function updateStandingsUI(groupLetter, standings) {
