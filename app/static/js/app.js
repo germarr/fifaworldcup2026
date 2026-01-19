@@ -146,6 +146,10 @@ function applyStateToUI() {
     if (typeof recalculateAllStandings === 'function') {
         recalculateAllStandings();
     }
+
+    if (typeof applyActualResultsToGroups === 'function') {
+        applyActualResultsToGroups();
+    }
 }
 
 function applyPredictionToUI(matchNum, pred) {

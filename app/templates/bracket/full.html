@@ -200,6 +200,12 @@
                             <span class="text-gray-400">-</span>
                             <input type="number" min="0" max="20" class="away-score w-12 text-center input-field text-xs py-1 border rounded" placeholder="-" onchange="handleScoreChange({{ match.match_number }})">
                         </div>
+                        {% if match.actual_home_score is not none and match.actual_away_score is not none %}
+                            <div class="actual-result-bar">
+                                <span class="actual-score">Actual: {{ match.actual_home_score }} - {{ match.actual_away_score }}</span>
+                                <span class="points-badge-small points-0">Pending points</span>
+                            </div>
+                        {% endif %}
                     </div>
                     {% endfor %}
                 </div>
@@ -557,7 +563,7 @@ function renderKOMatch(num, home, away, homeLabel, awayLabel) {
     window.knockoutTeams[num] = { home, away };
     const pred = window.bracketState.knockoutPredictions?.[num];
     const matchInfo = window.matchData[num];
-    const isCompleted = matchInfo?.status === 'completed' && matchInfo?.actualHomeScore !== null;
+    const isCompleted = matchInfo?.actualHomeScore != null && matchInfo?.actualAwayScore != null;
 
     const hClass = pred?.outcome === 'home_win' ? 'winner' : (pred?.outcome === 'away_win' ? 'loser' : '');
     const aClass = pred?.outcome === 'away_win' ? 'winner' : (pred?.outcome === 'home_win' ? 'loser' : '');
@@ -754,8 +760,8 @@ function renderKnockoutBracket() {
  */
 function calculateMatchPoints(matchNumber, prediction) {
     const matchInfo = window.matchData[matchNumber];
-    if (!matchInfo || matchInfo.status !== 'completed') return null;
-    if (matchInfo.actualHomeScore === null || matchInfo.actualAwayScore === null) return null;
+    if (!matchInfo) return null;
+    if (matchInfo.actualHomeScore == null || matchInfo.actualAwayScore == null) return null;
     if (!prediction) return null;
 
     const predHomeScore = prediction.homeScore ?? null;
@@ -803,8 +809,7 @@ function applyActualResultsToUI() {
 
     // Process all matches in matchData
     Object.entries(window.matchData).forEach(([matchNum, matchInfo]) => {
-        if (matchInfo.status !== 'completed') return;
-        if (matchInfo.actualHomeScore === null || matchInfo.actualAwayScore === null) return;
+        if (matchInfo.actualHomeScore == null || matchInfo.actualAwayScore == null) return;
 
         completedMatches++;
         const isKnockout = parseInt(matchNum) > 72;

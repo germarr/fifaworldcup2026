@@ -141,6 +141,9 @@ async def bracket_page(request: Request, db: Session = Depends(get_session)):
                 "away_team": away_team,
                 "home_team_id": match.home_team_id,
                 "away_team_id": match.away_team_id,
+                "status": match.status,
+                "actual_home_score": match.actual_home_score,
+                "actual_away_score": match.actual_away_score,
             })
 
             if match.match_number:

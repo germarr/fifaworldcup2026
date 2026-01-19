@@ -14,7 +14,6 @@ from app.database import engine, create_db_and_tables
 from app.models.fifa_team import FifaTeam
 from app.models.match import Match
 from app.models.stadium import Stadium
-from app.services.scoring import calculate_match_points
 import pandas as pd
 
 data_ = pd.read_csv('./app/core_files/matches.csv', index_col=0)
@@ -25,6 +24,18 @@ CORE_FILES_DIR = Path(__file__).parent.parent / "app" / "core_files"
 TEAMS_CSV = CORE_FILES_DIR / "teams.csv"
 STADIUMS_CSV = CORE_FILES_DIR / "stadiums.csv"
 MATCHES_CSV = CORE_FILES_DIR / "matches.csv"
+
+SCORING_ENABLED = os.getenv("ENABLE_SCORING", "0") == "1"
+
+def get_calculate_match_points():
+    if not SCORING_ENABLED:
+        return None
+    try:
+        from app.services.scoring import calculate_match_points
+    except Exception as exc:
+        print(f"Scoring disabled: {exc}")
+        return None
+    return calculate_match_points
 
 def parse_date(date_str: str) -> Optional[datetime]:
     if not date_str:
@@ -91,6 +102,7 @@ def update_matches(session: Session):
         return
 
     print(f"Updating matches from {MATCHES_CSV}...")
+    calculate_match_points = get_calculate_match_points()
     with open(MATCHES_CSV, mode="r", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         count = 0
@@ -193,23 +205,18 @@ def update_matches(session: Session):
         
         session.commit()
         
-        # Recalculate points for all completed matches we touched
-        # We can iterate again or just do it for all 'completed' matches in DB to be safe/easy
-        # Or better, just do it for the ones in this CSV?
-        # For simplicity in this script, let's re-calculate points for all completed matches 
-        # that were in the CSV.
-        
-        # Re-fetching matches to ensure IDs and relationships are fresh
-        f.seek(0)
-        reader = csv.DictReader(f)
-        for row in reader:
-             try:
-                m_num = int(row["match_number"])
-                m = session.exec(select(Match).where(Match.match_number == m_num)).first()
-                if m and m.status == "completed":
-                    calculate_match_points(session, m)
-             except ValueError:
-                 pass
+        if calculate_match_points is not None:
+            # Recalculate points for completed matches in this CSV.
+            f.seek(0)
+            reader = csv.DictReader(f)
+            for row in reader:
+                 try:
+                    m_num = int(row["match_number"])
+                    m = session.exec(select(Match).where(Match.match_number == m_num)).first()
+                    if m and m.status == "completed":
+                        calculate_match_points(session, m)
+                 except ValueError:
+                     pass
         
         print(f"Processed {count} matches.")
 
