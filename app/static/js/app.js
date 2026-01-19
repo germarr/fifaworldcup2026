@@ -282,6 +282,9 @@ function resetAllPredictions() {
     if (typeof recalculateAllStandings === 'function') {
         recalculateAllStandings();
     }
+    if (typeof applyActualResultsToGroups === 'function') {
+        applyActualResultsToGroups();
+    }
 
     showToast('All predictions cleared', 'success');
 }

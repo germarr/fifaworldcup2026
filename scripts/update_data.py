@@ -17,9 +17,9 @@ from app.models.stadium import Stadium
 from app.services.scoring import calculate_match_points
 import pandas as pd
 
-data_ = pd.read_csv('../app/core_files/matches.csv', index_col=0)
+data_ = pd.read_csv('./app/core_files/matches.csv', index_col=0)
 data_['scheduled_datetime'] = pd.to_datetime(data_['scheduled_datetime'], format='mixed')
-data_.to_csv("../app/core_files/matches.csv")
+data_.to_csv("./app/core_files/matches.csv")
 
 CORE_FILES_DIR = Path(__file__).parent.parent / "app" / "core_files"
 TEAMS_CSV = CORE_FILES_DIR / "teams.csv"

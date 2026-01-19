@@ -14,7 +14,7 @@ def _():
 def _():
     import sqlmodel
 
-    DATABASE_URL = "sqlite:///../worldcup.db"
+    DATABASE_URL = "sqlite:///./worldcup.db"
     engine = sqlmodel.create_engine(DATABASE_URL)
     return (engine,)
 
@@ -510,12 +510,11 @@ def _(get_exchange_data, minutes_to_df, pd, requests, ticker_):
             except:
                 None
 
-        
+
 
         full_event_results = pd.concat(events_list_).reset_index(drop=True)
 
         return ticker_lo,full_event_results
-
     return (event_ticker_dfv4,)
 
 
@@ -621,7 +620,6 @@ def _(get_kalshi_markets):
 
     #https://kalshi.com/markets/kxwcgroupwin/world-cup-group-winner/kxwcgroupwin-26c
 
-
     return (aaa,)
 
 
@@ -691,7 +689,6 @@ def _(pd, requests):
         final_df['series_title'] = data_dict['title']
 
         return final_df
-
 
     return
 

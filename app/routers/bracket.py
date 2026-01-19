@@ -54,6 +54,9 @@ async def groups_page(request: Request, db: Session = Depends(get_session)):
                 "home_team_id": match.home_team_id,
                 "away_team_id": match.away_team_id,
                 "scheduled_datetime": match.scheduled_datetime,
+                "status": match.status,
+                "actual_home_score": match.actual_home_score,
+                "actual_away_score": match.actual_away_score,
                 "stadium": {
                     "name": stadium.name,
                     "city": stadium.city
@@ -66,7 +69,10 @@ async def groups_page(request: Request, db: Session = Depends(get_session)):
                     "id": match.id,
                     "group": group_letter,
                     "homeTeamId": match.home_team_id,
-                    "awayTeamId": match.away_team_id
+                    "awayTeamId": match.away_team_id,
+                    "status": match.status,
+                    "actualHomeScore": match.actual_home_score,
+                    "actualAwayScore": match.actual_away_score
                 }
 
         groups[group_letter] = {
