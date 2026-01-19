@@ -7,37 +7,11 @@
             </a>
 
             <div class="hidden md:flex items-center space-x-6">
-                {% if current_user %}
-                    <!-- My Bracket Dropdown -->
-                    <div class="relative group">
-                        <button class="hover:text-fifa-gold transition-colors flex items-center gap-1">
-                            My Bracket
-                            <span class="text-sm">▼</span>
-                        </button>
-                        <div class="absolute left-0 mt-0 w-48 bg-fifa-dark border border-gray-600 rounded-lg shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                            <a href="/bracket/groups" class="block px-4 py-3 hover:bg-gray-700 hover:text-fifa-gold transition-colors border-b border-gray-600 first:rounded-t-lg">
-                                📊 Group Stage
-                            </a>
-                            <a href="/bracket" class="block px-4 py-3 hover:bg-gray-700 hover:text-fifa-gold transition-colors last:rounded-b-lg">
-                                🏆 Knockout Stage
-                            </a>
-                        </div>
-                    </div>
-
-                    <a href="/leaderboard" class="hover:text-fifa-gold transition-colors">Leaderboard</a>
-                    <a href="/results" class="hover:text-fifa-gold transition-colors">My Results</a>
-                    <a href="/teams" class="hover:text-fifa-gold transition-colors">Teams</a>
-                    {% if current_user.is_admin %}
-                        <a href="/admin" class="hover:text-fifa-gold transition-colors">Admin</a>
-                    {% endif %}
-                    <div class="flex items-center gap-4">
-                        <span class="text-gray-300">{{ current_user.display_name }}</span>
-                        <a href="/auth/logout" class="btn-gold text-sm">Logout</a>
-                    </div>
-                {% else %}
-                    <a href="/auth/login" class="hover:text-fifa-gold transition-colors">Login</a>
-                    <a href="/auth/register" class="btn-gold">Sign Up</a>
-                {% endif %}
+                <a href="#" onclick="navigateWithState('/bracket'); return false;" class="hover:text-fifa-gold transition-colors font-semibold">
+                    My Bracket
+                </a>
+                <a href="/results" class="hover:text-fifa-gold transition-colors">Results</a>
+                <button onclick="copyShareableLink()" class="btn-gold text-sm">Share Bracket</button>
             </div>
 
             <button id="mobile-menu-btn" class="md:hidden text-2xl">
@@ -46,57 +20,30 @@
         </div>
 
         <div id="mobile-menu" class="hidden md:hidden pb-4">
-            {% if current_user %}
-                <!-- Mobile My Bracket Menu -->
-                <div class="border-b border-gray-600 mb-2">
-                    <button id="mobile-bracket-btn" class="w-full text-left py-2 hover:text-fifa-gold flex justify-between items-center">
-                        My Bracket
-                        <span id="mobile-bracket-arrow" class="text-sm">▶</span>
-                    </button>
-                    <div id="mobile-bracket-menu" class="hidden bg-gray-800 rounded-lg mt-2 overflow-hidden">
-                        <a href="/bracket/groups" class="block py-2 px-4 hover:text-fifa-gold hover:bg-gray-700">
-                            📊 Group Stage
-                        </a>
-                        <a href="/bracket" class="block py-2 px-4 hover:text-fifa-gold hover:bg-gray-700">
-                            🏆 Knockout Stage
-                        </a>
-                    </div>
-                </div>
-                
-                <a href="/leaderboard" class="block py-2 hover:text-fifa-gold">Leaderboard</a>
-                <a href="/results" class="block py-2 hover:text-fifa-gold">My Results</a>
-                <a href="/teams" class="block py-2 hover:text-fifa-gold">Teams</a>
-                {% if current_user.is_admin %}
-                    <a href="/admin" class="block py-2 hover:text-fifa-gold">Admin</a>
-                {% endif %}
-                <div class="border-t border-gray-600 mt-2 pt-2">
-                    <span class="block py-2 text-gray-300">{{ current_user.display_name }}</span>
-                    <a href="/auth/logout" class="block py-2 text-fifa-gold">Logout</a>
-                </div>
-            {% else %}
-                <a href="/auth/login" class="block py-2 hover:text-fifa-gold">Login</a>
-                <a href="/auth/register" class="block py-2 hover:text-fifa-gold">Sign Up</a>
-            {% endif %}
+            <a href="#" onclick="navigateWithState('/bracket'); return false;" class="block py-2 hover:text-fifa-gold font-semibold">My Bracket</a>
+            <a href="/results" class="block py-2 hover:text-fifa-gold">Results</a>
+            <button onclick="copyShareableLink()" class="block py-2 text-fifa-gold text-left w-full">Share Bracket</button>
         </div>
     </div>
 </nav>
 
 <script>
-// Mobile menu toggle
-document.getElementById('mobile-menu-btn').addEventListener('click', function() {
-    document.getElementById('mobile-menu').classList.toggle('hidden');
-});
-
-// Mobile bracket submenu toggle
-const bracketBtn = document.getElementById('mobile-bracket-btn');
-const bracketMenu = document.getElementById('mobile-bracket-menu');
-const bracketArrow = document.getElementById('mobile-bracket-arrow');
-
-if (bracketBtn) {
-    bracketBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        bracketMenu.classList.toggle('hidden');
-        bracketArrow.textContent = bracketMenu.classList.contains('hidden') ? '▶' : '▼';
-    });
+// Navigate to a page while preserving bracket state in URL
+function navigateWithState(path) {
+    if (window.bracketState && typeof encodeState === 'function') {
+        const encoded = encodeState(window.bracketState);
+        if (encoded) {
+            window.location.href = `${path}?s=${encoded}`;
+            return;
+        }
+    }
+    // Fallback: preserve current URL state if present
+    const currentParams = new URLSearchParams(window.location.search);
+    const stateParam = currentParams.get('s');
+    if (stateParam) {
+        window.location.href = `${path}?s=${stateParam}`;
+    } else {
+        window.location.href = path;
+    }
 }
 </script>

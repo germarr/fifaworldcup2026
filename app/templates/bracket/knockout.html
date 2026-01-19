@@ -1,105 +1,4 @@
 {% extends "base.html" %}
-{% from "components/team_flag.html" import flag %}
-
-{# Macro for knockout match card with H-D-A style #}
-{% macro knockout_match_card(match) %}
-{% set is_draw = match.prediction and match.prediction.predicted_outcome == 'draw' %}
-{% set home_wins = match.prediction and match.prediction.predicted_outcome == 'home_win' %}
-{% set away_wins = match.prediction and match.prediction.predicted_outcome == 'away_win' %}
-
-<div class="match-card p-2 text-sm" data-match-id="{{ match.match_id }}" data-home-id="{{ match.home_team.team_id if match.home_team else '' }}" data-away-id="{{ match.away_team.team_id if match.away_team else '' }}" data-home-name="{{ match.home_team.team_name if match.home_team else 'TBD' }}" data-away-name="{{ match.away_team.team_name if match.away_team else 'TBD' }}">
-    <div class="text-xs text-gray-400 mb-2">Match {{ match.match_number }}</div>
-    <div class="text-xs text-gray-500 mb-2">
-        {% if match.scheduled_datetime %}
-            <span>{{ match.scheduled_datetime.strftime('%b %d, %Y %H:%M') }}</span>
-        {% endif %}
-        {% if match.stadium %}
-            <span class="ml-1">• {{ match.stadium.city }} — {{ match.stadium.name }}</span>
-        {% endif %}
-    </div>
-
-    <div class="flex items-center justify-between gap-2">
-        <!-- Home Team -->
-        <div class="team-row flex items-center gap-1 px-2 py-1 rounded flex-1 {{ 'bg-green-100 border border-green-400' if home_wins else ('bg-yellow-100 border border-yellow-400' if is_draw else 'bg-white') }}">
-            {{ flag(match.home_team.country_code, 16) if match.home_team else '?' }}
-            <span class="text-xs truncate">{{ match.home_team.team_name[:12] if match.home_team else 'TBD' }}</span>
-        </div>
-
-        <!-- H-D-A Buttons -->
-        <div class="flex gap-1">
-            <button
-                type="button"
-                class="prediction-btn text-xs px-2 py-1 {{ 'selected' if home_wins else '' }}"
-                data-outcome="home_win"
-                onclick="savePrediction({{ match.match_id }}, 'home_win', {{ match.home_team.team_id if match.home_team else 'null' }})"
-                {{ 'disabled' if not match.home_team or match.locked }}
-            >H</button>
-            <button
-                type="button"
-                class="prediction-btn text-xs px-2 py-1 {{ 'selected' if is_draw else '' }}"
-                data-outcome="draw"
-                onclick="showPenaltyPicker({{ match.match_id }})"
-                {{ 'disabled' if not match.home_team or not match.away_team or match.locked }}
-            >D</button>
-            <button
-                type="button"
-                class="prediction-btn text-xs px-2 py-1 {{ 'selected' if away_wins else '' }}"
-                data-outcome="away_win"
-                onclick="savePrediction({{ match.match_id }}, 'away_win', {{ match.away_team.team_id if match.away_team else 'null' }})"
-                {{ 'disabled' if not match.away_team or match.locked }}
-            >A</button>
-        </div>
-
-        <!-- Away Team -->
-        <div class="team-row flex items-center gap-1 px-2 py-1 rounded flex-1 justify-end {{ 'bg-green-100 border border-green-400' if away_wins else ('bg-yellow-100 border border-yellow-400' if is_draw else 'bg-white') }}">
-            <span class="text-xs truncate text-right">{{ match.away_team.team_name[:12] if match.away_team else 'TBD' }}</span>
-            {{ flag(match.away_team.country_code, 16) if match.away_team else '?' }}
-        </div>
-    </div>
-
-    {% if not match.locked %}
-        <!-- Score Inputs -->
-        <div class="flex items-center justify-center gap-1 mt-2 bg-white p-1 rounded border border-gray-200">
-            <input
-                type="number"
-                min="0"
-                max="20"
-                class="w-12 text-center font-semibold text-sm home-score"
-                placeholder="0"
-                value="{{ match.prediction.predicted_home_score if match.prediction and match.prediction.predicted_home_score is not none else '' }}"
-                data-match-id="{{ match.match_id }}"
-                onchange="updateScoreAndSave({{ match.match_id }}, 'home', this.value)"
-                oninput="updateScore({{ match.match_id }}, 'home', this.value)"
-            >
-            <span class="text-gray-500 font-bold">-</span>
-            <input
-                type="number"
-                min="0"
-                max="20"
-                class="w-12 text-center font-semibold text-sm away-score"
-                placeholder="0"
-                value="{{ match.prediction.predicted_away_score if match.prediction and match.prediction.predicted_away_score is not none else '' }}"
-                data-match-id="{{ match.match_id }}"
-                onchange="updateScoreAndSave({{ match.match_id }}, 'away', this.value)"
-                oninput="updateScore({{ match.match_id }}, 'away', this.value)"
-            >
-        </div>
-
-        <!-- Penalty Selection (shown when Draw is selected) -->
-        <div class="penalty-section mt-2 {{ '' if is_draw else 'hidden' }}" data-match-id="{{ match.match_id }}">
-            <select class="w-full text-xs p-1 border border-amber-300 rounded bg-amber-50 penalty-select" data-match-id="{{ match.match_id }}" onchange="onPenaltySelect({{ match.match_id }})">
-                <option value="">Penalty winner...</option>
-                <option value="{{ match.home_team.team_id if match.home_team else '' }}" {{ 'selected' if is_draw and match.prediction and match.prediction.predicted_winner_team_id == match.home_team.team_id else '' }}>{{ match.home_team.team_name if match.home_team else 'Home' }}</option>
-                <option value="{{ match.away_team.team_id if match.away_team else '' }}" {{ 'selected' if is_draw and match.prediction and match.prediction.predicted_winner_team_id == match.away_team.team_id else '' }}>{{ match.away_team.team_name if match.away_team else 'Away' }}</option>
-            </select>
-        </div>
-    {% endif %}
-
-    {% if match.locked %}
-        <div class="text-xs text-gray-400 text-center mt-1">Locked</div>
-    {% endif %}
-</div>
-{% endmacro %}
 
 {% block title %}Knockout Bracket - FIFA World Cup 2026{% endblock %}
 
@@ -109,65 +8,73 @@
         background: #f8fafc;
         border: 1px solid #e2e8f0;
         border-radius: 0.5rem;
+        min-width: 200px;
     }
-    .prediction-btn {
-        background: #e2e8f0;
-        border: 1px solid #cbd5e1;
+    .match-card.has-prediction {
+        border-color: #22c55e;
+        background: #f0fdf4;
+    }
+    .team-slot {
+        padding: 0.5rem;
         border-radius: 0.25rem;
         cursor: pointer;
         transition: all 0.15s ease;
-        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
     }
-    .prediction-btn:hover:not(:disabled) {
-        background: #cbd5e1;
+    .team-slot:hover {
+        background: #e2e8f0;
     }
-    .prediction-btn.selected {
-        background: #22c55e;
-        border-color: #16a34a;
-        color: white;
+    .team-slot.winner {
+        background: #dcfce7;
+        border: 2px solid #22c55e;
     }
-    .prediction-btn:disabled {
-        cursor: not-allowed;
+    .team-slot.loser {
         opacity: 0.5;
     }
-    .round-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 1rem;
+    .team-slot.tbd {
+        background: #f1f5f9;
+        color: #94a3b8;
+        font-style: italic;
     }
-    .round-buttons {
-        display: flex;
-        gap: 0.5rem;
+    .team-flag {
+        width: 24px;
+        height: 16px;
+        object-fit: cover;
+        border-radius: 2px;
     }
-    .auto-btn {
-        font-size: 0.75rem;
-        padding: 0.25rem 0.75rem;
+    .round-section {
+        margin-bottom: 2rem;
+    }
+    .bracket-connector {
+        position: relative;
+    }
+    .vs-badge {
+        background: #1e293b;
+        color: white;
+        font-size: 0.625rem;
+        padding: 0.125rem 0.375rem;
         border-radius: 0.25rem;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.15s ease;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
+        text-align: center;
     }
-    .auto-btn.select {
-        background: #3b82f6;
-        color: white;
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border: 2px dashed #e2e8f0;
     }
-    .auto-btn.select:hover:not(:disabled) {
-        background: #2563eb;
+    .progress-bar {
+        height: 8px;
+        background: #e2e8f0;
+        border-radius: 4px;
+        overflow: hidden;
     }
-    .auto-btn.reset {
-        background: #ef4444;
-        color: white;
-    }
-    .auto-btn.reset:hover:not(:disabled) {
-        background: #dc2626;
-    }
-    .auto-btn:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #22c55e, #16a34a);
+        transition: width 0.3s ease;
     }
 </style>
 {% endblock %}
@@ -176,493 +83,551 @@
 <div class="max-w-7xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Knockout Bracket</h1>
 
+    <!-- Progress Banner -->
+    <div class="bg-white rounded-lg p-4 mb-6 shadow-sm border">
+        <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold">Group Stage Predictions</span>
+            <span id="prediction-progress" class="text-sm text-gray-600">0/72 matches</span>
+        </div>
+        <div class="progress-bar">
+            <div id="progress-fill" class="progress-fill" style="width: 0%"></div>
+        </div>
+        <p id="progress-message" class="text-sm text-gray-500 mt-2">Complete your group stage predictions to see the knockout bracket.</p>
+    </div>
+
     <!-- Instructions Banner -->
     <div class="bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-lg p-6 mb-8 shadow-md border border-slate-400">
         <div class="grid md:grid-cols-2 gap-6">
             <div>
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span class="text-2xl">🏆</span> How to Fill Your Bracket
-                </h2>
-                <div class="space-y-3 text-sm">
-                    <div>
-                        <p class="font-semibold mb-1">🎯 Predict Outcomes:</p>
-                        <ul class="ml-4 space-y-1 list-disc">
-                            <li><strong>H</strong> = Home team wins</li>
-                            <li><strong>D</strong> = Draw (select penalty winner)</li>
-                            <li><strong>A</strong> = Away team wins</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p class="font-semibold mb-1">📊 Optional Scores:</p>
-                        <p>Enter scores if you want. If skipped, a random score is generated.</p>
-                    </div>
+                <h2 class="text-xl font-bold mb-4">&#127942; How It Works</h2>
+                <div class="space-y-2 text-sm">
+                    <p><strong>1.</strong> Complete your group stage predictions first</p>
+                    <p><strong>2.</strong> The bracket will populate based on your predicted standings</p>
+                    <p><strong>3.</strong> Click on teams to predict knockout match winners</p>
+                    <p><strong>4.</strong> Winners advance automatically through the bracket</p>
                 </div>
             </div>
             <div>
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span class="text-2xl">⚽</span> Scoring & Colors
-                </h2>
-                <div class="space-y-3 text-sm">
-                    <div>
-                        <p class="font-semibold mb-1">💰 Points:</p>
-                        <ul class="ml-4 list-disc">
-                            <li><strong>2 pts</strong> - Correct winner</li>
-                            <li><strong>3 pts</strong> - Exact score</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <p class="font-semibold mb-1">🎨 Colors:</p>
-                        <ul class="ml-4 list-disc">
-                            <li><span class="inline-block w-3 h-3 bg-green-100 border border-green-400 mr-1"></span> Winner</li>
-                            <li><span class="inline-block w-3 h-3 bg-yellow-100 border border-yellow-400 mr-1"></span> Draw (penalties)</li>
-                        </ul>
-                    </div>
-                </div>
+                <h2 class="text-xl font-bold mb-4">&#128279; Share Your Bracket</h2>
+                <p class="text-sm mb-4">Your entire bracket (groups + knockouts) is saved in the URL. Share it with friends!</p>
+                <button onclick="copyShareableLink()" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded font-semibold text-sm">
+                    &#128279; Copy Shareable Link
+                </button>
             </div>
         </div>
     </div>
 
-    {% if not bracket %}
-        <div class="card text-center py-12">
-            <p class="text-gray-500 mb-4">Complete your group stage and third-place ranking first.</p>
-            <a href="/bracket/groups" class="btn-primary">Go to Groups</a>
-        </div>
-    {% else %}
-        <!-- Round of 32 -->
-        <div class="mb-10">
-            <div class="round-header">
-                <h2 class="text-2xl font-bold text-red-600">Round of 32</h2>
-                <div class="round-buttons">
-                    <button class="auto-btn select" onclick="autoSelectRound('round_of_32', this)">
-                        <span>Auto Select</span>
-                        <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    </button>
-                    <button class="auto-btn reset" onclick="resetRound('round_of_32', this)">
-                        <span>Reset</span>
-                        <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                    </button>
-                </div>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3" data-round="round_of_32">
-                {% for match in bracket.round_of_32 %}
-                    {{ knockout_match_card(match) }}
-                {% endfor %}
-            </div>
+    <!-- Knockout Bracket Container -->
+    <div id="knockout-bracket">
+        <div class="empty-state" id="empty-bracket">
+            <div class="text-4xl mb-4">&#9917;</div>
+            <h3 class="text-xl font-bold mb-2">Complete Group Stage First</h3>
+            <p class="text-gray-500 mb-4">Make predictions for all 72 group stage matches to see your knockout bracket.</p>
+            <a href="/bracket/groups" class="btn-primary inline-block">Go to Group Stage</a>
         </div>
 
-        <!-- Round of 16 -->
-        {% if bracket.round_of_16 %}
-            <div class="mb-10">
-                <div class="round-header">
+        <!-- Bracket will be rendered here by JavaScript -->
+        <div id="bracket-content" class="hidden">
+            <!-- Round of 32 -->
+            <div class="round-section" id="round-of-32-section">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-2xl font-bold text-red-600">Round of 32</h2>
+                    <span class="text-sm text-gray-500" id="ro32-progress">0/16 predicted</span>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="round-of-32-matches"></div>
+            </div>
+
+            <!-- Round of 16 -->
+            <div class="round-section" id="round-of-16-section">
+                <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-bold text-orange-600">Round of 16</h2>
-                    <div class="round-buttons">
-                        <button class="auto-btn select" onclick="autoSelectRound('round_of_16', this)">
-                            <span>Auto Select</span>
-                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        </button>
-                        <button class="auto-btn reset" onclick="resetRound('round_of_16', this)">
-                            <span>Reset</span>
-                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        </button>
-                    </div>
+                    <span class="text-sm text-gray-500" id="ro16-progress">0/8 predicted</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" data-round="round_of_16">
-                    {% for match in bracket.round_of_16 %}
-                        {{ knockout_match_card(match) }}
-                    {% endfor %}
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="round-of-16-matches"></div>
             </div>
-        {% endif %}
 
-        <!-- Quarter Finals -->
-        {% if bracket.quarter_finals %}
-            <div class="mb-10">
-                <div class="round-header">
+            <!-- Quarter Finals -->
+            <div class="round-section" id="quarter-finals-section">
+                <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-bold text-yellow-600">Quarter Finals</h2>
-                    <div class="round-buttons">
-                        <button class="auto-btn select" onclick="autoSelectRound('quarter_finals', this)">
-                            <span>Auto Select</span>
-                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        </button>
-                        <button class="auto-btn reset" onclick="resetRound('quarter_finals', this)">
-                            <span>Reset</span>
-                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        </button>
-                    </div>
+                    <span class="text-sm text-gray-500" id="qf-progress">0/4 predicted</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" data-round="quarter_finals">
-                    {% for match in bracket.quarter_finals %}
-                        {{ knockout_match_card(match) }}
-                    {% endfor %}
-                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3" id="quarter-finals-matches"></div>
             </div>
-        {% endif %}
 
-        <!-- Semi Finals -->
-        {% if bracket.semi_finals %}
-            <div class="mb-10">
-                <div class="round-header">
+            <!-- Semi Finals -->
+            <div class="round-section" id="semi-finals-section">
+                <div class="flex items-center justify-between mb-4">
                     <h2 class="text-2xl font-bold text-purple-600">Semi Finals</h2>
-                    <div class="round-buttons">
-                        <button class="auto-btn select" onclick="autoSelectRound('semi_finals', this)">
-                            <span>Auto Select</span>
-                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        </button>
-                        <button class="auto-btn reset" onclick="resetRound('semi_finals', this)">
-                            <span>Reset</span>
-                            <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                        </button>
-                    </div>
+                    <span class="text-sm text-gray-500" id="sf-progress">0/2 predicted</span>
                 </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl" data-round="semi_finals">
-                    {% for match in bracket.semi_finals %}
-                        {{ knockout_match_card(match) }}
-                    {% endfor %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-xl" id="semi-finals-matches"></div>
+            </div>
+
+            <!-- Finals Row -->
+            <div class="grid md:grid-cols-2 gap-6 max-w-2xl mt-8">
+                <!-- Third Place -->
+                <div class="round-section" id="third-place-section">
+                    <h2 class="text-xl font-bold text-amber-700 mb-4">&#129353; Third Place Match</h2>
+                    <div id="third-place-match"></div>
+                </div>
+
+                <!-- Final -->
+                <div class="round-section" id="final-section">
+                    <h2 class="text-xl font-bold text-fifa-gold mb-4">&#128081; FINAL</h2>
+                    <div id="final-match"></div>
                 </div>
             </div>
-        {% endif %}
 
-        <!-- Finals Row -->
-        <div class="grid md:grid-cols-2 gap-6 max-w-3xl">
-            <!-- Third Place Match -->
-            {% if bracket.third_place_match %}
-                <div class="mb-10">
-                    <div class="round-header">
-                        <h2 class="text-xl font-bold text-amber-700">🥉 Third Place</h2>
-                        <div class="round-buttons">
-                            <button class="auto-btn select text-xs" onclick="autoSelectRound('third_place', this)">
-                                <span>Auto</span>
-                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                            <button class="auto-btn reset text-xs" onclick="resetRound('third_place', this)">
-                                <span>Reset</span>
-                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div data-round="third_place">
-                        {{ knockout_match_card(bracket.third_place_match) }}
-                    </div>
-                </div>
-            {% endif %}
-
-            <!-- Final -->
-            {% if bracket.final %}
-                <div class="mb-10">
-                    <div class="round-header">
-                        <h2 class="text-xl font-bold text-fifa-gold">👑 FINAL</h2>
-                        <div class="round-buttons">
-                            <button class="auto-btn select text-xs" onclick="autoSelectRound('final', this)">
-                                <span>Auto</span>
-                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                            <button class="auto-btn reset text-xs" onclick="resetRound('final', this)">
-                                <span>Reset</span>
-                                <svg class="hidden animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                            </button>
-                        </div>
-                    </div>
-                    <div data-round="final">
-                        {{ knockout_match_card(bracket.final) }}
-                    </div>
-                </div>
-            {% endif %}
+            <!-- Champion Display -->
+            <div id="champion-section" class="hidden mt-8 text-center p-8 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg border-2 border-yellow-400">
+                <div class="text-4xl mb-2">&#127942;</div>
+                <h2 class="text-2xl font-bold text-yellow-800">Your Predicted Champion</h2>
+                <div id="champion-display" class="mt-4 text-3xl font-bold"></div>
+            </div>
         </div>
-
-        <!-- Print Action -->
-        <div class="mt-12 text-center border-t border-slate-200 pt-8 pb-12">
-            <h3 class="text-xl font-bold mb-4">Ready to share?</h3>
-            <p class="text-slate-500 mb-6">Get a printable summary of your entire World Cup prediction journey.</p>
-            <a href="/bracket/print" target="_blank" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                Print My Bracket
-            </a>
-        </div>
-    {% endif %}
+    </div>
 </div>
 
 <script>
-// Track scores for each match
-const scores = {};
+// Data from server
+window.teamsByGroup = {{ teams_by_group_json|safe }};
+window.allTeams = {{ all_teams_json|safe }};
+window.matchData = {{ match_data_json|safe }};
 
-function updateScore(matchId, side, value) {
-    if (!scores[matchId]) {
-        scores[matchId] = { home: null, away: null };
-    }
-    scores[matchId][side] = value ? parseInt(value) : null;
-}
+// FIFA 2026 Bracket Structure (48 teams, 12 groups A-L)
+// Round of 32 pairings: Group winners vs runners-up from other groups + third place playoffs
+const ROUND_OF_32_STRUCTURE = [
+    // Left bracket half
+    { matchNum: 73, homeSlot: '1A', awaySlot: '2L', label: 'Match 73' },
+    { matchNum: 74, homeSlot: '1C', awaySlot: '2J', label: 'Match 74' },
+    { matchNum: 75, homeSlot: '1E', awaySlot: '2H', label: 'Match 75' },
+    { matchNum: 76, homeSlot: '1G', awaySlot: '2F', label: 'Match 76' },
+    { matchNum: 77, homeSlot: '1I', awaySlot: '2D', label: 'Match 77' },
+    { matchNum: 78, homeSlot: '1K', awaySlot: '2B', label: 'Match 78' },
+    { matchNum: 79, homeSlot: '3rd_1', awaySlot: '3rd_4', label: 'Match 79' },
+    { matchNum: 80, homeSlot: '3rd_2', awaySlot: '3rd_3', label: 'Match 80' },
+    // Right bracket half
+    { matchNum: 81, homeSlot: '1B', awaySlot: '2K', label: 'Match 81' },
+    { matchNum: 82, homeSlot: '1D', awaySlot: '2I', label: 'Match 82' },
+    { matchNum: 83, homeSlot: '1F', awaySlot: '2G', label: 'Match 83' },
+    { matchNum: 84, homeSlot: '1H', awaySlot: '2E', label: 'Match 84' },
+    { matchNum: 85, homeSlot: '1J', awaySlot: '2C', label: 'Match 85' },
+    { matchNum: 86, homeSlot: '1L', awaySlot: '2A', label: 'Match 86' },
+    { matchNum: 87, homeSlot: '3rd_5', awaySlot: '3rd_8', label: 'Match 87' },
+    { matchNum: 88, homeSlot: '3rd_6', awaySlot: '3rd_7', label: 'Match 88' },
+];
 
-async function updateScoreAndSave(matchId, side, value) {
-    updateScore(matchId, side, value);
-    
-    // Get the current outcome to resave the prediction with updated score
-    const card = document.querySelector(`[data-match-id="${matchId}"]`);
-    if (!card) return;
-    
-    const selectedBtn = card.querySelector('.prediction-btn.selected');
-    if (!selectedBtn) return; // No outcome selected yet
-    
-    const outcome = selectedBtn.dataset.outcome;
-    const homeId = parseInt(card.dataset.homeId);
-    const awayId = parseInt(card.dataset.awayId);
-    
-    let winnerId;
-    if (outcome === 'home_win') {
-        winnerId = homeId;
-    } else if (outcome === 'away_win') {
-        winnerId = awayId;
-    } else if (outcome === 'draw') {
-        // For draw, get the penalty shootout winner if selected
-        const penaltySelect = card.querySelector('.penalty-select');
-        winnerId = penaltySelect && penaltySelect.value ? parseInt(penaltySelect.value) : null;
-    }
-    
-    // Save the prediction with updated scores
-    const data = {
-        predicted_outcome: outcome,
-        predicted_winner_team_id: winnerId,
-        predicted_home_score: scores[matchId]?.home,
-        predicted_away_score: scores[matchId]?.away
-    };
-    
-    try {
-        await fetch(`/api/predictions/match/${matchId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
-    } catch (error) {
-        console.error('Error saving score:', error);
-    }
-}
+const ROUND_OF_16_STRUCTURE = [
+    { matchNum: 89, homeSource: 73, awaySource: 74, label: 'Match 89' },
+    { matchNum: 90, homeSource: 75, awaySource: 76, label: 'Match 90' },
+    { matchNum: 91, homeSource: 77, awaySource: 78, label: 'Match 91' },
+    { matchNum: 92, homeSource: 79, awaySource: 80, label: 'Match 92' },
+    { matchNum: 93, homeSource: 81, awaySource: 82, label: 'Match 93' },
+    { matchNum: 94, homeSource: 83, awaySource: 84, label: 'Match 94' },
+    { matchNum: 95, homeSource: 85, awaySource: 86, label: 'Match 95' },
+    { matchNum: 96, homeSource: 87, awaySource: 88, label: 'Match 96' },
+];
 
-async function savePrediction(matchId, outcome, winnerId) {
-    if (!matchId) return false;
+const QUARTER_FINALS_STRUCTURE = [
+    { matchNum: 97, homeSource: 89, awaySource: 90, label: 'QF 1' },
+    { matchNum: 98, homeSource: 91, awaySource: 92, label: 'QF 2' },
+    { matchNum: 99, homeSource: 93, awaySource: 94, label: 'QF 3' },
+    { matchNum: 100, homeSource: 95, awaySource: 96, label: 'QF 4' },
+];
 
-    const card = document.querySelector(`[data-match-id="${matchId}"]`);
-    if (!card) return false;
+const SEMI_FINALS_STRUCTURE = [
+    { matchNum: 101, homeSource: 97, awaySource: 98, label: 'SF 1' },
+    { matchNum: 102, homeSource: 99, awaySource: 100, label: 'SF 2' },
+];
 
-    const data = {
-        predicted_outcome: outcome,
-        predicted_winner_team_id: winnerId,
-        predicted_home_score: scores[matchId]?.home,
-        predicted_away_score: scores[matchId]?.away
-    };
+const THIRD_PLACE_STRUCTURE = { matchNum: 103, homeSource: 101, awaySource: 102, isLoser: true, label: '3rd Place' };
+const FINAL_STRUCTURE = { matchNum: 104, homeSource: 101, awaySource: 102, label: 'Final' };
 
-    try {
-        const response = await fetch(`/api/predictions/match/${matchId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        });
+// Calculate group standings (same logic as groups.html)
+function calculateGroupStandings(groupLetter, teams, predictions) {
+    const teamStats = {};
 
-        if (response.ok) {
-            // Update UI immediately
-            const buttons = card.querySelectorAll('.prediction-btn');
-            buttons.forEach(btn => {
-                btn.classList.remove('selected');
-                if (btn.dataset.outcome === outcome) {
-                    btn.classList.add('selected');
-                }
-            });
+    teams.forEach(team => {
+        teamStats[team.id] = {
+            team_id: team.id,
+            team_name: team.name,
+            country_code: team.country_code,
+            group: groupLetter,
+            played: 0,
+            won: 0,
+            drawn: 0,
+            lost: 0,
+            goals_for: 0,
+            goals_against: 0,
+            points: 0
+        };
+    });
 
-            // Update team backgrounds
-            const homeTeamRow = card.querySelectorAll('.team-row')[0];
-            const awayTeamRow = card.querySelectorAll('.team-row')[1];
+    Object.entries(predictions).forEach(([matchNum, pred]) => {
+        const matchInfo = window.matchData[String(matchNum)] || window.matchData[parseInt(matchNum)];
+        if (!matchInfo || matchInfo.group !== groupLetter) return;
 
-            // Reset all backgrounds
-            homeTeamRow.classList.remove('bg-green-100', 'border', 'border-green-400', 'bg-yellow-100', 'border-yellow-400');
-            awayTeamRow.classList.remove('bg-green-100', 'border', 'border-green-400', 'bg-yellow-100', 'border-yellow-400');
-            homeTeamRow.classList.add('bg-white');
-            awayTeamRow.classList.add('bg-white');
+        const homeStats = teamStats[matchInfo.homeTeamId];
+        const awayStats = teamStats[matchInfo.awayTeamId];
+        if (!homeStats || !awayStats) return;
 
-            if (outcome === 'home_win') {
-                homeTeamRow.classList.remove('bg-white');
-                homeTeamRow.classList.add('bg-green-100', 'border', 'border-green-400');
-            } else if (outcome === 'away_win') {
-                awayTeamRow.classList.remove('bg-white');
-                awayTeamRow.classList.add('bg-green-100', 'border', 'border-green-400');
-            } else if (outcome === 'draw') {
-                homeTeamRow.classList.remove('bg-white');
-                awayTeamRow.classList.remove('bg-white');
-                homeTeamRow.classList.add('bg-yellow-100', 'border', 'border-yellow-400');
-                awayTeamRow.classList.add('bg-yellow-100', 'border', 'border-yellow-400');
-            }
+        homeStats.played++;
+        awayStats.played++;
 
-            // Hide penalty section if not draw
-            const penaltySection = card.querySelector('.penalty-section');
-            if (penaltySection && outcome !== 'draw') {
-                penaltySection.classList.add('hidden');
-            }
+        const homeScore = pred.homeScore || 0;
+        const awayScore = pred.awayScore || 0;
 
-            if (!window.bulkOperation) {
-                showToast('Prediction saved!', 'success');
-                setTimeout(() => location.reload(), 800);
-            }
-            return true;
+        homeStats.goals_for += homeScore;
+        homeStats.goals_against += awayScore;
+        awayStats.goals_for += awayScore;
+        awayStats.goals_against += homeScore;
+
+        if (pred.outcome === 'home_win') {
+            homeStats.won++;
+            homeStats.points += 3;
+            awayStats.lost++;
+        } else if (pred.outcome === 'away_win') {
+            awayStats.won++;
+            awayStats.points += 3;
+            homeStats.lost++;
         } else {
-            if (!window.bulkOperation) {
-                showToast('Failed to save', 'error');
-            }
-            return false;
+            homeStats.drawn++;
+            awayStats.drawn++;
+            homeStats.points++;
+            awayStats.points++;
         }
-    } catch (error) {
-        console.error('Error:', error);
-        if (!window.bulkOperation) {
-            showToast('Network error', 'error');
-        }
-        return false;
-    }
+    });
+
+    return Object.values(teamStats)
+        .map(s => ({ ...s, goal_diff: s.goals_for - s.goals_against }))
+        .sort((a, b) => {
+            if (b.points !== a.points) return b.points - a.points;
+            if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
+            return b.goals_for - a.goals_for;
+        });
 }
 
-function showPenaltyPicker(matchId) {
-    const card = document.querySelector(`[data-match-id="${matchId}"]`);
-    if (!card) return;
+// Get all qualifying teams from group predictions
+function getQualifyingTeams() {
+    const predictions = window.bracketState.groupPredictions || {};
+    const qualifiers = {
+        groupWinners: {},      // 1A, 1B, etc.
+        groupRunnersUp: {},    // 2A, 2B, etc.
+        thirdPlace: []         // Sorted best to worst
+    };
 
-    const penaltySection = card.querySelector('.penalty-section');
-    if (penaltySection) {
-        penaltySection.classList.remove('hidden');
+    const groupLetters = Object.keys(window.teamsByGroup).sort();
 
-        // Mark D button as selected
-        const buttons = card.querySelectorAll('.prediction-btn');
-        buttons.forEach(btn => {
-            btn.classList.remove('selected');
-            if (btn.dataset.outcome === 'draw') {
-                btn.classList.add('selected');
+    groupLetters.forEach(group => {
+        const teams = window.teamsByGroup[group];
+        const standings = calculateGroupStandings(group, teams, predictions);
+
+        if (standings.length >= 1 && standings[0].played > 0) {
+            qualifiers.groupWinners[`1${group}`] = standings[0];
+        }
+        if (standings.length >= 2 && standings[1].played > 0) {
+            qualifiers.groupRunnersUp[`2${group}`] = standings[1];
+        }
+        if (standings.length >= 3) {
+            qualifiers.thirdPlace.push({ ...standings[2], group: group });
+        }
+    });
+
+    // Sort third place teams and take best 8
+    qualifiers.thirdPlace.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
+        return b.goals_for - a.goals_for;
+    });
+
+    // Apply user's manual third place ranking if exists
+    if (window.bracketState.thirdPlaceRanking && window.bracketState.thirdPlaceRanking.length > 0) {
+        const rankedTeams = [];
+        const unrankedTeams = [...qualifiers.thirdPlace];
+
+        window.bracketState.thirdPlaceRanking.forEach(teamId => {
+            const idx = unrankedTeams.findIndex(t => t.team_id === teamId);
+            if (idx !== -1) {
+                rankedTeams.push(unrankedTeams.splice(idx, 1)[0]);
             }
         });
 
-        // Update team backgrounds to yellow
-        const homeTeamRow = card.querySelectorAll('.team-row')[0];
-        const awayTeamRow = card.querySelectorAll('.team-row')[1];
-        homeTeamRow.classList.remove('bg-white', 'bg-green-100', 'border-green-400');
-        awayTeamRow.classList.remove('bg-white', 'bg-green-100', 'border-green-400');
-        homeTeamRow.classList.add('bg-yellow-100', 'border', 'border-yellow-400');
-        awayTeamRow.classList.add('bg-yellow-100', 'border', 'border-yellow-400');
-    }
-}
-
-function onPenaltySelect(matchId) {
-    const card = document.querySelector(`[data-match-id="${matchId}"]`);
-    if (!card) return;
-
-    const penaltySelect = card.querySelector('.penalty-select');
-    const winnerId = penaltySelect?.value;
-    if (!winnerId) return;
-
-    // Save with draw outcome but with a winner for penalties
-    savePrediction(matchId, 'draw', parseInt(winnerId));
-}
-
-async function autoSelectRound(roundName, btn) {
-    const roundContainer = document.querySelector(`[data-round="${roundName}"]`);
-    if (!roundContainer) return;
-
-    // Show spinner and disable button
-    const spinner = btn?.querySelector('svg');
-    if (spinner) spinner.classList.remove('hidden');
-    if (btn) btn.disabled = true;
-
-    window.bulkOperation = true;
-    let count = 0;
-
-    const matchCards = roundContainer.querySelectorAll('.match-card');
-
-    for (const card of matchCards) {
-        const matchId = card.dataset.matchId;
-        const homeId = card.dataset.homeId;
-        const awayId = card.dataset.awayId;
-
-        if (!homeId || !awayId) continue;
-
-        // Check if already has a selection
-        const buttons = card.querySelectorAll('.prediction-btn:not(:disabled)');
-        if (buttons.length === 0) continue;
-
-        // Random outcome: H, D, or A (weighted towards H/A since draws are less common)
-        const rand = Math.random();
-        let outcome, winnerId;
-
-        if (rand < 0.4) {
-            outcome = 'home_win';
-            winnerId = parseInt(homeId);
-        } else if (rand < 0.8) {
-            outcome = 'away_win';
-            winnerId = parseInt(awayId);
-        } else {
-            outcome = 'draw';
-            // For draw, randomly pick penalty winner
-            winnerId = Math.random() < 0.5 ? parseInt(homeId) : parseInt(awayId);
-        }
-
-        const success = await savePrediction(parseInt(matchId), outcome, winnerId);
-        if (success) count++;
-
-        // Small delay
-        await new Promise(r => setTimeout(r, 100));
+        qualifiers.thirdPlace = [...rankedTeams, ...unrankedTeams];
     }
 
-    window.bulkOperation = false;
+    return qualifiers;
+}
 
-    if (count > 0) {
-        showToast(`Auto-selected ${count} matches!`, 'success');
-        setTimeout(() => location.reload(), 800);
+// Get team for a slot position
+function getTeamForSlot(slot, qualifiers) {
+    if (slot.startsWith('1')) {
+        return qualifiers.groupWinners[slot] || null;
+    } else if (slot.startsWith('2')) {
+        return qualifiers.groupRunnersUp[slot] || null;
+    } else if (slot.startsWith('3rd_')) {
+        const rank = parseInt(slot.split('_')[1]) - 1;
+        return qualifiers.thirdPlace[rank] || null;
+    }
+    return null;
+}
+
+// Get winner of a knockout match
+function getMatchWinner(matchNum, isLoserMatch = false) {
+    const pred = window.bracketState.knockoutPredictions[matchNum];
+    if (!pred) return null;
+
+    // Get the teams that played in this match
+    const matchTeams = window.knockoutMatchTeams[matchNum];
+    if (!matchTeams) return null;
+
+    if (isLoserMatch) {
+        // For third place match, get the loser
+        if (pred.outcome === 'home_win') return matchTeams.away;
+        if (pred.outcome === 'away_win') return matchTeams.home;
     } else {
-        // Reset button state if nothing changed
-        if (spinner) spinner.classList.add('hidden');
-        if (btn) btn.disabled = false;
-        showToast('No matches to select', 'info');
-    }
-}
-
-async function resetRound(roundName, btn) {
-    const roundContainer = document.querySelector(`[data-round="${roundName}"]`);
-    if (!roundContainer) return;
-
-    if (!confirm(`Reset all predictions in this round?`)) return;
-
-    // Show spinner and disable button
-    const spinner = btn?.querySelector('svg');
-    if (spinner) spinner.classList.remove('hidden');
-    if (btn) btn.disabled = true;
-
-    window.bulkOperation = true;
-    let count = 0;
-
-    const matchCards = roundContainer.querySelectorAll('.match-card');
-
-    for (const card of matchCards) {
-        const matchId = card.dataset.matchId;
-        const hasSelection = card.querySelector('.prediction-btn.selected');
-
-        if (hasSelection) {
-            try {
-                const response = await fetch(`/api/predictions/match/${matchId}`, {
-                    method: 'DELETE'
-                });
-
-                if (response.ok) {
-                    count++;
-                }
-            } catch (error) {
-                console.error('Error:', error);
-            }
-
-            await new Promise(r => setTimeout(r, 50));
+        if (pred.outcome === 'home_win') return matchTeams.home;
+        if (pred.outcome === 'away_win') return matchTeams.away;
+        if (pred.outcome === 'draw' && pred.penaltyWinner) {
+            return matchTeams.home?.team_id === pred.penaltyWinner ? matchTeams.home : matchTeams.away;
         }
     }
-
-    window.bulkOperation = false;
-
-    if (count > 0) {
-        showToast(`Reset ${count} predictions!`, 'success');
-        setTimeout(() => location.reload(), 800);
-    } else {
-        // Reset button state if nothing changed
-        if (spinner) spinner.classList.add('hidden');
-        if (btn) btn.disabled = false;
-        showToast('No predictions to reset', 'info');
-    }
+    return null;
 }
+
+// Store computed match teams for later rounds
+window.knockoutMatchTeams = {};
+
+// Render a match card
+function renderMatchCard(matchNum, homeTeam, awayTeam, homeSlot, awaySlot, label) {
+    // Store teams for this match
+    window.knockoutMatchTeams[matchNum] = { home: homeTeam, away: awayTeam };
+
+    const pred = window.bracketState.knockoutPredictions[matchNum];
+    const hasPrediction = !!pred;
+
+    const homeClass = pred?.outcome === 'home_win' ? 'winner' : (pred?.outcome === 'away_win' ? 'loser' : '');
+    const awayClass = pred?.outcome === 'away_win' ? 'winner' : (pred?.outcome === 'home_win' ? 'loser' : '');
+
+    const homeDisplay = homeTeam
+        ? `<img src="https://flagcdn.com/w40/${homeTeam.country_code.toLowerCase()}.png" class="team-flag" alt="${homeTeam.country_code}">
+           <span class="font-medium">${homeTeam.team_name}</span>`
+        : `<span class="text-gray-400">${homeSlot || 'TBD'}</span>`;
+
+    const awayDisplay = awayTeam
+        ? `<img src="https://flagcdn.com/w40/${awayTeam.country_code.toLowerCase()}.png" class="team-flag" alt="${awayTeam.country_code}">
+           <span class="font-medium">${awayTeam.team_name}</span>`
+        : `<span class="text-gray-400">${awaySlot || 'TBD'}</span>`;
+
+    return `
+        <div class="match-card p-3 ${hasPrediction ? 'has-prediction' : ''}" data-match-number="${matchNum}">
+            <div class="text-xs text-gray-500 mb-2">${label}</div>
+            <div class="space-y-1">
+                <div class="team-slot ${homeTeam ? '' : 'tbd'} ${homeClass}"
+                     onclick="selectKnockoutWinner(${matchNum}, 'home')"
+                     ${!homeTeam ? 'style="pointer-events: none;"' : ''}>
+                    ${homeDisplay}
+                </div>
+                <div class="vs-badge mx-auto w-8">VS</div>
+                <div class="team-slot ${awayTeam ? '' : 'tbd'} ${awayClass}"
+                     onclick="selectKnockoutWinner(${matchNum}, 'away')"
+                     ${!awayTeam ? 'style="pointer-events: none;"' : ''}>
+                    ${awayDisplay}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Select knockout winner
+function selectKnockoutWinner(matchNum, side) {
+    const matchTeams = window.knockoutMatchTeams[matchNum];
+    if (!matchTeams) return;
+
+    const winner = side === 'home' ? matchTeams.home : matchTeams.away;
+    if (!winner) return;
+
+    const outcome = side === 'home' ? 'home_win' : 'away_win';
+    const winnerId = winner.team_id;
+
+    // Save prediction
+    window.bracketState.knockoutPredictions[matchNum] = {
+        outcome: outcome,
+        homeScore: null,
+        awayScore: null,
+        penaltyWinner: winnerId
+    };
+
+    updateURLState();
+    renderBracket();
+}
+
+// Count group stage predictions
+function countGroupPredictions() {
+    return Object.keys(window.bracketState.groupPredictions || {}).length;
+}
+
+// Render the entire bracket
+function renderBracket() {
+    const predictionCount = countGroupPredictions();
+    const totalGroupMatches = 72;
+    const percentage = Math.round((predictionCount / totalGroupMatches) * 100);
+
+    // Update progress bar
+    document.getElementById('prediction-progress').textContent = `${predictionCount}/${totalGroupMatches} matches`;
+    document.getElementById('progress-fill').style.width = `${percentage}%`;
+
+    if (predictionCount < totalGroupMatches) {
+        document.getElementById('progress-message').textContent =
+            `Complete ${totalGroupMatches - predictionCount} more group stage predictions to see the knockout bracket.`;
+        document.getElementById('empty-bracket').classList.remove('hidden');
+        document.getElementById('bracket-content').classList.add('hidden');
+        document.getElementById('champion-section').classList.add('hidden');
+        return;
+    }
+
+    document.getElementById('progress-message').textContent = 'All group stage predictions complete! Your knockout bracket is ready.';
+    document.getElementById('empty-bracket').classList.add('hidden');
+    document.getElementById('bracket-content').classList.remove('hidden');
+
+    const qualifiers = getQualifyingTeams();
+
+    // Render Round of 32
+    let ro32Html = '';
+    ROUND_OF_32_STRUCTURE.forEach(match => {
+        const homeTeam = getTeamForSlot(match.homeSlot, qualifiers);
+        const awayTeam = getTeamForSlot(match.awaySlot, qualifiers);
+        ro32Html += renderMatchCard(match.matchNum, homeTeam, awayTeam, match.homeSlot, match.awaySlot, match.label);
+    });
+    document.getElementById('round-of-32-matches').innerHTML = ro32Html;
+
+    // Render Round of 16
+    let ro16Html = '';
+    ROUND_OF_16_STRUCTURE.forEach(match => {
+        const homeTeam = getMatchWinner(match.homeSource);
+        const awayTeam = getMatchWinner(match.awaySource);
+        const homeSlot = `W${match.homeSource}`;
+        const awaySlot = `W${match.awaySource}`;
+        ro16Html += renderMatchCard(match.matchNum, homeTeam, awayTeam, homeSlot, awaySlot, match.label);
+    });
+    document.getElementById('round-of-16-matches').innerHTML = ro16Html;
+
+    // Render Quarter Finals
+    let qfHtml = '';
+    QUARTER_FINALS_STRUCTURE.forEach(match => {
+        const homeTeam = getMatchWinner(match.homeSource);
+        const awayTeam = getMatchWinner(match.awaySource);
+        const homeSlot = `W${match.homeSource}`;
+        const awaySlot = `W${match.awaySource}`;
+        qfHtml += renderMatchCard(match.matchNum, homeTeam, awayTeam, homeSlot, awaySlot, match.label);
+    });
+    document.getElementById('quarter-finals-matches').innerHTML = qfHtml;
+
+    // Render Semi Finals
+    let sfHtml = '';
+    SEMI_FINALS_STRUCTURE.forEach(match => {
+        const homeTeam = getMatchWinner(match.homeSource);
+        const awayTeam = getMatchWinner(match.awaySource);
+        const homeSlot = `W${match.homeSource}`;
+        const awaySlot = `W${match.awaySource}`;
+        sfHtml += renderMatchCard(match.matchNum, homeTeam, awayTeam, homeSlot, awaySlot, match.label);
+    });
+    document.getElementById('semi-finals-matches').innerHTML = sfHtml;
+
+    // Render Third Place Match (losers of semis)
+    const thirdPlaceHome = getMatchWinner(THIRD_PLACE_STRUCTURE.homeSource, true);
+    const thirdPlaceAway = getMatchWinner(THIRD_PLACE_STRUCTURE.awaySource, true);
+    document.getElementById('third-place-match').innerHTML = renderMatchCard(
+        THIRD_PLACE_STRUCTURE.matchNum,
+        thirdPlaceHome,
+        thirdPlaceAway,
+        `L${THIRD_PLACE_STRUCTURE.homeSource}`,
+        `L${THIRD_PLACE_STRUCTURE.awaySource}`,
+        THIRD_PLACE_STRUCTURE.label
+    );
+
+    // Render Final
+    const finalHome = getMatchWinner(FINAL_STRUCTURE.homeSource);
+    const finalAway = getMatchWinner(FINAL_STRUCTURE.awaySource);
+    document.getElementById('final-match').innerHTML = renderMatchCard(
+        FINAL_STRUCTURE.matchNum,
+        finalHome,
+        finalAway,
+        `W${FINAL_STRUCTURE.homeSource}`,
+        `W${FINAL_STRUCTURE.awaySource}`,
+        FINAL_STRUCTURE.label
+    );
+
+    // Show champion if final is predicted
+    const champion = getMatchWinner(104);
+    if (champion) {
+        document.getElementById('champion-section').classList.remove('hidden');
+        document.getElementById('champion-display').innerHTML = `
+            <img src="https://flagcdn.com/w80/${champion.country_code.toLowerCase()}.png"
+                 class="inline-block w-16 h-10 object-cover rounded mr-3" alt="${champion.country_code}">
+            ${champion.team_name}
+        `;
+    } else {
+        document.getElementById('champion-section').classList.add('hidden');
+    }
+
+    // Update progress counters
+    updateProgressCounters();
+}
+
+// Update round progress counters
+function updateProgressCounters() {
+    const koPreds = window.bracketState.knockoutPredictions || {};
+
+    const ro32Count = ROUND_OF_32_STRUCTURE.filter(m => koPreds[m.matchNum]).length;
+    const ro16Count = ROUND_OF_16_STRUCTURE.filter(m => koPreds[m.matchNum]).length;
+    const qfCount = QUARTER_FINALS_STRUCTURE.filter(m => koPreds[m.matchNum]).length;
+    const sfCount = SEMI_FINALS_STRUCTURE.filter(m => koPreds[m.matchNum]).length;
+
+    document.getElementById('ro32-progress').textContent = `${ro32Count}/16 predicted`;
+    document.getElementById('ro16-progress').textContent = `${ro16Count}/8 predicted`;
+    document.getElementById('qf-progress').textContent = `${qfCount}/4 predicted`;
+    document.getElementById('sf-progress').textContent = `${sfCount}/2 predicted`;
+}
+
+// Decode state from URL (independent of app.js)
+function loadBracketStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const stateParam = params.get('s');
+
+    if (stateParam) {
+        try {
+            // Decode base64url
+            let str = stateParam.replace(/-/g, '+').replace(/_/g, '/');
+            while (str.length % 4) str += '=';
+            const compressed = new Uint8Array(atob(str).split('').map(c => c.charCodeAt(0)));
+
+            // Decompress with pako
+            const json = pako.inflate(compressed, { to: 'string' });
+            const state = JSON.parse(json);
+
+            console.log('Loaded state from URL:', state);
+            return state;
+        } catch (e) {
+            console.error('Failed to decode state:', e);
+        }
+    }
+
+    return {
+        version: 1,
+        groupPredictions: {},
+        knockoutPredictions: {},
+        thirdPlaceRanking: []
+    };
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Load state from URL
+    window.bracketState = loadBracketStateFromURL();
+
+    console.log('Knockout page - Group predictions count:', Object.keys(window.bracketState?.groupPredictions || {}).length);
+    renderBracket();
+});
 </script>
 {% endblock %}

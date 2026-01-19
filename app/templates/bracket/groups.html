@@ -20,25 +20,28 @@
     .drag-over {
         border: 2px dashed #326295;
     }
+    .prediction-btn.selected {
+        background-color: #326295;
+        color: white;
+        border-color: #326295;
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="max-w-6xl mx-auto">
     <h1 class="text-3xl font-bold mb-6">Group Stage Predictions</h1>
-    <div class="text-xs text-gray-500 mb-4">Bracket ID: {{ bracket_id }}</div>
 
     <!-- Instructions Banner -->
     <div class="bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-lg p-6 mb-8 shadow-md border border-slate-400">
         <div class="grid md:grid-cols-2 gap-6">
-            <!-- Left Column: Basics -->
             <div>
                 <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span class="text-2xl">📋</span> How to Fill Your Bracket
+                    <span class="text-2xl">&#128203;</span> How to Fill Your Bracket
                 </h2>
                 <div class="space-y-3 text-sm">
                     <div>
-                        <p class="font-semibold mb-1">🎯 Predict Match Outcomes:</p>
+                        <p class="font-semibold mb-1">&#127919; Predict Match Outcomes:</p>
                         <ul class="ml-4 space-y-1 list-disc">
                             <li><strong>H</strong> = Home team wins</li>
                             <li><strong>D</strong> = Draw</li>
@@ -46,41 +49,27 @@
                         </ul>
                     </div>
                     <div>
-                        <p class="font-semibold mb-1">📊 Optional Scores:</p>
-                        <p>Enter predicted scores (home-away). If you skip this, a random score matching your outcome will be generated automatically.</p>
+                        <p class="font-semibold mb-1">&#128202; Optional Scores:</p>
+                        <p>Enter predicted scores (home-away) for more precise predictions.</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Right Column: Scoring & Rules -->
             <div>
                 <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span class="text-2xl">🏆</span> Scoring & Rules
+                    <span class="text-2xl">&#127942;</span> How It Works
                 </h2>
                 <div class="space-y-3 text-sm">
                     <div>
-                        <p class="font-semibold mb-1">💰 Points Earned:</p>
-                        <ul class="ml-4 space-y-1 list-disc">
-                            <li><strong>1 point</strong> - Correct outcome (H/D/A)</li>
-                            <li><strong>3 points</strong> - Exact score (bonus!)</li>
-                        </ul>
+                        <p class="font-semibold mb-1">&#128279; URL-Based Saving:</p>
+                        <p>Your predictions are saved in the URL. Bookmark or share the link to save your bracket!</p>
                     </div>
                     <div>
-                        <p class="font-semibold mb-1">🥉 Third-Place Qualification:</p>
-                        <p>Top 2 teams per group auto-qualify (24 teams). Best 8 of 12 third-place teams also advance to Round of 32 in your bracket.</p>
+                        <p class="font-semibold mb-1">&#129353; Third-Place Qualification:</p>
+                        <p>Top 2 teams per group auto-qualify. Best 8 of 12 third-place teams also advance.</p>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <!-- Additional Info Banner -->
-        <div class="mt-4 pt-4 border-t border-slate-400 text-xs">
-            <p class="mb-2">
-                <strong>⏰ Deadline:</strong> Predictions lock once a match starts. Plan carefully!
-            </p>
-            <p>
-                <strong>📈 Progress:</strong> Check the standings in real-time to see which teams are advancing based on your predictions.
-            </p>
         </div>
     </div>
 
@@ -90,52 +79,45 @@
             <p class="text-sm text-gray-400">Check back when the tournament draw is complete.</p>
         </div>
     {% else %}
-        <!-- Auto-Select All Button & Reset Button -->
+        <!-- Action Buttons -->
         <div class="mb-6 flex gap-3 justify-center">
-            <button 
+            <button
                 id="autoSelectAllBtn"
-                onclick="autoSelectAllGroups()" 
+                onclick="autoSelectAllGroups()"
                 class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 cursor-pointer"
             >
-                <span>⚡ Auto-Select All Groups</span>
-                <span id="autoSelectSpinner" class="hidden">
-                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </span>
+                <span>&#9889; Auto-Select All Groups</span>
             </button>
-            <button 
-                id="resetAllBtn"
-                onclick="resetAllPredictions()" 
+            <button
+                onclick="resetAllPredictions()"
                 class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 cursor-pointer"
             >
-                <span>🔄 Reset All</span>
-                <span id="resetSpinner" class="hidden">
-                    <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                </span>
+                <span>&#128260; Reset All</span>
+            </button>
+            <button
+                onclick="copyShareableLink()"
+                class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition flex items-center gap-2 cursor-pointer"
+            >
+                <span>&#128279; Share Bracket</span>
             </button>
         </div>
 
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {% for group_letter, group_data in groups.items() %}
-                <div class="card">
+                <div class="card" data-group="{{ group_letter }}">
                     <div class="flex items-center justify-between mb-4">
                         <h2 class="text-xl font-bold text-fifa-blue">Group {{ group_letter }}</h2>
-                        <button 
-                            onclick="autoSelectGroup('{{ group_letter }}')" 
+                        <button
+                            onclick="autoSelectGroup('{{ group_letter }}')"
                             class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded font-semibold transition"
                         >
-                            ⚡ Select
+                            &#9889; Select
                         </button>
                     </div>
 
-                    <!-- Standings -->
+                    <!-- Standings Table -->
                     <div class="mb-4">
-                        <table class="w-full text-sm">
+                        <table class="w-full text-sm" id="standings-{{ group_letter }}">
                             <thead>
                                 <tr class="border-b">
                                     <th class="text-left py-1">#</th>
@@ -148,38 +130,42 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for team in group_data.standings %}
-                                    <tr class="border-b {{ 'bg-green-50' if loop.index <= 2 else ('bg-yellow-50' if loop.index == 3 else '') }}">
-                                        <td class="py-1">{{ loop.index }}</td>
+                                {% for team in group_data.teams %}
+                                    <tr class="border-b" data-team-id="{{ team.id }}">
+                                        <td class="py-1 rank-cell">{{ loop.index }}</td>
                                         <td class="py-1">
                                             {{ flag(team.country_code, 16) }}
                                             <span class="ml-1">{{ team.country_code }}</span>
                                         </td>
-                                        <td class="text-center py-1">{{ team.played }}</td>
-                                        <td class="text-center py-1">{{ team.goals_for }}</td>
-                                        <td class="text-center py-1">{{ team.goals_against }}</td>
-                                        <td class="text-center py-1">{{ team.goal_diff }}</td>
-                                        <td class="text-center py-1 font-bold">{{ team.points }}</td>
+                                        <td class="text-center py-1 played-cell">0</td>
+                                        <td class="text-center py-1 gf-cell">0</td>
+                                        <td class="text-center py-1 ga-cell">0</td>
+                                        <td class="text-center py-1 gd-cell">0</td>
+                                        <td class="text-center py-1 font-bold pts-cell">0</td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
                         <div class="text-xs text-gray-500 mt-2">
-                            <span class="inline-block w-3 h-3 bg-green-50 border mr-1"></span> Qualifies
-                            <span class="inline-block w-3 h-3 bg-yellow-50 border ml-2 mr-1"></span> Third place
+                            <span class="inline-block w-3 h-3 bg-green-100 border mr-1"></span> Qualifies
+                            <span class="inline-block w-3 h-3 bg-yellow-100 border ml-2 mr-1"></span> Third place
                         </div>
                     </div>
 
                     <!-- Matches -->
                     <div class="space-y-2">
                         {% for match in group_data.matches %}
-                            <div class="match-card p-2 text-sm" data-match="{{ match.id }}">
+                            <div class="match-card p-2 text-sm border rounded"
+                                 data-match-number="{{ match.match_number }}"
+                                 data-home-team-id="{{ match.home_team_id }}"
+                                 data-away-team-id="{{ match.away_team_id }}"
+                                 data-group="{{ group_letter }}">
                                 <div class="text-xs text-gray-500 mt-1 mb-2">
                                     {% if match.scheduled_datetime %}
                                         <span>{{ match.scheduled_datetime.strftime('%b %d, %Y %H:%M') }}</span>
                                     {% endif %}
                                     {% if match.stadium %}
-                                        <span class="ml-1">• {{ match.stadium.city }} — {{ match.stadium.name }}</span>
+                                        <span class="ml-1">&#8226; {{ match.stadium.city }}</span>
                                     {% endif %}
                                 </div>
                                 <div class="flex items-center justify-between">
@@ -191,28 +177,25 @@
                                     <div class="flex gap-1">
                                         <button
                                             type="button"
-                                            class="prediction-btn text-xs px-2 py-1 {{ 'selected' if match.prediction and match.prediction.predicted_outcome == 'home_win' }}"
+                                            class="prediction-btn text-xs px-2 py-1 border rounded"
                                             data-outcome="home_win"
-                                            onclick="savePrediction({{ match.id }}, 'home_win', {{ match.home_team.id }})"
-                                            {{ 'disabled' if match.locked }}
+                                            onclick="handlePrediction({{ match.match_number }}, 'home_win')"
                                         >
                                             H
                                         </button>
                                         <button
                                             type="button"
-                                            class="prediction-btn text-xs px-2 py-1 {{ 'selected' if match.prediction and match.prediction.predicted_outcome == 'draw' }}"
+                                            class="prediction-btn text-xs px-2 py-1 border rounded"
                                             data-outcome="draw"
-                                            onclick="savePrediction({{ match.id }}, 'draw', null)"
-                                            {{ 'disabled' if match.locked }}
+                                            onclick="handlePrediction({{ match.match_number }}, 'draw')"
                                         >
                                             D
                                         </button>
                                         <button
                                             type="button"
-                                            class="prediction-btn text-xs px-2 py-1 {{ 'selected' if match.prediction and match.prediction.predicted_outcome == 'away_win' }}"
+                                            class="prediction-btn text-xs px-2 py-1 border rounded"
                                             data-outcome="away_win"
-                                            onclick="savePrediction({{ match.id }}, 'away_win', {{ match.away_team.id }})"
-                                            {{ 'disabled' if match.locked }}
+                                            onclick="handlePrediction({{ match.match_number }}, 'away_win')"
                                         >
                                             A
                                         </button>
@@ -224,40 +207,32 @@
                                     </div>
                                 </div>
 
-                                {% if not match.locked %}
-                                    <div class="flex items-center justify-center gap-2 mt-2">
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="20"
-                                            class="w-12 text-center input-field text-xs py-1"
-                                            placeholder="-"
-                                            value="{{ match.prediction.predicted_home_score if match.prediction else '' }}"
-                                            onchange="updateScore({{ match.id }}, 'home', this.value)"
-                                        >
-                                        <span class="text-gray-400">-</span>
-                                        <input
-                                            type="number"
-                                            min="0"
-                                            max="20"
-                                            class="w-12 text-center input-field text-xs py-1"
-                                            placeholder="-"
-                                            value="{{ match.prediction.predicted_away_score if match.prediction else '' }}"
-                                            onchange="updateScore({{ match.id }}, 'away', this.value)"
-                                        >
-                                    </div>
-                                {% endif %}
-
-                                {% if match.locked %}
-                                    <div class="text-xs text-gray-400 text-center mt-1">Locked</div>
-                                {% endif %}
+                                <div class="flex items-center justify-center gap-2 mt-2">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="20"
+                                        class="home-score w-12 text-center input-field text-xs py-1 border rounded"
+                                        placeholder="-"
+                                        onchange="handleScoreChange({{ match.match_number }})"
+                                    >
+                                    <span class="text-gray-400">-</span>
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        max="20"
+                                        class="away-score w-12 text-center input-field text-xs py-1 border rounded"
+                                        placeholder="-"
+                                        onchange="handleScoreChange({{ match.match_number }})"
+                                    >
+                                </div>
                             </div>
                         {% endfor %}
                     </div>
 
                     <div class="mt-4 text-center">
-                        <span class="text-sm text-gray-500">
-                            {{ group_data.predictions_count }}/{{ group_data.matches|length }} predicted
+                        <span class="text-sm text-gray-500 predictions-count">
+                            0/{{ group_data.matches|length }} predicted
                         </span>
                     </div>
                 </div>
@@ -268,327 +243,339 @@
         <div class="mt-12 border-t pt-8">
             <h2 class="text-2xl font-bold mb-4">Third Place Ranking</h2>
             <p class="text-gray-600 mb-6">
-                Based on your group predictions, these are the third-place teams.
                 Drag and drop to reorder. The top 8 teams will qualify for the Round of 32.
             </p>
 
-            <div class="card mb-6 max-w-4xl mx-auto">
-                <h3 class="text-lg font-bold mb-3">Tiebreaker Rules</h3>
-                <ol class="text-sm text-gray-600 list-decimal list-inside space-y-1">
-                    <li>Points earned in group stage</li>
-                    <li>Goal difference</li>
-                    <li>Goals scored</li>
-                    <li>Your manual ranking (drag to adjust)</li>
-                </ol>
+            <div class="max-w-4xl mx-auto">
+                <div class="card">
+                    <div id="ranking-list" class="space-y-2">
+                        <!-- Will be populated by JavaScript based on standings -->
+                        <p class="text-gray-500 text-center py-4">Make predictions above to see third-place teams</p>
+                    </div>
+
+                    <div class="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
+                        <span class="inline-block w-4 h-4 bg-green-500 rounded mr-1"></span>
+                        Teams 1-8 qualify for Round of 32
+                    </div>
+                </div>
+
+                <div class="mt-8 text-center">
+                    <button onclick="goToKnockout()" class="btn-primary text-lg px-8 py-3 inline-block cursor-pointer">
+                        Go to Knockout Phase &rarr;
+                    </button>
+                </div>
             </div>
-
-            {% if third_place_teams %}
-                <div class="max-w-4xl mx-auto">
-                    <div class="card">
-                        <div id="ranking-list" class="space-y-2">
-                            {% for team in third_place_teams %}
-                                <div
-                                    class="draggable flex items-center justify-between p-3 bg-white border rounded-lg {{ 'border-green-500 bg-green-50' if team.rank <= 8 else 'border-gray-200' }}"
-                                    data-team-id="{{ team.team_id }}"
-                                    data-rank="{{ team.rank }}"
-                                    draggable="true"
-                                >
-                                    <div class="flex items-center gap-4">
-                                        <span class="w-8 h-8 flex items-center justify-center rounded-full {{ 'bg-green-500 text-white' if team.rank <= 8 else 'bg-gray-200' }} font-bold">
-                                            {{ team.rank }}
-                                        </span>
-                                        {{ flag(team.country_code, 24) }}
-                                        <div>
-                                            <div class="font-medium">{{ team.team_name }}</div>
-                                            <div class="text-sm text-gray-500">Group {{ team.group }}</div>
-                                        </div>
-                                    </div>
-                                    <div class="flex gap-6 text-sm">
-                                        <div class="text-center">
-                                            <div class="font-bold">{{ team.points }}</div>
-                                            <div class="text-gray-500">Pts</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="font-bold">{{ team.goal_diff }}</div>
-                                            <div class="text-gray-500">GD</div>
-                                        </div>
-                                        <div class="text-center">
-                                            <div class="font-bold">{{ team.goals_for }}</div>
-                                            <div class="text-gray-500">GF</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-
-                        <div class="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
-                            <span class="inline-block w-4 h-4 bg-green-500 rounded mr-1"></span>
-                            Teams 1-8 qualify for Round of 32
-                        </div>
-                    </div>
-
-                    <div class="mt-8 text-center">
-                        <button onclick="saveRanking()" class="btn-primary text-lg px-8 py-3">
-                            Save Ranking & Go to Knockout Phase &rarr;
-                        </button>
-                    </div>
-                </div>
-            {% else %}
-                <div class="card text-center py-12 max-w-4xl mx-auto">
-                    <p class="text-gray-500 mb-4">Complete your group stage predictions above to see the third-place ranking.</p>
-                </div>
-            {% endif %}
         </div>
     {% endif %}
 </div>
 
 <script>
-const scores = {};
+// Initialize match data from server
+window.matchData = {{ match_data_json|safe }};
 
-async function savePrediction(matchId, outcome, winnerId) {
-    const data = {
-        predicted_outcome: outcome,
-        predicted_winner_team_id: winnerId,
-        predicted_home_score: scores[matchId]?.home,
-        predicted_away_score: scores[matchId]?.away
-    };
+// Group teams data for standings calculation
+window.groupTeams = {
+    {% for group_letter, group_data in groups.items() %}
+    '{{ group_letter }}': [
+        {% for team in group_data.teams %}
+        { id: {{ team.id }}, name: '{{ team.name }}', country_code: '{{ team.country_code }}' }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
 
-    const success = await submitPrediction(matchId, outcome, data.predicted_home_score, data.predicted_away_score, window.bulkOperation);
+// Handle prediction button click
+function handlePrediction(matchNumber, outcome) {
+    const matchCard = document.querySelector(`[data-match-number="${matchNumber}"]`);
+    if (!matchCard) return;
 
-    if (success) {
+    // Get scores if entered
+    const homeScoreInput = matchCard.querySelector('.home-score');
+    const awayScoreInput = matchCard.querySelector('.away-score');
+    const homeScore = homeScoreInput?.value ? parseInt(homeScoreInput.value) : null;
+    const awayScore = awayScoreInput?.value ? parseInt(awayScoreInput.value) : null;
+
+    // Update UI
+    selectPrediction(matchNumber, outcome);
+
+    // Save to local state and URL
+    savePredictionLocal(matchNumber, outcome, homeScore, awayScore);
+
+    // Recalculate standings
+    recalculateAllStandings();
+}
+
+// Handle score input change
+function handleScoreChange(matchNumber) {
+    const matchCard = document.querySelector(`[data-match-number="${matchNumber}"]`);
+    if (!matchCard) return;
+
+    const homeScoreInput = matchCard.querySelector('.home-score');
+    const awayScoreInput = matchCard.querySelector('.away-score');
+    const homeScore = homeScoreInput?.value ? parseInt(homeScoreInput.value) : null;
+    const awayScore = awayScoreInput?.value ? parseInt(awayScoreInput.value) : null;
+
+    // Determine outcome from scores
+    let outcome = null;
+    if (homeScore !== null && awayScore !== null) {
+        if (homeScore > awayScore) outcome = 'home_win';
+        else if (awayScore > homeScore) outcome = 'away_win';
+        else outcome = 'draw';
+
         // Update UI
-        const buttons = document.querySelectorAll(`[data-match="${matchId}"] .prediction-btn`);
-        buttons.forEach(btn => {
-            btn.classList.remove('selected');
-            if (btn.dataset.outcome === outcome) {
-                btn.classList.add('selected');
+        selectPrediction(matchNumber, outcome);
+    }
+
+    // Get current prediction or use calculated outcome
+    const currentPred = window.bracketState.groupPredictions[matchNumber];
+    const finalOutcome = outcome || (currentPred ? currentPred.outcome : null);
+
+    if (finalOutcome) {
+        savePredictionLocal(matchNumber, finalOutcome, homeScore, awayScore, null, true);
+        recalculateAllStandings();
+    }
+}
+
+// Auto-select all groups with random outcomes
+async function autoSelectAllGroups() {
+    const matchCards = document.querySelectorAll('[data-match-number]');
+    let selectedCount = 0;
+
+    matchCards.forEach(card => {
+        const matchNumber = parseInt(card.dataset.matchNumber);
+        if (matchNumber <= 72) { // Only group stage
+            const outcomes = ['home_win', 'draw', 'away_win'];
+            const randomOutcome = outcomes[Math.floor(Math.random() * 3)];
+
+            // Generate random scores matching outcome
+            let homeScore, awayScore;
+            if (randomOutcome === 'home_win') {
+                homeScore = Math.floor(Math.random() * 4) + 1;
+                awayScore = Math.floor(Math.random() * homeScore);
+            } else if (randomOutcome === 'away_win') {
+                awayScore = Math.floor(Math.random() * 4) + 1;
+                homeScore = Math.floor(Math.random() * awayScore);
+            } else {
+                homeScore = awayScore = Math.floor(Math.random() * 4);
+            }
+
+            // Update UI
+            selectPrediction(matchNumber, randomOutcome);
+            card.querySelector('.home-score').value = homeScore;
+            card.querySelector('.away-score').value = awayScore;
+
+            // Save
+            savePredictionLocal(matchNumber, randomOutcome, homeScore, awayScore, null, true);
+            selectedCount++;
+        }
+    });
+
+    console.log(`Auto-selected ${selectedCount} matches`);
+    
+    // Ensure state is updated properly
+    updateURLState();
+    
+    // Small delay to ensure recalculation happens after state is updated
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    recalculateAllStandings();
+    showToast(`All groups auto-selected! (${selectedCount} matches)`, 'success');
+}
+
+// Auto-select a single group
+async function autoSelectGroup(groupLetter) {
+    const groupCard = document.querySelector(`[data-group="${groupLetter}"]`);
+    if (!groupCard) return;
+
+    const matchCards = groupCard.querySelectorAll('[data-match-number]');
+    let selectedCount = 0;
+
+    matchCards.forEach(card => {
+        const matchNumber = parseInt(card.dataset.matchNumber);
+        const outcomes = ['home_win', 'draw', 'away_win'];
+        const randomOutcome = outcomes[Math.floor(Math.random() * 3)];
+
+        // Generate random scores
+        let homeScore, awayScore;
+        if (randomOutcome === 'home_win') {
+            homeScore = Math.floor(Math.random() * 4) + 1;
+            awayScore = Math.floor(Math.random() * homeScore);
+        } else if (randomOutcome === 'away_win') {
+            awayScore = Math.floor(Math.random() * 4) + 1;
+            homeScore = Math.floor(Math.random() * awayScore);
+        } else {
+            homeScore = awayScore = Math.floor(Math.random() * 4);
+        }
+
+        selectPrediction(matchNumber, randomOutcome);
+        card.querySelector('.home-score').value = homeScore;
+        card.querySelector('.away-score').value = awayScore;
+
+        savePredictionLocal(matchNumber, randomOutcome, homeScore, awayScore, null, true);
+        selectedCount++;
+    });
+
+    console.log(`Auto-selected ${selectedCount} matches in group ${groupLetter}`);
+    
+    // Ensure state is updated properly
+    updateURLState();
+    
+    // Small delay to ensure recalculation happens after state is updated
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
+    recalculateAllStandings();
+    showToast(`Group ${groupLetter} auto-selected! (${selectedCount} matches)`, 'success');
+}
+
+// Recalculate all group standings
+function recalculateAllStandings() {
+    const groupLetters = Object.keys(window.groupTeams);
+    const thirdPlaceTeams = [];
+
+    groupLetters.forEach(group => {
+        const standings = calculateGroupStandings(group, window.groupTeams[group], window.bracketState.groupPredictions);
+        updateStandingsUI(group, standings);
+
+        // Track third place team
+        if (standings.length >= 3) {
+            thirdPlaceTeams.push({
+                ...standings[2],
+                group: group
+            });
+        }
+    });
+
+    // Update prediction counts
+    updatePredictionCounts();
+
+    // Update third place ranking
+    updateThirdPlaceRanking(thirdPlaceTeams);
+}
+
+// Update standings table UI
+function updateStandingsUI(groupLetter, standings) {
+    const table = document.getElementById(`standings-${groupLetter}`);
+    if (!table) return;
+
+    const tbody = table.querySelector('tbody');
+    const rows = tbody.querySelectorAll('tr');
+
+    // Sort rows by standings order
+    standings.forEach((team, index) => {
+        const row = tbody.querySelector(`tr[data-team-id="${team.team_id}"]`);
+        if (row) {
+            row.querySelector('.rank-cell').textContent = index + 1;
+            row.querySelector('.played-cell').textContent = team.played;
+            row.querySelector('.gf-cell').textContent = team.goals_for;
+            row.querySelector('.ga-cell').textContent = team.goals_against;
+            row.querySelector('.gd-cell').textContent = team.goal_diff;
+            row.querySelector('.pts-cell').textContent = team.points;
+
+            // Update row styling
+            row.className = 'border-b';
+            if (index < 2) {
+                row.classList.add('bg-green-50');
+            } else if (index === 2) {
+                row.classList.add('bg-yellow-50');
+            }
+
+            // Move row to correct position
+            tbody.appendChild(row);
+        }
+    });
+}
+
+// Update prediction counts for each group
+function updatePredictionCounts() {
+    document.querySelectorAll('[data-group]').forEach(groupCard => {
+        const matchCards = groupCard.querySelectorAll('[data-match-number]');
+        let predictedCount = 0;
+
+        matchCards.forEach(card => {
+            const matchNumber = card.dataset.matchNumber;
+            if (window.bracketState.groupPredictions[matchNumber]) {
+                predictedCount++;
             }
         });
-        
-        // If not a bulk operation, we might want to reload or update standings dynamically.
-        // For simplicity, we just reload if it's a single manual action to ensure standings/third place updates.
-        if (!window.bulkOperation) {
-             // Use a small timeout to allow the toast to appear
-             setTimeout(() => location.reload(), 500);
+
+        const countEl = groupCard.querySelector('.predictions-count');
+        if (countEl) {
+            countEl.textContent = `${predictedCount}/${matchCards.length} predicted`;
         }
-    }
-    return success;
+    });
 }
 
-function updateScore(matchId, side, value) {
-    if (!scores[matchId]) {
-        scores[matchId] = { home: null, away: null };
-    }
-    scores[matchId][side] = value ? parseInt(value) : null;
-}
+// Update third place ranking UI
+function updateThirdPlaceRanking(thirdPlaceTeams) {
+    const rankingList = document.getElementById('ranking-list');
+    if (!rankingList) return;
 
-// Auto-select all matches with random outcomes (H, D, or A)
-async function autoSelectAllGroups() {
-    // Show spinner
-    const spinner = document.getElementById('autoSelectSpinner');
-    const btn = document.getElementById('autoSelectAllBtn');
-    spinner.classList.remove('hidden');
-    btn.disabled = true;
-    
-    // Suppress individual toasts during bulk operation
-    window.bulkOperation = true;
-    
-    const matchElements = document.querySelectorAll('[data-match]');
-    let selectCount = 0;
-    let alreadySelectedCount = 0;
-    
-    // First pass: count already selected matches
-    for (const element of matchElements) {
-        const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
-        if (buttons.length > 0) {
-            const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
-            if (alreadySelected) {
-                alreadySelectedCount++;
-            }
-        }
-    }
-    
-    // If all are already selected, ask for confirmation
-    if (alreadySelectedCount > 0 && selectCount === 0) {
-        const confirmOverwrite = confirm(`All matches are already selected! Do you want to re-run and overwrite all ${alreadySelectedCount} selections with new random outcomes?`);
-        if (!confirmOverwrite) {
-            // User cancelled, hide spinner and re-enable button
-            spinner.classList.add('hidden');
-            btn.disabled = false;
-            window.bulkOperation = false;
-            return;
-        }
-    }
-    
-    // Second pass: select all matches (including already selected ones)
-    for (const element of matchElements) {
-        const matchId = element.getAttribute('data-match');
-        const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
-        
-        if (buttons.length > 0) {
-            // Randomly select H, D, or A (ignore if already selected - will overwrite)
-            const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
-            const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
-            
-            if (selectedButton && !selectedButton.disabled) {
-                await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
-                selectCount++;
-                
-                // Small delay to avoid overwhelming the server
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-        }
-    }
-    
-    // Stop bulk operation
-    window.bulkOperation = false;
-    
-    // Hide spinner and re-enable button
-    spinner.classList.add('hidden');
-    btn.disabled = false;
-    
-    // Show result toast only at the end
-    if (selectCount > 0) {
-        showToast(`Selected ${selectCount} matches! Reloading...`, 'success');
-        setTimeout(() => location.reload(), 800);
-    } else {
-        showToast('No unlocked matches available to select!', 'info');
-    }
-}
+    // Sort by points, goal diff, goals for
+    thirdPlaceTeams.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        if (b.goal_diff !== a.goal_diff) return b.goal_diff - a.goal_diff;
+        return b.goals_for - a.goals_for;
+    });
 
-// Auto-select all matches in a specific group
-async function autoSelectGroup(groupLetter) {
-    const groupCards = document.querySelectorAll('.card');
-    let selectCount = 0;
-    let alreadySelectedCount = 0;
-    
-    for (const card of groupCards) {
-        const heading = card.querySelector('h2');
-        if (heading && heading.textContent.includes(`Group ${groupLetter}`)) {
-            const matchElements = card.querySelectorAll('[data-match]');
-            
-            // First pass: count already selected matches
-            for (const element of matchElements) {
-                const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
-                if (buttons.length > 0) {
-                    const alreadySelected = Array.from(buttons).some(btn => btn.classList.contains('selected'));
-                    if (alreadySelected) {
-                        alreadySelectedCount++;
-                    }
-                }
-            }
-            
-            // If all are already selected, ask for confirmation
-            if (alreadySelectedCount > 0 && selectCount === 0) {
-                const confirmOverwrite = confirm(`All matches in Group ${groupLetter} are already selected! Do you want to re-run and overwrite all ${alreadySelectedCount} selections with new random outcomes?`);
-                if (!confirmOverwrite) {
-                    return;
-                }
-            }
-            
-            // Second pass: select all matches in this group
-            for (const element of matchElements) {
-                const matchId = element.getAttribute('data-match');
-                const buttons = element.querySelectorAll('.prediction-btn:not(:disabled)');
-                
-                if (buttons.length > 0) {
-                    // Randomly select H, D, or A (ignore if already selected - will overwrite)
-                    const randomOutcome = ['home_win', 'draw', 'away_win'][Math.floor(Math.random() * 3)];
-                    const selectedButton = element.querySelector(`[data-outcome="${randomOutcome}"]`);
-                    
-                    if (selectedButton && !selectedButton.disabled) {
-                        await savePrediction(matchId, randomOutcome, randomOutcome === 'home_win' ? getWinnerId(element) : null);
-                        selectCount++;
-                        
-                        // Small delay to avoid overwhelming the server
-                        await new Promise(resolve => setTimeout(resolve, 100));
-                    }
-                }
-            }
-            break; // Found the group, no need to continue
-        }
-    }
-    
-    // Reload once at the end to update standings
-    if (selectCount > 0) {
-        showToast(`Selected ${selectCount} matches in Group ${groupLetter}! Reloading...`, 'success');
-        setTimeout(() => location.reload(), 800);
-    } else {
-        showToast('No unlocked matches available in this group!', 'info');
-    }
-}
+    // Apply user's manual ranking if exists
+    if (window.bracketState.thirdPlaceRanking && window.bracketState.thirdPlaceRanking.length > 0) {
+        const rankedTeams = [];
+        const unrankedTeams = [...thirdPlaceTeams];
 
-// Helper function to get winner ID
-function getWinnerId(element) {
-    const homeTeamButton = element.querySelector('[data-outcome="home_win"]');
-    return homeTeamButton?.getAttribute('onclick')?.match(/savePrediction\([^,]+,\s*'[^']+',\s*(\d+)/)?.[1] || null;
-}
+        window.bracketState.thirdPlaceRanking.forEach(teamId => {
+            const idx = unrankedTeams.findIndex(t => t.team_id === teamId);
+            if (idx !== -1) {
+                rankedTeams.push(unrankedTeams.splice(idx, 1)[0]);
+            }
+        });
 
-// Reset all predictions by clearing from database via API
-async function resetAllPredictions() {
-    if (!confirm('Are you sure you want to reset ALL predictions? This cannot be undone.')) {
+        thirdPlaceTeams.length = 0;
+        thirdPlaceTeams.push(...rankedTeams, ...unrankedTeams);
+    }
+
+    if (thirdPlaceTeams.length === 0) {
+        rankingList.innerHTML = '<p class="text-gray-500 text-center py-4">Make predictions above to see third-place teams</p>';
         return;
     }
-    
-    // Show spinner
-    const spinner = document.getElementById('resetSpinner');
-    const btn = document.getElementById('resetAllBtn');
-    spinner.classList.remove('hidden');
-    btn.disabled = true;
-    
-    const matchElements = document.querySelectorAll('[data-match]');
-    let resetCount = 0;
-    
-    for (const element of matchElements) {
-        const matchId = element.getAttribute('data-match');
-        const buttons = element.querySelectorAll('.prediction-btn');
-        
-        // Check if any button is selected and not locked
-        const hasSelection = Array.from(buttons).some(btn => btn.classList.contains('selected'));
-        
-        if (hasSelection && !buttons[0].disabled) {
-            // Call API to delete the prediction
-            try {
-                const response = await fetch(`/api/predictions/match/${matchId}`, {
-                    method: 'DELETE',
-                    headers: { 'Content-Type': 'application/json' }
-                });
-                
-                if (response.ok) {
-                    // Remove selected class from all buttons
-                    buttons.forEach(btn => btn.classList.remove('selected'));
-                    
-                    // Clear score inputs if they exist
-                    const scoreInputs = element.querySelectorAll('input[type="number"]');
-                    scoreInputs.forEach(input => input.value = '');
-                    
-                    resetCount++;
-                } else {
-                    console.error('Failed to delete prediction:', response.statusText);
-                }
-            } catch (error) {
-                console.error('Error resetting prediction:', error);
-            }
-            
-            await new Promise(resolve => setTimeout(resolve, 50));
-        }
-    }
-    
-    // Hide spinner and re-enable button
-    spinner.classList.add('hidden');
-    btn.disabled = false;
-    
-    // Show result toast only at the end
-    if (resetCount > 0) {
-        showToast(`Reset ${resetCount} predictions!`, 'error');
-        setTimeout(() => location.reload(), 800);
-    } else {
-        showToast('No predictions to reset!', 'info');
-    }
+
+    rankingList.innerHTML = thirdPlaceTeams.map((team, index) => `
+        <div
+            class="draggable flex items-center justify-between p-3 bg-white border rounded-lg ${index < 8 ? 'border-green-500 bg-green-50' : 'border-gray-200'}"
+            data-team-id="${team.team_id}"
+            draggable="true"
+        >
+            <div class="flex items-center gap-4">
+                <span class="w-8 h-8 flex items-center justify-center rounded-full ${index < 8 ? 'bg-green-500 text-white' : 'bg-gray-200'} font-bold">
+                    ${index + 1}
+                </span>
+                <div>
+                    <div class="font-medium">${team.team_name}</div>
+                    <div class="text-sm text-gray-500">Group ${team.group}</div>
+                </div>
+            </div>
+            <div class="flex gap-6 text-sm">
+                <div class="text-center">
+                    <div class="font-bold">${team.points}</div>
+                    <div class="text-gray-500">Pts</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold">${team.goal_diff}</div>
+                    <div class="text-gray-500">GD</div>
+                </div>
+                <div class="text-center">
+                    <div class="font-bold">${team.goals_for}</div>
+                    <div class="text-gray-500">GF</div>
+                </div>
+            </div>
+        </div>
+    `).join('');
+
+    // Re-attach drag and drop handlers
+    initDragAndDrop();
 }
 
-// Third Place Ranking Drag and Drop
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize drag and drop for third place ranking
+function initDragAndDrop() {
     const list = document.getElementById('ranking-list');
     if (!list) return;
 
@@ -603,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function() {
         item.addEventListener('dragend', function(e) {
             this.classList.remove('dragging');
             draggedItem = null;
-            updateRankNumbers();
+            saveThirdPlaceOrder();
         });
 
         item.addEventListener('dragover', function(e) {
@@ -629,21 +616,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     this.parentNode.insertBefore(draggedItem, this);
                 }
+
+                updateRankBadges();
             }
         });
     });
-});
+}
 
-function updateRankNumbers() {
+// Update rank badges after reordering
+function updateRankBadges() {
     const items = document.querySelectorAll('#ranking-list .draggable');
     items.forEach((item, index) => {
-        const rank = index + 1;
-        item.dataset.rank = rank;
-
         const rankBadge = item.querySelector('span:first-child');
-        rankBadge.textContent = rank;
+        rankBadge.textContent = index + 1;
 
-        if (rank <= 8) {
+        if (index < 8) {
             item.classList.add('border-green-500', 'bg-green-50');
             item.classList.remove('border-gray-200');
             rankBadge.classList.add('bg-green-500', 'text-white');
@@ -657,52 +644,47 @@ function updateRankNumbers() {
     });
 }
 
-async function saveRanking() {
+// Save third place order to state
+function saveThirdPlaceOrder() {
     const items = document.querySelectorAll('#ranking-list .draggable');
     const rankings = [];
-    let hasError = false;
-
-    items.forEach((item, index) => {
+    items.forEach(item => {
         const teamId = parseInt(item.dataset.teamId);
-        if (isNaN(teamId)) {
-            console.error('Invalid team ID for item:', item);
-            hasError = true;
-            return;
+        if (!isNaN(teamId)) {
+            rankings.push(teamId);
         }
-        rankings.push({
-            team_id: teamId,
-            rank_position: index + 1
-        });
     });
+    saveThirdPlaceRanking(rankings);
+    updateRankBadges();
+}
 
-    if (hasError) {
-        showToast('Error: Invalid team data found in list.', 'error');
-        return;
-    }
+// Apply third place ranking from state
+function applyThirdPlaceRanking(rankings) {
+    // This will be called when loading state from URL
+    // The recalculateAllStandings function handles this
+}
 
-    try {
-        const response = await fetch('/bracket/api/third-place', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ rankings })
-        });
-
-        if (response.ok) {
-            window.location.href = '/bracket';
-        } else {
-            const errorText = await response.text();
-            console.error('Failed to save ranking:', response.status, errorText);
-            try {
-                const errorJson = JSON.parse(errorText);
-                showToast(`Failed to save: ${errorJson.detail || 'Unknown error'}`, 'error');
-            } catch (e) {
-                showToast(`Failed to save ranking (Status ${response.status})`, 'error');
-            }
-        }
-    } catch (error) {
-        console.error('Network error saving ranking:', error);
-        showToast('Network error - check console', 'error');
+// Navigate to knockout page with state preserved in URL
+function goToKnockout() {
+    const encoded = encodeState(window.bracketState);
+    if (encoded) {
+        window.location.href = `/bracket?s=${encoded}`;
+    } else {
+        window.location.href = '/bracket';
     }
 }
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Debug: Log match data
+    console.log('Match data loaded:', Object.keys(window.matchData).length, 'matches');
+    console.log('Group teams loaded:', Object.keys(window.groupTeams));
+
+    // Load state from URL (already done in app.js)
+    setTimeout(() => {
+        console.log('Predictions loaded:', Object.keys(window.bracketState.groupPredictions).length);
+        recalculateAllStandings();
+    }, 100);
+});
 </script>
 {% endblock %}

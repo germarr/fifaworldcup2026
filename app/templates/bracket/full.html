@@ -1,0 +1,706 @@
+{% extends "base.html" %}
+{% from "components/team_flag.html" import flag %}
+
+{% block title %}My Bracket - FIFA World Cup 2026{% endblock %}
+
+{% block head %}
+<style>
+    .draggable { cursor: move; transition: transform 0.2s, box-shadow 0.2s; }
+    .draggable:hover { transform: scale(1.02); }
+    .draggable.dragging { opacity: 0.5; transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.2); }
+    .drag-over { border: 2px dashed #326295 !important; }
+    .prediction-btn.selected { background-color: #326295; color: white; border-color: #326295; }
+
+    .ko-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 0.5rem; }
+    .ko-card.predicted { border-color: #22c55e; background: #f0fdf4; }
+    .team-slot { padding: 0.5rem; border-radius: 0.25rem; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 0.5rem; }
+    .team-slot:hover:not(.tbd) { background: #e2e8f0; }
+    .team-slot.winner { background: #dcfce7; border: 2px solid #22c55e; }
+    .team-slot.loser { opacity: 0.5; }
+    .team-slot.tbd { background: #f1f5f9; color: #94a3b8; cursor: default; }
+
+    .section-anchor { scroll-margin-top: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <h1 class="text-3xl font-bold mb-6">My Bracket - FIFA World Cup 2026</h1>
+
+    <!-- Instructions Banner -->
+    <div class="bg-gradient-to-r from-slate-200 to-slate-300 text-slate-900 rounded-lg p-6 mb-8 shadow-md border border-slate-400">
+        <div class="grid md:grid-cols-2 gap-6">
+            <div>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">&#128203;</span> How to Fill Your Bracket
+                </h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <p class="font-semibold mb-1">&#127919; Predict Match Outcomes:</p>
+                        <ul class="ml-4 space-y-1 list-disc">
+                            <li><strong>H</strong> = Home team wins</li>
+                            <li><strong>D</strong> = Draw</li>
+                            <li><strong>A</strong> = Away team wins</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-1">&#128202; Optional Scores:</p>
+                        <p>Enter predicted scores for tiebreakers.</p>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <span class="text-2xl">&#127942;</span> How It Works
+                </h2>
+                <div class="space-y-3 text-sm">
+                    <div>
+                        <p class="font-semibold mb-1">&#128279; URL-Based Saving:</p>
+                        <p>Your predictions are saved in the URL. Bookmark or share the link!</p>
+                    </div>
+                    <div>
+                        <p class="font-semibold mb-1">&#129353; Third-Place Qualification:</p>
+                        <p>Top 2 per group + best 8 third-place teams advance to knockout.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="mb-6 flex flex-wrap gap-3 justify-center">
+        <button onclick="autoSelectAllGroups()" class="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-semibold transition cursor-pointer">
+            &#9889; Auto-Fill All Groups
+        </button>
+        <button onclick="autoSelectAllKnockouts()" class="bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold transition cursor-pointer">
+            &#9889; Auto-Fill Knockouts
+        </button>
+        <button onclick="resetAllPredictions()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-lg font-semibold transition cursor-pointer">
+            &#128260; Reset All
+        </button>
+        <button onclick="copyShareableLink()" class="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition cursor-pointer">
+            &#128279; Share Bracket
+        </button>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="bg-white rounded-lg p-4 mb-8 shadow-sm border">
+        <div class="flex items-center justify-between mb-2">
+            <span class="font-semibold">Overall Progress</span>
+            <span id="progress-text" class="text-sm text-gray-600">0/103 predictions</span>
+        </div>
+        <div class="h-3 bg-gray-200 rounded-full overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-green-400 to-green-600 transition-all duration-300" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- SECTION 1: GROUP STAGE -->
+    <!-- ============================================ -->
+    <section id="groups-section" class="section-anchor mb-12">
+        <h2 class="text-2xl font-bold text-fifa-blue mb-4 flex items-center gap-2">
+            <span>&#127944;</span> Group Stage
+            <span class="text-sm font-normal text-gray-500 ml-2" id="groups-count">(0/72)</span>
+        </h2>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for group_letter, group_data in groups.items() %}
+            <div class="card" data-group="{{ group_letter }}">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-xl font-bold text-fifa-blue">Group {{ group_letter }}</h3>
+                    <button onclick="autoSelectGroup('{{ group_letter }}')" class="bg-green-500 hover:bg-green-600 text-white text-xs px-3 py-1 rounded font-semibold transition cursor-pointer">
+                        &#9889; Auto
+                    </button>
+                </div>
+
+                <!-- Standings Table -->
+                <div class="mb-4">
+                    <table class="w-full text-sm" id="standings-{{ group_letter }}">
+                        <thead>
+                            <tr class="border-b">
+                                <th class="text-left py-1">#</th>
+                                <th class="text-left py-1">Team</th>
+                                <th class="text-center py-1">P</th>
+                                <th class="text-center py-1">GF</th>
+                                <th class="text-center py-1">GA</th>
+                                <th class="text-center py-1">GD</th>
+                                <th class="text-center py-1">Pts</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for team in group_data.teams %}
+                            <tr class="border-b" data-team-id="{{ team.id }}">
+                                <td class="py-1 rank-cell">{{ loop.index }}</td>
+                                <td class="py-1">
+                                    {{ flag(team.country_code, 16) }}
+                                    <span class="ml-1">{{ team.country_code }}</span>
+                                </td>
+                                <td class="text-center py-1 played-cell">0</td>
+                                <td class="text-center py-1 gf-cell">0</td>
+                                <td class="text-center py-1 ga-cell">0</td>
+                                <td class="text-center py-1 gd-cell">0</td>
+                                <td class="text-center py-1 font-bold pts-cell">0</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    <div class="text-xs text-gray-500 mt-2">
+                        <span class="inline-block w-3 h-3 bg-green-100 border mr-1"></span> Qualifies
+                        <span class="inline-block w-3 h-3 bg-yellow-100 border ml-2 mr-1"></span> Third place
+                    </div>
+                </div>
+
+                <!-- Matches -->
+                <div class="space-y-2">
+                    {% for match in group_data.matches %}
+                    <div class="match-card p-2 text-sm border rounded"
+                         data-match-number="{{ match.match_number }}"
+                         data-home-team-id="{{ match.home_team_id }}"
+                         data-away-team-id="{{ match.away_team_id }}"
+                         data-group="{{ group_letter }}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-1">
+                                {{ flag(match.home_team.country_code, 16) }}
+                                <span class="truncate w-16">{{ match.home_team.name }}</span>
+                            </div>
+                            <div class="flex gap-1">
+                                <button type="button" class="prediction-btn text-xs px-2 py-1 border rounded" data-outcome="home_win" onclick="handlePrediction({{ match.match_number }}, 'home_win')">H</button>
+                                <button type="button" class="prediction-btn text-xs px-2 py-1 border rounded" data-outcome="draw" onclick="handlePrediction({{ match.match_number }}, 'draw')">D</button>
+                                <button type="button" class="prediction-btn text-xs px-2 py-1 border rounded" data-outcome="away_win" onclick="handlePrediction({{ match.match_number }}, 'away_win')">A</button>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="truncate w-16 text-right">{{ match.away_team.name }}</span>
+                                {{ flag(match.away_team.country_code, 16) }}
+                            </div>
+                        </div>
+                        <div class="flex items-center justify-center gap-2 mt-2">
+                            <input type="number" min="0" max="20" class="home-score w-12 text-center input-field text-xs py-1 border rounded" placeholder="-" onchange="handleScoreChange({{ match.match_number }})">
+                            <span class="text-gray-400">-</span>
+                            <input type="number" min="0" max="20" class="away-score w-12 text-center input-field text-xs py-1 border rounded" placeholder="-" onchange="handleScoreChange({{ match.match_number }})">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SECTION 2: THIRD PLACE RANKING -->
+    <!-- ============================================ -->
+    <section id="third-place-section" class="section-anchor mb-12">
+        <h2 class="text-2xl font-bold text-amber-600 mb-4 flex items-center gap-2">
+            <span>&#129353;</span> Third Place Rankings
+        </h2>
+        <p class="text-gray-600 mb-4">Drag and drop to reorder. Top 8 teams qualify for Round of 32.</p>
+
+        <div class="bg-white rounded-lg p-4 shadow-sm border">
+            <div id="third-place-list" class="space-y-2">
+                <p class="text-gray-400 text-center py-4">Complete group stage predictions to see third-place teams</p>
+            </div>
+            <div class="mt-4 p-3 bg-gray-100 rounded text-sm text-gray-600">
+                <span class="inline-block w-4 h-4 bg-green-500 rounded mr-1"></span>
+                Teams 1-8 qualify for Round of 32
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================ -->
+    <!-- SECTION 3: KNOCKOUT STAGE -->
+    <!-- ============================================ -->
+    <section id="knockout-section" class="section-anchor mb-12">
+        <h2 class="text-2xl font-bold text-purple-600 mb-4 flex items-center gap-2">
+            <span>&#127942;</span> Knockout Stage
+            <span class="text-sm font-normal text-gray-500 ml-2" id="knockout-count">(0/31)</span>
+        </h2>
+
+        <!-- Round of 32 -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-red-600 mb-3">Round of 32</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-3" id="round-of-32"></div>
+        </div>
+
+        <!-- Round of 16 -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-orange-600 mb-3">Round of 16</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="round-of-16"></div>
+        </div>
+
+        <!-- Quarter Finals -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-yellow-600 mb-3">Quarter Finals</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="quarter-finals"></div>
+        </div>
+
+        <!-- Semi Finals -->
+        <div class="mb-8">
+            <h3 class="text-xl font-bold text-green-600 mb-3">Semi Finals</h3>
+            <div class="grid grid-cols-2 gap-3 max-w-lg" id="semi-finals"></div>
+        </div>
+
+        <!-- Final & Third Place -->
+        <div class="grid md:grid-cols-2 gap-6 max-w-xl">
+            <div>
+                <h3 class="text-lg font-bold text-amber-700 mb-3">&#129353; Third Place</h3>
+                <div id="third-place-match"></div>
+            </div>
+            <div>
+                <h3 class="text-lg font-bold text-fifa-gold mb-3">&#128081; FINAL</h3>
+                <div id="final-match"></div>
+            </div>
+        </div>
+
+        <!-- Champion -->
+        <div id="champion-section" class="hidden mt-8 text-center p-8 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg border-2 border-yellow-400">
+            <div class="text-4xl mb-2">&#127942;</div>
+            <h3 class="text-2xl font-bold text-yellow-800">Your Predicted Champion</h3>
+            <div id="champion-name" class="mt-4 text-3xl font-bold"></div>
+        </div>
+    </section>
+</div>
+
+<script>
+// ============================================
+// DATA FROM SERVER
+// ============================================
+window.matchData = {{ match_data_json|safe }};
+window.allTeams = {{ all_teams_json|safe }};
+window.groupTeams = {
+    {% for group_letter, group_data in groups.items() %}
+    '{{ group_letter }}': [
+        {% for team in group_data.teams %}
+        { id: {{ team.id }}, name: '{{ team.name }}', country_code: '{{ team.country_code }}' }{% if not loop.last %},{% endif %}
+        {% endfor %}
+    ]{% if not loop.last %},{% endif %}
+    {% endfor %}
+};
+
+// ============================================
+// KNOCKOUT BRACKET STRUCTURE
+// ============================================
+const ROUND_OF_32 = [
+    { num: 73, home: '1A', away: '2L' }, { num: 74, home: '1C', away: '2J' },
+    { num: 75, home: '1E', away: '2H' }, { num: 76, home: '1G', away: '2F' },
+    { num: 77, home: '1I', away: '2D' }, { num: 78, home: '1K', away: '2B' },
+    { num: 79, home: '3rd_1', away: '3rd_4' }, { num: 80, home: '3rd_2', away: '3rd_3' },
+    { num: 81, home: '1B', away: '2K' }, { num: 82, home: '1D', away: '2I' },
+    { num: 83, home: '1F', away: '2G' }, { num: 84, home: '1H', away: '2E' },
+    { num: 85, home: '1J', away: '2C' }, { num: 86, home: '1L', away: '2A' },
+    { num: 87, home: '3rd_5', away: '3rd_8' }, { num: 88, home: '3rd_6', away: '3rd_7' },
+];
+const ROUND_OF_16 = [
+    { num: 89, home: 73, away: 74 }, { num: 90, home: 75, away: 76 },
+    { num: 91, home: 77, away: 78 }, { num: 92, home: 79, away: 80 },
+    { num: 93, home: 81, away: 82 }, { num: 94, home: 83, away: 84 },
+    { num: 95, home: 85, away: 86 }, { num: 96, home: 87, away: 88 },
+];
+const QUARTER_FINALS = [
+    { num: 97, home: 89, away: 90 }, { num: 98, home: 91, away: 92 },
+    { num: 99, home: 93, away: 94 }, { num: 100, home: 95, away: 96 },
+];
+const SEMI_FINALS = [
+    { num: 101, home: 97, away: 98 }, { num: 102, home: 99, away: 100 },
+];
+const THIRD_PLACE = { num: 103, home: 101, away: 102, losers: true };
+const FINAL = { num: 104, home: 101, away: 102 };
+
+window.knockoutTeams = {};
+
+// ============================================
+// STATE LOADING
+// ============================================
+function loadStateFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    const s = params.get('s');
+    if (s) {
+        try {
+            let str = s.replace(/-/g, '+').replace(/_/g, '/');
+            while (str.length % 4) str += '=';
+            const compressed = new Uint8Array(atob(str).split('').map(c => c.charCodeAt(0)));
+            window.bracketState = JSON.parse(pako.inflate(compressed, { to: 'string' }));
+        } catch (e) { console.error('Failed to load state:', e); }
+    }
+}
+
+// ============================================
+// GROUP STAGE FUNCTIONS
+// ============================================
+function handlePrediction(matchNumber, outcome) {
+    const card = document.querySelector(`[data-match-number="${matchNumber}"]`);
+    if (!card) return;
+
+    const homeScore = parseInt(card.querySelector('.home-score')?.value) || null;
+    const awayScore = parseInt(card.querySelector('.away-score')?.value) || null;
+
+    selectPrediction(matchNumber, outcome);
+    savePredictionLocal(matchNumber, outcome, homeScore, awayScore, null, true);
+    recalculateAll();
+}
+
+function handleScoreChange(matchNumber) {
+    const card = document.querySelector(`[data-match-number="${matchNumber}"]`);
+    if (!card) return;
+
+    const homeScore = parseInt(card.querySelector('.home-score')?.value) || 0;
+    const awayScore = parseInt(card.querySelector('.away-score')?.value) || 0;
+
+    let outcome = homeScore > awayScore ? 'home_win' : (awayScore > homeScore ? 'away_win' : 'draw');
+    selectPrediction(matchNumber, outcome);
+    savePredictionLocal(matchNumber, outcome, homeScore, awayScore, null, true);
+    recalculateAll();
+}
+
+function autoSelectGroup(groupLetter) {
+    const groupCard = document.querySelector(`[data-group="${groupLetter}"]`);
+    if (!groupCard) return;
+
+    groupCard.querySelectorAll('[data-match-number]').forEach(card => {
+        const matchNumber = parseInt(card.dataset.matchNumber);
+        const outcomes = ['home_win', 'draw', 'away_win'];
+        const outcome = outcomes[Math.floor(Math.random() * 3)];
+
+        let homeScore, awayScore;
+        if (outcome === 'home_win') {
+            homeScore = Math.floor(Math.random() * 4) + 1;
+            awayScore = Math.floor(Math.random() * homeScore);
+        } else if (outcome === 'away_win') {
+            awayScore = Math.floor(Math.random() * 4) + 1;
+            homeScore = Math.floor(Math.random() * awayScore);
+        } else {
+            homeScore = awayScore = Math.floor(Math.random() * 4);
+        }
+
+        selectPrediction(matchNumber, outcome);
+        card.querySelector('.home-score').value = homeScore;
+        card.querySelector('.away-score').value = awayScore;
+        savePredictionLocal(matchNumber, outcome, homeScore, awayScore, null, true);
+    });
+
+    updateURLState();
+    recalculateAll();
+}
+
+function autoSelectAllGroups() {
+    Object.keys(window.groupTeams).forEach(g => autoSelectGroup(g));
+    showToast('All groups auto-filled!', 'success');
+}
+
+function calculateGroupStandings(groupLetter) {
+    const teams = window.groupTeams[groupLetter];
+    const preds = window.bracketState.groupPredictions || {};
+    const stats = {};
+
+    teams.forEach(t => {
+        stats[t.id] = { ...t, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 };
+    });
+
+    Object.entries(preds).forEach(([num, pred]) => {
+        const match = window.matchData[String(num)] || window.matchData[parseInt(num)];
+        if (!match || match.group !== groupLetter) return;
+
+        const home = stats[match.homeTeamId];
+        const away = stats[match.awayTeamId];
+        if (!home || !away) return;
+
+        home.played++; away.played++;
+        const hs = pred.homeScore || 0, as = pred.awayScore || 0;
+        home.gf += hs; home.ga += as;
+        away.gf += as; away.ga += hs;
+
+        if (pred.outcome === 'home_win') { home.won++; home.pts += 3; away.lost++; }
+        else if (pred.outcome === 'away_win') { away.won++; away.pts += 3; home.lost++; }
+        else { home.drawn++; away.drawn++; home.pts++; away.pts++; }
+    });
+
+    return Object.values(stats)
+        .map(s => ({ ...s, gd: s.gf - s.ga }))
+        .sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+}
+
+function updateStandingsUI(groupLetter, standings) {
+    const table = document.getElementById(`standings-${groupLetter}`);
+    if (!table) return;
+    const tbody = table.querySelector('tbody');
+
+    standings.forEach((team, i) => {
+        const row = tbody.querySelector(`tr[data-team-id="${team.id}"]`);
+        if (row) {
+            row.querySelector('.rank-cell').textContent = i + 1;
+            row.querySelector('.played-cell').textContent = team.played;
+            row.querySelector('.gf-cell').textContent = team.gf;
+            row.querySelector('.ga-cell').textContent = team.ga;
+            row.querySelector('.gd-cell').textContent = team.gd;
+            row.querySelector('.pts-cell').textContent = team.pts;
+            row.className = 'border-b ' + (i < 2 ? 'bg-green-50' : (i === 2 ? 'bg-yellow-50' : ''));
+            tbody.appendChild(row);
+        }
+    });
+}
+
+// ============================================
+// THIRD PLACE RANKING
+// ============================================
+function getThirdPlaceTeams() {
+    const thirds = [];
+    Object.keys(window.groupTeams).forEach(g => {
+        const standings = calculateGroupStandings(g);
+        if (standings.length >= 3 && standings[2].played > 0) {
+            thirds.push({ ...standings[2], group: g });
+        }
+    });
+
+    thirds.sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf);
+
+    // Apply manual ranking
+    const manual = window.bracketState.thirdPlaceRanking || [];
+    if (manual.length > 0) {
+        const ranked = [], unranked = [...thirds];
+        manual.forEach(id => {
+            const idx = unranked.findIndex(t => t.id === id);
+            if (idx !== -1) ranked.push(unranked.splice(idx, 1)[0]);
+        });
+        return [...ranked, ...unranked];
+    }
+    return thirds;
+}
+
+function renderThirdPlaceList() {
+    const teams = getThirdPlaceTeams();
+    const container = document.getElementById('third-place-list');
+
+    if (teams.length === 0) {
+        container.innerHTML = '<p class="text-gray-400 text-center py-4">Complete group stage predictions to see third-place teams</p>';
+        return;
+    }
+
+    container.innerHTML = teams.map((t, i) => `
+        <div class="draggable flex items-center justify-between p-3 rounded-lg border ${i < 8 ? 'bg-green-50 border-green-300' : 'bg-gray-50 border-gray-200'}"
+             data-team-id="${t.id}" draggable="true">
+            <div class="flex items-center gap-3">
+                <span class="w-8 h-8 flex items-center justify-center rounded-full text-sm font-bold ${i < 8 ? 'bg-green-500 text-white' : 'bg-gray-300'}">${i + 1}</span>
+                <img src="https://flagcdn.com/w40/${t.country_code.toLowerCase()}.png" class="w-6 h-4 object-cover rounded" alt="${t.country_code}">
+                <div>
+                    <div class="font-medium">${t.name}</div>
+                    <div class="text-xs text-gray-500">Group ${t.group}</div>
+                </div>
+            </div>
+            <div class="text-right text-sm">
+                <div class="font-bold">${t.pts} pts</div>
+                <div class="text-gray-500">${t.gd > 0 ? '+' : ''}${t.gd} GD</div>
+            </div>
+        </div>
+    `).join('');
+
+    initDragDrop();
+}
+
+function initDragDrop() {
+    const container = document.getElementById('third-place-list');
+    let dragged = null;
+
+    container.querySelectorAll('.draggable').forEach(el => {
+        el.addEventListener('dragstart', () => { dragged = el; el.classList.add('dragging'); });
+        el.addEventListener('dragend', () => { el.classList.remove('dragging'); saveThirdPlaceOrder(); });
+        el.addEventListener('dragover', e => { e.preventDefault(); el.classList.add('drag-over'); });
+        el.addEventListener('dragleave', () => el.classList.remove('drag-over'));
+        el.addEventListener('drop', e => {
+            e.preventDefault();
+            el.classList.remove('drag-over');
+            if (dragged && dragged !== el) {
+                const items = [...container.querySelectorAll('.draggable')];
+                if (items.indexOf(dragged) < items.indexOf(el)) el.after(dragged);
+                else el.before(dragged);
+            }
+        });
+    });
+}
+
+function saveThirdPlaceOrder() {
+    const items = document.querySelectorAll('#third-place-list .draggable');
+    window.bracketState.thirdPlaceRanking = [...items].map(el => parseInt(el.dataset.teamId));
+    updateURLState();
+    renderThirdPlaceList();
+    renderKnockoutBracket();
+}
+
+// ============================================
+// KNOCKOUT BRACKET
+// ============================================
+function getQualifiers() {
+    const q = { winners: {}, runners: {}, thirds: getThirdPlaceTeams() };
+    Object.keys(window.groupTeams).forEach(g => {
+        const s = calculateGroupStandings(g);
+        if (s[0]?.played > 0) q.winners[`1${g}`] = s[0];
+        if (s[1]?.played > 0) q.runners[`2${g}`] = s[1];
+    });
+    return q;
+}
+
+function getSlotTeam(slot, q) {
+    if (slot.startsWith('1')) return q.winners[slot];
+    if (slot.startsWith('2')) return q.runners[slot];
+    if (slot.startsWith('3rd_')) return q.thirds[parseInt(slot.split('_')[1]) - 1];
+    return null;
+}
+
+function getMatchWinner(num, losers = false) {
+    const pred = window.bracketState.knockoutPredictions?.[num];
+    const teams = window.knockoutTeams[num];
+    if (!pred || !teams) return null;
+
+    if (losers) return pred.outcome === 'home_win' ? teams.away : teams.home;
+    return pred.outcome === 'home_win' ? teams.home : teams.away;
+}
+
+function renderKOMatch(num, home, away, homeLabel, awayLabel) {
+    window.knockoutTeams[num] = { home, away };
+    const pred = window.bracketState.knockoutPredictions?.[num];
+    const hClass = pred?.outcome === 'home_win' ? 'winner' : (pred?.outcome === 'away_win' ? 'loser' : '');
+    const aClass = pred?.outcome === 'away_win' ? 'winner' : (pred?.outcome === 'home_win' ? 'loser' : '');
+
+    const teamHtml = (team, label, cls, side) => team
+        ? `<div class="team-slot ${cls}" onclick="selectKOWinner(${num}, '${side}')">
+             <img src="https://flagcdn.com/w40/${team.country_code.toLowerCase()}.png" class="w-6 h-4 object-cover rounded">
+             <span class="text-sm font-medium truncate">${team.name}</span>
+           </div>`
+        : `<div class="team-slot tbd"><span class="text-sm text-gray-400">${label}</span></div>`;
+
+    return `
+        <div class="ko-card p-2 ${pred ? 'predicted' : ''}" data-ko-match="${num}">
+            <div class="text-xs text-gray-400 mb-1">M${num}</div>
+            ${teamHtml(home, homeLabel, hClass, 'home')}
+            <div class="text-center text-xs text-gray-400 my-1">vs</div>
+            ${teamHtml(away, awayLabel, aClass, 'away')}
+        </div>
+    `;
+}
+
+function selectKOWinner(num, side) {
+    const teams = window.knockoutTeams[num];
+    if (!teams) return;
+    const winner = side === 'home' ? teams.home : teams.away;
+    if (!winner) return;
+
+    window.bracketState.knockoutPredictions = window.bracketState.knockoutPredictions || {};
+    window.bracketState.knockoutPredictions[num] = {
+        outcome: side === 'home' ? 'home_win' : 'away_win',
+        penaltyWinner: winner.id
+    };
+
+    updateURLState();
+    renderKnockoutBracket();
+    updateProgress();
+}
+
+function autoSelectAllKnockouts() {
+    // First render to populate teams
+    renderKnockoutBracket();
+
+    const allMatches = [...ROUND_OF_32, ...ROUND_OF_16, ...QUARTER_FINALS, ...SEMI_FINALS, THIRD_PLACE, FINAL];
+
+    // Do multiple passes to propagate winners
+    for (let pass = 0; pass < 6; pass++) {
+        allMatches.forEach(m => {
+            const teams = window.knockoutTeams[m.num];
+            if (teams?.home && teams?.away && !window.bracketState.knockoutPredictions?.[m.num]) {
+                const side = Math.random() < 0.5 ? 'home' : 'away';
+                window.bracketState.knockoutPredictions = window.bracketState.knockoutPredictions || {};
+                window.bracketState.knockoutPredictions[m.num] = {
+                    outcome: side + '_win',
+                    penaltyWinner: (side === 'home' ? teams.home : teams.away).id
+                };
+            }
+        });
+        renderKnockoutBracket();
+    }
+
+    updateURLState();
+    updateProgress();
+    showToast('Knockouts auto-filled!', 'success');
+}
+
+function renderKnockoutBracket() {
+    const q = getQualifiers();
+
+    document.getElementById('round-of-32').innerHTML = ROUND_OF_32.map(m =>
+        renderKOMatch(m.num, getSlotTeam(m.home, q), getSlotTeam(m.away, q), m.home, m.away)
+    ).join('');
+
+    document.getElementById('round-of-16').innerHTML = ROUND_OF_16.map(m =>
+        renderKOMatch(m.num, getMatchWinner(m.home), getMatchWinner(m.away), `W${m.home}`, `W${m.away}`)
+    ).join('');
+
+    document.getElementById('quarter-finals').innerHTML = QUARTER_FINALS.map(m =>
+        renderKOMatch(m.num, getMatchWinner(m.home), getMatchWinner(m.away), `W${m.home}`, `W${m.away}`)
+    ).join('');
+
+    document.getElementById('semi-finals').innerHTML = SEMI_FINALS.map(m =>
+        renderKOMatch(m.num, getMatchWinner(m.home), getMatchWinner(m.away), `W${m.home}`, `W${m.away}`)
+    ).join('');
+
+    document.getElementById('third-place-match').innerHTML =
+        renderKOMatch(103, getMatchWinner(101, true), getMatchWinner(102, true), 'L101', 'L102');
+
+    document.getElementById('final-match').innerHTML =
+        renderKOMatch(104, getMatchWinner(101), getMatchWinner(102), 'W101', 'W102');
+
+    // Champion
+    const champ = getMatchWinner(104);
+    const champSection = document.getElementById('champion-section');
+    if (champ) {
+        champSection.classList.remove('hidden');
+        document.getElementById('champion-name').innerHTML = `
+            <img src="https://flagcdn.com/w80/${champ.country_code.toLowerCase()}.png" class="inline w-16 h-10 object-cover rounded mr-2">
+            ${champ.name}
+        `;
+    } else {
+        champSection.classList.add('hidden');
+    }
+}
+
+// ============================================
+// PROGRESS & RECALCULATION
+// ============================================
+function updateProgress() {
+    const groupCount = Object.keys(window.bracketState.groupPredictions || {}).length;
+    const koCount = Object.keys(window.bracketState.knockoutPredictions || {}).length;
+    const total = groupCount + koCount;
+    const pct = Math.round((total / 103) * 100);
+
+    document.getElementById('progress-bar').style.width = pct + '%';
+    document.getElementById('progress-text').textContent = `${total}/103 predictions`;
+    document.getElementById('groups-count').textContent = `(${groupCount}/72)`;
+    document.getElementById('knockout-count').textContent = `(${koCount}/31)`;
+}
+
+function recalculateAll() {
+    Object.keys(window.groupTeams).forEach(g => {
+        const standings = calculateGroupStandings(g);
+        updateStandingsUI(g, standings);
+    });
+    renderThirdPlaceList();
+    renderKnockoutBracket();
+    updateProgress();
+}
+
+// ============================================
+// INITIALIZATION
+// ============================================
+document.addEventListener('DOMContentLoaded', function() {
+    loadStateFromURL();
+
+    // Apply saved group predictions
+    Object.entries(window.bracketState.groupPredictions || {}).forEach(([num, pred]) => {
+        const card = document.querySelector(`[data-match-number="${num}"]`);
+        if (card) {
+            selectPrediction(parseInt(num), pred.outcome);
+            if (pred.homeScore != null) card.querySelector('.home-score').value = pred.homeScore;
+            if (pred.awayScore != null) card.querySelector('.away-score').value = pred.awayScore;
+        }
+    });
+
+    recalculateAll();
+});
+</script>
+{% endblock %}

@@ -11,97 +11,13 @@
         <h2 class="text-2xl md:text-3xl text-fifa-blue mb-6">
             Bracket Prediction Game
         </h2>
-        <p class="text-gray-600 text-lg">
-            Predict match outcomes, build your bracket, and compete with friends!
+        <p class="text-gray-600 text-lg mb-8">
+            Predict match outcomes, build your bracket, and share with friends!
         </p>
+        <div class="flex gap-4 justify-center">
+            <a href="/bracket" class="btn-primary text-lg px-8 py-3">Start Predicting</a>
+        </div>
     </div>
-
-    {% if not current_user %}
-        <div class="card max-w-md mx-auto text-center">
-            <h3 class="text-xl font-bold mb-4">Get Started</h3>
-            <p class="text-gray-600 mb-6">
-                Create an account to start making your predictions for the World Cup 2026.
-            </p>
-            <div class="flex gap-4 justify-center">
-                <a href="/auth/register" class="btn-primary">Sign Up</a>
-                <a href="/auth/login" class="btn-secondary">Login</a>
-            </div>
-        </div>
-    {% else %}
-        <div class="grid md:grid-cols-2 gap-6">
-            <div class="card">
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span>&#127942;</span> Your Progress
-                </h3>
-                <div class="space-y-3">
-                    <div class="flex justify-between">
-                        <span>Group Stage Predictions</span>
-                        <span class="font-bold">{{ group_predictions_count }}/72</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Knockout Predictions</span>
-                        <span class="font-bold">{{ knockout_predictions_count }}/32</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span>Total Points</span>
-                        <span class="font-bold text-fifa-blue">{{ total_points }}</span>
-                    </div>
-                </div>
-                <div class="mt-6">
-                    <a href="/bracket/groups" class="btn-primary w-full block text-center">
-                        Continue Predictions
-                    </a>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                    <span>&#128200;</span> Leaderboard
-                </h3>
-                {% if leaderboard %}
-                    <div class="space-y-2">
-                        {% for entry in leaderboard[:5] %}
-                            <div class="flex justify-between items-center py-2 border-b last:border-0">
-                                <div class="flex items-center gap-2">
-                                    <span class="font-bold text-gray-500">#{{ loop.index }}</span>
-                                    <span>{{ entry.display_name }}</span>
-                                </div>
-                                <span class="font-bold">{{ entry.total_points }} pts</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <p class="text-gray-500">No predictions yet.</p>
-                {% endif %}
-                <div class="mt-4">
-                    <a href="/leaderboard" class="text-fifa-blue hover:underline">
-                        View Full Leaderboard &rarr;
-                    </a>
-                </div>
-            </div>
-        </div>
-
-        <div class="card mt-6">
-            <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
-                <span>&#128101;</span> Your Teams
-            </h3>
-            {% if user_teams %}
-                <div class="grid md:grid-cols-3 gap-4">
-                    {% for team in user_teams %}
-                        <a href="/teams/{{ team.id }}" class="block p-3 border rounded hover:border-fifa-blue transition-colors">
-                            <div class="font-bold">{{ team.name }}</div>
-                            <div class="text-sm text-gray-500">{{ team.member_count }} members</div>
-                        </a>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-gray-500 mb-4">You haven't joined any teams yet.</p>
-            {% endif %}
-            <div class="mt-4">
-                <a href="/teams/create" class="btn-secondary">Create a Team</a>
-            </div>
-        </div>
-    {% endif %}
 
     <div class="mt-12 text-center">
         <h3 class="text-xl font-bold mb-6">How It Works</h3>
@@ -117,37 +33,31 @@
                 <div class="text-3xl mb-3">2</div>
                 <h4 class="font-bold mb-2">Build Your Bracket</h4>
                 <p class="text-gray-600 text-sm">
-                    Based on your group predictions, pick winners through the knockout rounds.
+                    Pick winners through the knockout rounds to the final.
                 </p>
             </div>
             <div class="card">
                 <div class="text-3xl mb-3">3</div>
-                <h4 class="font-bold mb-2">Earn Points</h4>
+                <h4 class="font-bold mb-2">Share Your Bracket</h4>
                 <p class="text-gray-600 text-sm">
-                    Score points for correct predictions and climb the leaderboard!
+                    Get a shareable link and compare with friends!
                 </p>
             </div>
         </div>
     </div>
 
     <div class="mt-8 card bg-fifa-blue text-white">
-        <h3 class="text-xl font-bold mb-4">Scoring</h3>
-        <div class="grid md:grid-cols-2 gap-4">
-            <div>
-                <h4 class="font-semibold mb-2">Group Stage</h4>
-                <ul class="text-sm space-y-1">
-                    <li>&#10003; Correct outcome: 1 point</li>
-                    <li>&#10003; Exact score: 3 points</li>
-                </ul>
-            </div>
-            <div>
-                <h4 class="font-semibold mb-2">Knockout Rounds</h4>
-                <ul class="text-sm space-y-1">
-                    <li>&#10003; Correct winner: 2 points</li>
-                    <li>&#10003; Exact score: 3 points</li>
-                </ul>
-            </div>
-        </div>
+        <h3 class="text-xl font-bold mb-4">Your Predictions Are Stored in the URL</h3>
+        <p class="mb-4">
+            No account needed! All your predictions are saved directly in the URL.
+            Just bookmark your page or copy the link to save and share your bracket.
+        </p>
+        <ul class="text-sm space-y-1">
+            <li>&#10003; No login required</li>
+            <li>&#10003; Share your bracket with a simple link</li>
+            <li>&#10003; Bookmark to save your progress</li>
+            <li>&#10003; Compare brackets with friends</li>
+        </ul>
     </div>
 </div>
 {% endblock %}
