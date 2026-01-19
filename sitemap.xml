@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- 
+        This is a placeholder sitemap.xml file.
+        You should update this with the actual URLs of your website.
+        
+        Example entry for your home page:
+        <url>
+            <loc>https://www.your-worldcup-site.com/</loc>
+            <lastmod>2026-01-19</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>1.0</priority>
+        </url>
+
+        Example entry for a bracket page:
+        <url>
+            <loc>https://www.your-worldcup-site.com/bracket</loc>
+            <lastmod>2026-01-19</lastmod>
+            <changefreq>daily</changefreq>
+            <priority>0.8</priority>
+        </url>
+    -->
+</urlset>

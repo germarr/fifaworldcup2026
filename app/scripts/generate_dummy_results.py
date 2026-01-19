@@ -27,8 +27,22 @@ sys.path.insert(0, str(__file__).rsplit("/app/", 1)[0])
 from app.database import engine
 from app.models.match import Match
 from app.models.fifa_team import FifaTeam
-from app.models.prediction import Prediction
-from app.services.scoring import calculate_match_points
+
+# Scoring is disabled for dummy results - the SQLAlchemy model relationships
+# require all related models to be imported which adds unnecessary complexity.
+# Scoring can be triggered separately via the admin interface if needed.
+SCORING_ENABLED = False
+
+if SCORING_ENABLED:
+    from app.models.prediction import Prediction
+    from app.services.scoring import calculate_match_points
+else:
+    Prediction = None
+    calculate_match_points = None
+
+def is_scoring_available(db) -> bool:
+    """Check if scoring should be performed."""
+    return SCORING_ENABLED and calculate_match_points is not None
 
 
 # Match number ranges for each round
@@ -256,10 +270,15 @@ def generate_group_stage_results(db: Session, verbose: bool = True) -> int:
 
     db.commit()
 
-    # Calculate points for all predictions
-    for match in matches:
-        if match.status == "completed":
-            calculate_match_points(db, match)
+    # Calculate points for all predictions (if scoring tables exist)
+    if is_scoring_available(db):
+        for match in matches:
+            if match.status == "completed":
+                try:
+                    calculate_match_points(db, match)
+                except Exception as e:
+                    if verbose:
+                        print(f"  Warning: Could not calculate points for match {match.match_number}: {e}")
 
     return count
 
@@ -362,10 +381,15 @@ def generate_knockout_round_results(
 
     db.commit()
 
-    # Calculate points for all predictions
-    for match in matches:
-        if match.status == "completed":
-            calculate_match_points(db, match)
+    # Calculate points for all predictions (if scoring tables exist)
+    if is_scoring_available(db):
+        for match in matches:
+            if match.status == "completed":
+                try:
+                    calculate_match_points(db, match)
+                except Exception as e:
+                    if verbose:
+                        print(f"  Warning: Could not calculate points for match {match.match_number}: {e}")
 
     # Assign winners to next round
     assign_next_round_teams(db, round_name, winners, losers, verbose)
@@ -493,12 +517,16 @@ def reset_all_results(db: Session, verbose: bool = True) -> int:
             db.add(match)
             count += 1
 
-    # Also reset points earned on predictions
-    predictions = db.exec(select(Prediction)).all()
-    for pred in predictions:
-        if pred.points_earned != 0:
-            pred.points_earned = 0
-            db.add(pred)
+    # Also reset points earned on predictions (if tables exist)
+    if is_scoring_available(db) and Prediction is not None:
+        try:
+            predictions = db.exec(select(Prediction)).all()
+            for pred in predictions:
+                if pred.points_earned != 0:
+                    pred.points_earned = 0
+                    db.add(pred)
+        except Exception:
+            pass  # Prediction table may not exist
 
     # Reset knockout match team assignments (keep group stage teams)
     knockout_start = ROUND_RANGES["round_of_32"][0]

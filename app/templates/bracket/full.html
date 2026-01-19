@@ -273,11 +273,19 @@
             </div>
         </div>
 
-        <!-- Champion -->
+        <!-- Predicted Champion -->
         <div id="champion-section" class="hidden mt-8 text-center p-8 bg-gradient-to-r from-yellow-100 to-yellow-200 rounded-lg border-2 border-yellow-400">
             <div class="text-4xl mb-2">&#127942;</div>
             <h3 class="text-2xl font-bold text-yellow-800">Your Predicted Champion</h3>
             <div id="champion-name" class="mt-4 text-3xl font-bold"></div>
+        </div>
+
+        <!-- Actual Champion -->
+        <div id="actual-champion-section" class="hidden mt-8 text-center p-8 bg-gradient-to-r from-green-100 to-emerald-200 rounded-lg border-2 border-green-500">
+            <div class="text-4xl mb-2">&#127942;</div>
+            <h3 class="text-2xl font-bold text-green-800">Actual World Cup Champion</h3>
+            <div id="actual-champion-name" class="mt-4 text-3xl font-bold"></div>
+            <div id="champion-match-result" class="mt-2 text-sm text-green-700"></div>
         </div>
     </section>
 </div>
@@ -548,8 +556,20 @@ function getMatchWinner(num, losers = false) {
 function renderKOMatch(num, home, away, homeLabel, awayLabel) {
     window.knockoutTeams[num] = { home, away };
     const pred = window.bracketState.knockoutPredictions?.[num];
+    const matchInfo = window.matchData[num];
+    const isCompleted = matchInfo?.status === 'completed' && matchInfo?.actualHomeScore !== null;
+
     const hClass = pred?.outcome === 'home_win' ? 'winner' : (pred?.outcome === 'away_win' ? 'loser' : '');
     const aClass = pred?.outcome === 'away_win' ? 'winner' : (pred?.outcome === 'home_win' ? 'loser' : '');
+
+    // Determine result styling for completed matches
+    let resultClass = '';
+    let actualResultBar = '';
+    if (isCompleted) {
+        const result = calculateKOMatchResult(num, pred, matchInfo);
+        resultClass = result.className;
+        actualResultBar = result.html;
+    }
 
     const teamHtml = (team, label, cls, side) => team
         ? `<div class="team-slot ${cls}" onclick="selectKOWinner(${num}, '${side}')">
@@ -559,13 +579,83 @@ function renderKOMatch(num, home, away, homeLabel, awayLabel) {
         : `<div class="team-slot tbd"><span class="text-sm text-gray-400">${label}</span></div>`;
 
     return `
-        <div class="ko-card p-2 ${pred ? 'predicted' : ''}" data-ko-match="${num}">
+        <div class="ko-card p-2 ${pred ? 'predicted' : ''} ${resultClass}" data-ko-match="${num}" data-match-number="${num}">
             <div class="text-xs text-gray-400 mb-1">M${num}</div>
             ${teamHtml(home, homeLabel, hClass, 'home')}
             <div class="text-center text-xs text-gray-400 my-1">vs</div>
             ${teamHtml(away, awayLabel, aClass, 'away')}
+            ${actualResultBar}
         </div>
     `;
+}
+
+/**
+ * Calculate result styling and HTML for a knockout match
+ */
+function calculateKOMatchResult(num, pred, matchInfo) {
+    const actualHomeScore = matchInfo.actualHomeScore;
+    const actualAwayScore = matchInfo.actualAwayScore;
+    const actualWinner = matchInfo.actualWinnerTeamId;
+
+    // Determine actual outcome from scores (for regular time)
+    let actualOutcome;
+    if (actualHomeScore > actualAwayScore) actualOutcome = 'home_win';
+    else if (actualAwayScore > actualHomeScore) actualOutcome = 'away_win';
+    else actualOutcome = 'draw'; // Went to penalties
+
+    let className = '';
+    let points = 0;
+    let resultType = 'incorrect';
+
+    if (pred) {
+        const predHomeScore = pred.homeScore ?? null;
+        const predAwayScore = pred.awayScore ?? null;
+
+        // Check for exact score match
+        if (predHomeScore !== null && predAwayScore !== null &&
+            predHomeScore === actualHomeScore && predAwayScore === actualAwayScore) {
+            className = 'correct-exact';
+            points = 3;
+            resultType = 'exact';
+        }
+        // For knockout: check if predicted winner matches actual winner
+        else if (actualOutcome === 'draw') {
+            // Match went to penalties - check if predicted winner (via penaltyWinner) matches actual
+            const teams = window.knockoutTeams[num];
+            const predictedWinnerId = pred.penaltyWinner || (pred.outcome === 'home_win' ? teams?.home?.id : teams?.away?.id);
+            if (predictedWinnerId === actualWinner) {
+                className = 'correct-outcome';
+                points = 2;
+                resultType = 'outcome';
+            } else {
+                className = 'incorrect';
+            }
+        }
+        // Regular time result
+        else if (pred.outcome === actualOutcome) {
+            className = 'correct-outcome';
+            points = 2;
+            resultType = 'outcome';
+        } else {
+            className = 'incorrect';
+        }
+    } else {
+        className = 'incorrect';
+    }
+
+    // Build the result bar HTML
+    const pointsClass = points >= 2 ? 'points-3' : (points === 1 ? 'points-1' : 'points-0');
+    const pointsText = pred ? `+${points} pts` : 'No prediction';
+    const penaltyNote = actualOutcome === 'draw' ? ' (pens)' : '';
+
+    const html = `
+        <div class="actual-result-bar">
+            <span class="actual-score">Actual: ${actualHomeScore} - ${actualAwayScore}${penaltyNote}</span>
+            <span class="points-badge-small ${pointsClass}">${pointsText}</span>
+        </div>
+    `;
+
+    return { className, html, points, resultType };
 }
 
 function selectKOWinner(num, side) {
@@ -582,6 +672,7 @@ function selectKOWinner(num, side) {
 
     updateURLState();
     renderKnockoutBracket();
+    applyActualResultsToUI();
     updateProgress();
 }
 
@@ -608,6 +699,7 @@ function autoSelectAllKnockouts() {
     }
 
     updateURLState();
+    applyActualResultsToUI();
     updateProgress();
     showToast('Knockouts auto-filled!', 'success');
 }
@@ -698,8 +790,9 @@ function calculateMatchPoints(matchNumber, prediction) {
  * Apply actual results to match cards UI
  */
 function applyActualResultsToUI() {
-    // Remove existing result bars and classes
-    document.querySelectorAll('.actual-result-bar').forEach(el => el.remove());
+    // Remove existing result bars and classes from group stage cards only
+    // (knockout cards are re-rendered each time with results included)
+    document.querySelectorAll('.match-card .actual-result-bar').forEach(el => el.remove());
     document.querySelectorAll('.match-card').forEach(card => {
         card.classList.remove('correct-exact', 'correct-outcome', 'incorrect');
     });
@@ -714,55 +807,96 @@ function applyActualResultsToUI() {
         if (matchInfo.actualHomeScore === null || matchInfo.actualAwayScore === null) return;
 
         completedMatches++;
-        const card = document.querySelector(`[data-match-number="${matchNum}"]`);
-        if (!card) return;
+        const isKnockout = parseInt(matchNum) > 72;
 
         // Get prediction for this match
-        const isKnockout = parseInt(matchNum) > 72;
         const predictions = isKnockout
             ? window.bracketState.knockoutPredictions
             : window.bracketState.groupPredictions;
         const prediction = predictions?.[matchNum];
 
-        // Calculate points
-        const result = calculateMatchPoints(matchNum, prediction);
-
-        // Add actual result bar
-        const resultBar = document.createElement('div');
-        resultBar.className = 'actual-result-bar';
-
-        if (result) {
+        if (isKnockout) {
+            // Knockout matches are handled in renderKOMatch, just calculate points for summary
+            const result = calculateKOMatchResult(parseInt(matchNum), prediction, matchInfo);
             totalPoints += result.points;
             if (result.points > 0) correctPredictions++;
+        } else {
+            // Group stage matches - add result bar to card
+            const card = document.querySelector(`[data-match-number="${matchNum}"]`);
+            if (!card) return;
 
-            // Apply styling class based on result
-            if (result.type === 'exact') {
-                card.classList.add('correct-exact');
-            } else if (result.type === 'outcome') {
-                card.classList.add('correct-outcome');
+            const result = calculateMatchPoints(matchNum, prediction);
+
+            const resultBar = document.createElement('div');
+            resultBar.className = 'actual-result-bar';
+
+            if (result) {
+                totalPoints += result.points;
+                if (result.points > 0) correctPredictions++;
+
+                // Apply styling class based on result
+                if (result.type === 'exact') {
+                    card.classList.add('correct-exact');
+                } else if (result.type === 'outcome') {
+                    card.classList.add('correct-outcome');
+                } else {
+                    card.classList.add('incorrect');
+                }
+
+                const pointsClass = result.points >= 2 ? 'points-3' : (result.points === 1 ? 'points-1' : 'points-0');
+                resultBar.innerHTML = `
+                    <span class="actual-score">Actual: ${matchInfo.actualHomeScore} - ${matchInfo.actualAwayScore}</span>
+                    <span class="points-badge-small ${pointsClass}">+${result.points} pts</span>
+                `;
             } else {
+                // No prediction made for this completed match
                 card.classList.add('incorrect');
+                resultBar.innerHTML = `
+                    <span class="actual-score">Actual: ${matchInfo.actualHomeScore} - ${matchInfo.actualAwayScore}</span>
+                    <span class="points-badge-small points-0">No prediction</span>
+                `;
             }
 
-            const pointsClass = result.points >= 2 ? 'points-3' : (result.points === 1 ? 'points-1' : 'points-0');
-            resultBar.innerHTML = `
-                <span class="actual-score">Actual: ${matchInfo.actualHomeScore} - ${matchInfo.actualAwayScore}</span>
-                <span class="points-badge-small ${pointsClass}">+${result.points} pts</span>
-            `;
-        } else {
-            // No prediction made for this completed match
-            card.classList.add('incorrect');
-            resultBar.innerHTML = `
-                <span class="actual-score">Actual: ${matchInfo.actualHomeScore} - ${matchInfo.actualAwayScore}</span>
-                <span class="points-badge-small points-0">No prediction</span>
-            `;
+            card.appendChild(resultBar);
         }
-
-        card.appendChild(resultBar);
     });
 
     // Update score summary
     updateScoreSummary(totalPoints, completedMatches, correctPredictions);
+
+    // Update actual champion display
+    updateActualChampion();
+}
+
+/**
+ * Display the actual World Cup champion if the final has been played
+ */
+function updateActualChampion() {
+    const finalMatch = window.matchData[104];
+    const actualChampSection = document.getElementById('actual-champion-section');
+
+    if (!finalMatch || finalMatch.status !== 'completed' || !finalMatch.actualWinnerTeamId) {
+        actualChampSection.classList.add('hidden');
+        return;
+    }
+
+    // Get the winning team info
+    const championTeam = window.allTeams[finalMatch.actualWinnerTeamId];
+    if (!championTeam) {
+        actualChampSection.classList.add('hidden');
+        return;
+    }
+
+    actualChampSection.classList.remove('hidden');
+    document.getElementById('actual-champion-name').innerHTML = `
+        <img src="https://flagcdn.com/w80/${championTeam.country_code.toLowerCase()}.png" class="inline w-16 h-10 object-cover rounded mr-2">
+        ${championTeam.name}
+    `;
+
+    // Show final score
+    const penaltyNote = finalMatch.actualHomeScore === finalMatch.actualAwayScore ? ' (penalties)' : '';
+    document.getElementById('champion-match-result').textContent =
+        `Final: ${finalMatch.actualHomeScore} - ${finalMatch.actualAwayScore}${penaltyNote}`;
 }
 
 /**

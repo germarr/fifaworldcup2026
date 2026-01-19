@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /__pycache__/
+Disallow: /node_modules/
+Disallow: /.venv/
+
+Sitemap: https://www.your-worldcup-site.com/sitemap.xml
